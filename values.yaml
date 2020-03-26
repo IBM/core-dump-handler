@@ -20,9 +20,9 @@ serviceAccount:
 
 pvc:
   
-    bucket-name: "kcdt-core-dumps"
-    bucket-secret-name: "cos-write-access"
-    bucket-storate-class: "ibmc-s3fs-standard-regional"
+    bucketName: "kcdt-core-dumps"
+    bucketSecretName: "cos-write-access"
+    bucketStorageClass: "ibmc-s3fs-standard-regional"
 
 podSecurityContext: {}
   # fsGroup: 2000

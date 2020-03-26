@@ -1,12 +1,12 @@
 apiVersion : v1
 kind: PersistentVolumeClaim
 metadata:
-  name: name: {{ include "ibm-core-dump-handler.fullname" . }}
+  name: {{ include "ibm-core-dump-handler.fullname" . }}
   annotations:
     ibm.io/auto-create-bucket: "true"
     ibm.io/auto-delete-bucket: "false"
-    ibm.io/bucket: {{ .Values.pvc.bucket-name }} 
-    ibm.io/secret-name: {{ .Values.pvc.bucket-secret-name }}
+    ibm.io/bucket: {{ .Values.pvc.bucketName }} 
+    ibm.io/secret-name: {{ .Values.pvc.bucketSecretName }}
     
 spec:
   resources:
@@ -14,4 +14,4 @@ spec:
       storage: 50Gi
   accessModes:
     - ReadWriteMany
-  storageClassName: {{ .Values.pvc.bucket-storage-class }} 
+  storageClassName: {{ .Values.pvc.bucketStorageClass }} 
