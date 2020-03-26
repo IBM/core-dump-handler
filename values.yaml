@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: number9/kcdt:v1.0.20
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -16,8 +16,13 @@ serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name:
+  name: "coredump-admin"
+
+pvc:
+  
+    bucket-name: "kcdt-core-dumps"
+    bucket-secret-name: "cos-write-access"
+    bucket-storate-class: "ibmc-s3fs-standard-regional"
 
 podSecurityContext: {}
   # fsGroup: 2000

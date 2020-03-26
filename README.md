@@ -1,4 +1,4 @@
-# IBM Cloud Core Dump Handler
+# IBM Core Dump Handler
 
 This helm chart creates a reference configuration to automatically saves core dumps from [IBM Kubernetes Service](https://cloud.ibm.com/docs/containers?topic=containers-getting-started) pods to [IBM Cloud Object Storage](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-about-ibm-cloud-object-storage#about-ibm-cloud-object-storage).
 By default the chart is deployed to the `kcdt` namespace of your cluster but that can be modified if required.
