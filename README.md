@@ -1,13 +1,15 @@
 # IBM Core Dump Handler
 
-This helm chart creates a reference configuration to automatically saves core dumps from [IBM Kubernetes Service](https://cloud.ibm.com/docs/containers?topic=containers-getting-started) pods to [IBM Cloud Object Storage](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-about-ibm-cloud-object-storage#about-ibm-cloud-object-storage).
-By default the chart is deployed to the `kcdt` namespace of your cluster but that can be modified if required.
+This helm chart creates to automatically save core dumps from [IBM Kubernetes Service](https://cloud.ibm.com/docs/containers?topic=containers-getting-started) pods to [IBM Cloud Object Storage](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-about-ibm-cloud-object-storage#about-ibm-cloud-object-storage).
+
 
 ## Introduction
 
-[Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability. As systems become more distributed core dumps offer teams a non-invasive approach to understanding why programs are malfunctioning in any environment they are deployed to.
+[Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability. A
 
-This chart utilizes a set of [simple bash scripts](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) based on work by [Guangwen Feng](https://github.com/fenggw-fnst/coredump-node-detector). The scripts manage an install of a core_pattern and script to handle a core dump from a privaliged container into the host server. A shared Cloud Object Store filesystem is also created betwwen the privaliged container and the host for deployment purposes and to allow the host to persist the coredumps "off box".
+As systems become more distributed core dumps offer teams a non-invasive approach to understanding why programs are malfunctioning in any environment they are deployed to. 
+
+This chart utilizes a set of [simple bash scripts](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) based on work by [Guangwen Feng](https://github.com/fenggw-fnst/coredump-node-detector). The scripts manage an install of a core_pattern and script to handle a core dump from a privileged container into the host server. A shared Cloud Object Store filesystem is also created between the privileged container and the host for deployment purposes and to allow the host to persist the coredumps "off box".
 
 Information that is stored with IBM Cloud Object Storage is encrypted in transit and at rest, dispersed across multiple geographic locations, and accessed over HTTP by using a REST API.
 
