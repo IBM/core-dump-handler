@@ -8,8 +8,8 @@ metadata:
     "helm.sh/hook": test-success
 spec:
   containers:
-    - name: wget
+    - name: deadshell
       image: busybox
-      command: ['wget']
-      args:  ['{{ include "ibm-core-dump-handler.fullname" . }}:{{ .Values.service.port }}']
+      command: ['kill']
+      args:  ['-11', '$$']
   restartPolicy: Never

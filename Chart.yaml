@@ -6,4 +6,6 @@ type: application
 
 version: 1.0.0
 
-appVersion: 1.0.18
+appVersion: 1.0.211
+
+icon: https://raw.githubusercontent.com/No9/ibm-core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg

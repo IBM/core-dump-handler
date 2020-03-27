@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.daemonset.name }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ .Values.daemonset.label }}
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.daemonset.label }}
+    spec:
+      containers:
+      - name: coredump-container
+        image: {{ .Values.image.repository }}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: tz-config
+          mountPath: /etc/localtime
+        - name: host-volume
+          mountPath:  /kcdt/host
+          mountPropagation: Bidirectional
+        - name: coredump-backend
+          mountPath: /kcdt/host/core
+        env:
+          # This value must be the same with the path of
+          # "host-volume", see below comments for details.
+        - name: HOSTVOL
+          value: {{ .Values.daemonset.hostVolume }}
+          # NS_DISK_QUOTA sets the coredump disk quota
+          # for every k8s namespace, this is optional,
+          # default value is 1 GB.
+        - name: NS_DISK_QUOTA
+          value: "1000mb"
+        command: ["/kcdt/init.sh"]
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/kcdt/cleanup.sh"]
+      serviceAccountName: {{ include "ibm-core-dump-handler.serviceAccountName" . }}
+      volumes:
+      - name: tz-config
+        hostPath:
+          # Change the path to the timezone of your host.
+          path: {{ .Values.daemonset.timezonePath }}
+      - name: host-volume
+        hostPath:
+          # The coredump handler program and related files will
+          # be installed here, you can config it as you like,
+          # but remember to modify the args value of HOSTVOL in
+          # env above as well.
+          path: {{ .Values.daemonset.hostVolume }}
+      - name: coredump-backend
+        # The coredump files will be stored here, please config
+        # your own storage backend here with nfs or ceph etc..
+        persistentVolumeClaim:
+          claimName: {{ include "ibm-core-dump-handler.fullname" . }}

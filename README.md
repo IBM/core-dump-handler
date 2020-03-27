@@ -36,7 +36,39 @@ The IBM Cloud Core Dump Handler requires the following resources on each worker 
 
 ### Before you begin
 
+Create a token
+```
+$ ibmcloud resource service-key-create $SERVICE_INSTANCE_KEY 'Manager' --instance-name $SERVICE_INSTANCE_NAME -p "{\"HMAC\":true}"
+```
+
+Get the token information
+```
+$ ibmcloud resource service-key $SERVICE_INSTANCE_KEY 
+```
+
+Create the namespace
+```
+$ create namespace ibm-observe
+```
+
+Store the token as a secret in the namespace
+```
+$ kubectl create secret generic cos-write-access --type=ibm/ibmc-s3fs --from-literal=access-key= --from-literal=secret-key= -n ibm-observe
+```
+
+Update the pvc section of values created above
+```
+pvc:
+    bucketName: "coredumps-002" #name of the bucket
+    bucketSecretName: "cos-write-access" #unless you changed the secret name this should stay the same
+```
+
 ### Installing the chart
+
+Simply
+```
+helm install coredump-handler . --namespace ibm-observe 
+```
 
 ### Verifying the chart
 
@@ -55,3 +87,7 @@ $ kubectl exec -it busybox -- /bin/sh
 4. View the core dump tar file in the configured Cloud Object Store service instance.
 
 ## Removing the Chart
+
+```
+helm delete coredump-handler -n ibm-observe
+```
