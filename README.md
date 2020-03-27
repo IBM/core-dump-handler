@@ -5,7 +5,7 @@ This helm chart creates to automatically save core dumps from [IBM Kubernetes Se
 
 ## Introduction
 
-[Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability. A
+[Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability.
 
 As systems become more distributed core dumps offer teams a non-invasive approach to understanding why programs are malfunctioning in any environment they are deployed to. 
 
