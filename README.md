@@ -24,7 +24,11 @@ RUNTIME ARCH HERE.
 
 ## Prerequisites
 
-[IBM Cloud Object Storage](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-about-ibm-cloud-object-storage#about-ibm-cloud-object-storage)
+[An IBM Cloud account]()
+
+[Virtual Routing and Forwarding Enabled](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint)
+
+[An IBM Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create)
 
 ### Permissions
 To install the Helm chart in your cluster, you must have the **Administrator** platform role.
@@ -38,9 +42,19 @@ The IBM Cloud Core Dump Handler requires the following resources on each worker 
 
 ### Before you begin
 
+If you are just starting out then make sure you have [VRF enabled ](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint) and a [test cluster provisioned](https://cloud.ibm.com/kubernetes/catalog/create).
+
+You can then use [This script](https://gist.github.com/No9/3cf779bed538ee3e89e564a32512da09) to provide the default COS plugin install and configuration as well as creating the keys required to just run the chart. 
+
+Provision and configure the Cloud Object Store Kubernetes plugin.
+
+https://hub.helm.sh/charts/ibm-charts/ibm-object-storage-plugin 
+
+
 Create a token
 ```
-$ ibmcloud resource service-key-create $SERVICE_INSTANCE_KEY 'Manager' --instance-name $SERVICE_INSTANCE_NAME -p "{\"HMAC\":true}"
+$ ibmcloud resource service-key-create $SERVICE_INSTANCE_KEY 'Manager' \ 
+    --instance-name $SERVICE_INSTANCE_NAME -p "{\"HMAC\":true}"
 ```
 
 Get the token information
@@ -55,7 +69,8 @@ $ create namespace ibm-observe
 
 Store the token as a secret in the namespace
 ```
-$ kubectl create secret generic cos-write-access --type=ibm/ibmc-s3fs --from-literal=access-key= --from-literal=secret-key= -n ibm-observe
+$ kubectl create secret generic cos-write-access --type=ibm/ibmc-s3fs \
+--from-literal=access-key= --from-literal=secret-key= -n ibm-observe
 ```
 
 Update the pvc section of values created above
