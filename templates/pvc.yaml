@@ -15,3 +15,28 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: {{ .Values.pvc.bucketStorageClass }} 
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tz-config-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: tzclass
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: host-path-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: hostclass
+

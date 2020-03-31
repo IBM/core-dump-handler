@@ -42,16 +42,11 @@ spec:
       serviceAccountName: {{ include "ibm-core-dump-handler.serviceAccountName" . }}
       volumes:
       - name: tz-config
-        hostPath:
-          # Change the path to the timezone of your host.
-          path: {{ .Values.daemonset.timezonePath }}
+        persistentVolumeClaim:
+          claimName: tz-config-pvc
       - name: host-volume
-        hostPath:
-          # The coredump handler program and related files will
-          # be installed here, you can config it as you like,
-          # but remember to modify the args value of HOSTVOL in
-          # env above as well.
-          path: {{ .Values.daemonset.hostVolume }}
+        persistentVolumeClaim:
+          claimName:  host-path-pvc
       - name: coredump-backend
         # The coredump files will be stored here, please config
         # your own storage backend here with nfs or ceph etc..
