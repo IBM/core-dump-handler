@@ -35,7 +35,17 @@ Information that is stored with IBM Cloud Object Storage is encrypted in transit
 
 When you install the IBM Cloud Core Dump Handler Helm chart, the following Kubernetes resources are deployed into your Kubernetes cluster:
 
-- **IBM Cloud Kubernetes Core Dump Tool daemonset**: The daemonset deploys one `kcdt` pod on every worker node in your cluster. The daemonset contains scripts to define the core pattern on the host along with scripts to place the core dump into object storage as well as gather pod information if available.
+- **Namespace**: A specific namespace is created to install the components into - defaults to ibm-observe
+
+- **Handler Daemonset**: The daemonset deploys [pod](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) on every worker node in your cluster. The daemonset contains scripts to define the core pattern on the host along with scripts to place the core dump into object storage as well as gather pod information if available.
+
+- **Privileged Policy**: The daemonset configures the host node so priviledges are required.
+
+- **Service Account**: Standard Service account to run the daemonset
+
+- **Volume Claims**: For Timezone configuration, copying the coredump script to the host and integrating cloud object storage
+
+- **Cluster Role**: Created with and event resource and create verb and associated with the service account. 
 
 ## Component Diagram
 ![Component Diagram](assets/topology.png)
