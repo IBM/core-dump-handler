@@ -63,7 +63,10 @@ $ ibmcloud plugin install cloud-object-storage
 $ ibmcloud plugin install kubernetes-service
 ```
 
+[jq cli](https://stedolan.github.io/jq/download/) - Used in the `install-cos.sh` script 
+
 if you are deploying into Openshift [oc](https://mirror.openshift.com/pub/openshift-v4/clients/oc/) is also required as well as the IBM Cloud CLI.
+
 
 
 ### Permissions
