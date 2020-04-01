@@ -38,7 +38,7 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 - **IBM Cloud Kubernetes Core Dump Tool daemonset**: The daemonset deploys one `kcdt` pod on every worker node in your cluster. The daemonset contains scripts to define the core pattern on the host along with scripts to place the core dump into object storage as well as gather pod information if available.
 
 ## Component Diagram
-!()[assets/topology.png]
+![Component Diagram](assets/topology.png)
 ## Prerequisites
 
 [An IBM Cloud account](https://cloud.ibm.com/login)
