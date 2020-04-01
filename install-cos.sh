@@ -35,8 +35,8 @@ CLUSTER_INFO=$(ibmcloud ks cluster get -c $CLUSTER_ID --json)
 RES_GRP=$(echo $CLUSTER_INFO | jq -r '.resourceGroup')
 RES_GRP_NAME=$(echo $CLUSTER_INFO | jq -r '.resourceGroupName')
 
-SERVICE_INSTANCE_NAME=$CLUSTER_NAME-cos-kcdt
-SERVICE_INSTANCE_KEY=$CLUSTER_NAME-key-kcdt
+SERVICE_INSTANCE_NAME=$CLUSTER_NAME-cos
+SERVICE_INSTANCE_KEY=$CLUSTER_NAME-key
 ibmcloud resource service-instance-create $SERVICE_INSTANCE_NAME cloud-object-storage Standard global -g $RES_GRP_NAME 
 
 ibmcloud resource service-key-create $SERVICE_INSTANCE_KEY 'Manager' --instance-name $SERVICE_INSTANCE_NAME -p "{\"HMAC\":true}"
@@ -47,7 +47,16 @@ SERVICE_CRED=$(ibmcloud resource service-key $SERVICE_INSTANCE_KEY --output json
 ACCESS_KEY_ID=$(echo $SERVICE_CRED | jq -r '.[0].credentials.cos_hmac_keys.access_key_id')
 SECRET_ACCESS_KEY=$(echo $SERVICE_CRED | jq -r '.[0].credentials.cos_hmac_keys.secret_access_key')
 
-SERVICE_INSTANCE_ID=$(ibmcloud resource service-instance $SERVICE_INSTANCE_NAME | grep GUID)
+SERVICE_INSTANCE_ID=$(ibmcloud resource service-instance $SERVICE_INSTANCE_NAME --output json | jq -r '.[0].guid')
+
+  --bucket BUCKET_NAME          The name (BUCKET_NAME) of the bucket.
+  --ibm-service-instance-id ID  Sets the IBM Service Instance ID in the request.
+  --class CLASS_NAME            The name (CLASS_NAME) of the Class.
+  --region REGION               The REGION where the bucket is present. If this flag is not provided, the program will use the default option specified in config.
+  --json                        Output returned in raw JSON format.
+
+BUCKET_NAME=${CLUSTER_NAME}-core-dumps
+ibmcloud cos create-bucket --bucket $BUCKET_NAME --ibm-service-instance-id $SERVICE_INSTANCE_ID --class 
 
 if [ "$IS_ROKS" = true ] ; then
     oc new-project $NAMESPACE
@@ -67,3 +76,6 @@ HELM_PLUGINS=$(helm env | grep HELM_PLUGINS | sed -e 's/HELM_PLUGINS=//g' | sed 
 chmod 755 $HELM_PLUGINS/helm-ibmc/ibmc.sh
 
 helm ibmc install ibm-object-storage-plugin ibm-charts/ibm-object-storage-plugin --verbos
+
+echo "If no errors returned and you are using the default install you can now run:"
+echo "helm install coredump-handler . --namespace $NAMESPACE --set pvc.bucketName=$BUCKET_NAME"
