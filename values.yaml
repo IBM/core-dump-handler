@@ -30,6 +30,7 @@ clusterRoleBinding:
   name: "coredump-event-report"
 
 pvc:
+    autoCreateBucket: \"true\"
     bucketName: "coredumps-005"
     bucketSecretName: "cos-write-access"
     bucketStorageClass: "ibmc-s3fs-standard-regional"

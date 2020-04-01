@@ -47,17 +47,6 @@ SERVICE_CRED=$(ibmcloud resource service-key $SERVICE_INSTANCE_KEY --output json
 ACCESS_KEY_ID=$(echo $SERVICE_CRED | jq -r '.[0].credentials.cos_hmac_keys.access_key_id')
 SECRET_ACCESS_KEY=$(echo $SERVICE_CRED | jq -r '.[0].credentials.cos_hmac_keys.secret_access_key')
 
-SERVICE_INSTANCE_ID=$(ibmcloud resource service-instance $SERVICE_INSTANCE_NAME --output json | jq -r '.[0].guid')
-
-  --bucket BUCKET_NAME          The name (BUCKET_NAME) of the bucket.
-  --ibm-service-instance-id ID  Sets the IBM Service Instance ID in the request.
-  --class CLASS_NAME            The name (CLASS_NAME) of the Class.
-  --region REGION               The REGION where the bucket is present. If this flag is not provided, the program will use the default option specified in config.
-  --json                        Output returned in raw JSON format.
-
-BUCKET_NAME=${CLUSTER_NAME}-core-dumps
-ibmcloud cos create-bucket --bucket $BUCKET_NAME --ibm-service-instance-id $SERVICE_INSTANCE_ID --class 
-
 if [ "$IS_ROKS" = true ] ; then
     oc new-project $NAMESPACE
     oc create secret generic cos-write-access --type=ibm/ibmc-s3fs --from-literal=access-key=$ACCESS_KEY_ID --from-literal=secret-key=$SECRET_ACCESS_KEY
@@ -77,5 +66,5 @@ chmod 755 $HELM_PLUGINS/helm-ibmc/ibmc.sh
 
 helm ibmc install ibm-object-storage-plugin ibm-charts/ibm-object-storage-plugin --verbos
 
-echo "If no errors returned and you are using the default install you can now run:"
+echo "If no errors returned you can now run:"
 echo "helm install coredump-handler . --namespace $NAMESPACE --set pvc.bucketName=$BUCKET_NAME"

@@ -3,11 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "ibm-core-dump-handler.fullname" . }}
   annotations:
-    ibm.io/auto-create-bucket: "false"
     ibm.io/auto-delete-bucket: "false"
     ibm.io/bucket: {{ .Values.pvc.bucketName }} 
     ibm.io/secret-name: {{ .Values.pvc.bucketSecretName }}
-    
+    ibm.io/auto-create-bucket: {{ .Values.pvc.autoCreateBucket }} 
 spec:
   resources:
     requests:
