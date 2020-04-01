@@ -100,7 +100,7 @@ If you require specific configuration then [IBM Cloud Object Storage](https://hu
 ### Installing the chart
 
 ```
-helm install coredump-handler . --namespace ibm-observe 
+helm install coredump-handler . --namespace ibm-observe --set pvc.bucketName=A_UNIQUE_NAME
 ```
 
 ### Verifying the chart
