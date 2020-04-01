@@ -45,7 +45,7 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 
 - **Volume Claims**: For Timezone configuration, copying the coredump script to the host and integrating cloud object storage
 
-- **Cluster Role**: Created with and event resource and create verb and associated with the service account. 
+- **Cluster Role**: Created with an **event** resource and **create** verb and associated with the service account. 
 
 ## Component Diagram
 ![Component Diagram](assets/topology.png)
