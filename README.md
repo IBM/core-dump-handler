@@ -86,14 +86,21 @@ The IBM Cloud Core Dump Handler requires the following resources on each worker 
 
 If you are just starting out then make sure you have [VRF enabled ](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint) and a [cluster provisioned](https://cloud.ibm.com/kubernetes/catalog/create).
 
-You can then use the `./install-cos.sh <NAME_OF_CLUSTER>` to provide the default COS plugin install and configuration as well as creating the keys required to simply run the chart. 
+If you're taking the default install then take the following steps:
+
+1. Set up the connection to your target cluster
+`ibmlcoud ks cluster config -c YOURCLUSTER` or `$ oc login --token=XXX --server=https://XXX`
+
+2. Run the install cos scipt
+`./install-cos.sh -c=<NAME_OF_CLUSTER>` 
+**N.B. The = sign in the arguments**
 
 If you require specific configuration then [IBM Cloud Object Storage](https://hub.helm.sh/charts/ibm-charts/ibm-object-storage-plugin) can be configured outside of this script and the properties set in this charts `values.yaml` 
 
 ### Installing the chart
 
 ```
-helm install coredump-handler . --namespace ibm-observe --set pvc.bucketName=<NAME_OF_CLUSTER>-core-dumps
+helm install coredump-handler . --namespace ibm-observe 
 ```
 
 ### Verifying the chart

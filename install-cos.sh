@@ -8,15 +8,17 @@
 # e.g. ./install-cos.sh -c kcdt-test-002
 
 NAMESPACE="ibm-observe"
+CLUSTER_NAME=""
 
 for i in "$@"
 do
 case $i in
     -c=*|--CLUSTER_NAME=*)
         CLUSTER_NAME="${i#*=}"; shift
-
+    ;;
     -n=*|--NAMESPACE=*)
         NAMESPACE="${i#*=}"; shift
+    ;;
 esac
 done
 
@@ -28,7 +30,6 @@ IS_ROKS=false
 if [[ $CLUSTER_VERSION == *"openshift"* ]]; then
   IS_ROKS=true
 fi
-
 
 CLUSTER_INFO=$(ibmcloud ks cluster get -c $CLUSTER_ID --json)
 
@@ -67,4 +68,4 @@ chmod 755 $HELM_PLUGINS/helm-ibmc/ibmc.sh
 helm ibmc install ibm-object-storage-plugin ibm-charts/ibm-object-storage-plugin --verbos
 
 echo "If no errors returned you can now run:"
-echo "helm install coredump-handler . --namespace $NAMESPACE --set pvc.bucketName=$BUCKET_NAME"
+echo "helm install coredump-handler . --namespace $NAMESPACE"
