@@ -92,8 +92,7 @@ If you're taking the default install then take the following steps:
 `ibmlcoud ks cluster config -c YOURCLUSTER` or `$ oc login --token=XXX --server=https://XXX`
 
 2. Run the install cos scipt
-`./install-cos.sh -c=<NAME_OF_CLUSTER>` 
-**N.B. The = sign in the arguments**
+`./install-cos.sh
 
 If you require specific configuration then [IBM Cloud Object Storage](https://hub.helm.sh/charts/ibm-charts/ibm-object-storage-plugin) can be configured outside of this script and the properties set in this charts `values.yaml` 
 
