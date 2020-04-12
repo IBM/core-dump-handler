@@ -37,7 +37,7 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 
 - **Namespace**: A specific namespace is created to install the components into - defaults to ibm-observe
 
-- **Handler Daemonset**: The daemonset deploys [pod](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) on every worker node in your cluster. The daemonset contains scripts to define the core pattern on the host along with scripts to place the core dump into object storage as well as gather pod information if available.
+- **Handler Daemonset**: The daemonset deploys a [pod](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) on every worker node in your cluster. The daemonset contains scripts to define the core pattern on the host along with scripts to place the core dump into object storage as well as gather pod information if available.
 
 - **Privileged Policy**: The daemonset configures the host node so priviledges are required.
 
@@ -55,7 +55,7 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 
 [Virtual Routing and Forwarding Enabled](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint)
 
-[An IBM Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create) **OR** [An RedHat OpenShift Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift)
+[An IBM Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create) **OR** [A RedHat OpenShift Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift)
 
 [ibmcloud cli](https://cloud.ibm.com/docs/cli?topic=cloud-cli-install-ibmcloud-cli) with the following plugins
 ```
