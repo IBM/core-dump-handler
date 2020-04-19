@@ -118,7 +118,22 @@ $ kubectl exec -it busybox -- /bin/sh
 ```
 4. View the core dump tar file in the configured Cloud Object Store service instance.
 
-## Removing the Chart
+## Updating the chart
+
+1. Delete the chart. Don't worry this won't impact the data stored in object storage.
+```
+$ helm delete coredump-handler . --namespace ibm-observe
+```
+2. Ensure the persitent volumes fot `tz-config` and `host-name` are deleted before continuing
+```
+$ kubectl get pv -n ibm-observe
+```
+3. Install the chart using the same bucket name as per the first install but tell the chart not to creat it. 
+```
+$ helm install coredump-handler . --namespace ibm-observe --set pvc.bucketName=SAME_UNIQUE_NAME --set pvc.autoCreateBucket=false
+```
+
+## Removing the chart
 
 ```
 helm delete coredump-handler -n ibm-observe
