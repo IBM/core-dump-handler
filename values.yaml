@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: number9/kcdt:v1.2.3
+  repository: number9/kcdt:v1.2.4
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
