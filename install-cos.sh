@@ -58,8 +58,8 @@ done
 echo "* Retreiving the IKS Cluster ID and Cluster Name"
 CLUSTER_ID=$(kubectl get cm -n kube-system cluster-info -o yaml | grep ' "cluster_id": ' | cut -d'"' -f4)
 # Using awk as the --json option is broken as it only returns one cluster
-CLUSTER_VERSION=$(ibmcloud ks clusters ls | awk -v pat=$CLUSTER_ID '{ if ( $2~pat) { print( $7 ) } }')
-CLUSTER_NAME=$(ibmcloud ks clusters ls | awk -v pat=$CLUSTER_ID '{ if ( $2~pat) { print( $1 ) } }')
+CLUSTER_VERSION=$(ibmcloud ks clusters | awk -v pat=$CLUSTER_ID '{ if ( $2~pat) { print( $0 ) } }')
+CLUSTER_NAME=$(ibmcloud ks clusters | awk -v pat=$CLUSTER_ID '{ if ( $2~pat) { print( $1 ) } }')
 
 if [[ $CLUSTER_VERSION == *"openshift"* ]]; then
   OPENSHIFT=1
