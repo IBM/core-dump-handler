@@ -1,7 +1,6 @@
 # IBM Core Dump Handler
 
-This helm chart is designed to deploy functionality to automatically save core dumps from [IBM Kubernetes Service](https://cloud.ibm.com/docs/containers?topic=containers-getting-started) pods or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) pods to [IBM Cloud Object Storage](https://cloud.ibm.com/docs/services/cloud-object-storage?topic=cloud-object-storage-about-ibm-cloud-object-storage#about-ibm-cloud-object-storage).
-
+This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kuberenetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
 
 ## Introduction
 
@@ -29,51 +28,53 @@ This chart aims to tackle the problems surrounding core dumps by leveraging comm
 
 ## Chart Details
 
-This chart utilizes a set of [simple bash scripts](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) based on work by [Guangwen Feng](https://github.com/fenggw-fnst/coredump-node-detector). The scripts manage an install of a `/proc/sys/kernel/core_pattern` and a script to handle a core dump from a privileged container into the host server. A shared Cloud Object Store filesystem is also created between the privileged container and the host for deployment purposes and to allow the host to persist the coredumps "off box".
+The chart deploys two processes: 
 
-Information that is stored with IBM Cloud Object Storage is encrypted in transit and at rest, dispersed across multiple geographic locations, and accessed over HTTP by using a REST API.
+1. The **agent** manages the updating of `/proc/sys/kernel/*` configuration, deploys the composer service and uploads the core dumps zipfile created by the composer to an object storage instance. 
+    
+2. The **composer** handles the processing of a core dump and creating runtime, container coredump and image JSON documents from CRICTL and inserting them into a single zip file. The zip file is stored on the local file system of the node for the agent to upload.
+
 
 When you install the IBM Cloud Core Dump Handler Helm chart, the following Kubernetes resources are deployed into your Kubernetes cluster:
 
 - **Namespace**: A specific namespace is created to install the components into - defaults to ibm-observe
 
-- **Handler Daemonset**: The daemonset deploys a [pod](https://github.com/No9/coredump-node-detector/tree/containerd-support/src) on every worker node in your cluster. The daemonset contains scripts to define the core pattern on the host along with scripts to place the core dump into object storage as well as gather pod information if available.
+- **Handler Daemonset**: The daemonset deploys a [pod](./charts/templates/daemonset.yaml) on every worker node in your cluster. The daemonset contains configuration to enable the elevated process to define the core pattern  to place the core dump into object storage as well as gather pod information if available.
 
 - **Privileged Policy**: The daemonset configures the host node so priviledges are required.
 
 - **Service Account**: Standard Service account to run the daemonset
 
-- **Volume Claims**: For Timezone configuration, copying the coredump script to the host and integrating cloud object storage
+- **Volume Claims**: For copying the composer to the host and enabling access to the generated core dumps
 
 - **Cluster Role**: Created with an **event** resource and **create** verb and associated with the service account. 
 
 ## Component Diagram
-![Component Diagram](assets/topology.png)
+![Component Diagram](charts/assets/topology.png)
+
 ## Prerequisites
 
-[An IBM Cloud account](https://cloud.ibm.com/login)
+The [Helm](https://helm.sh/) cli to run the chart
 
-[Virtual Routing and Forwarding Enabled](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint)
+An [S3](https://en.wikipedia.org/wiki/Amazon_S3) compatible object storage solution such as [IBM Cloud Object Storage](https://cloud.ibm.com/objectstorage/create)
 
-[An IBM Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create) **OR** [A RedHat OpenShift Kubernetes Service Instance](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift)
-
-[ibmcloud cli](https://cloud.ibm.com/docs/cli?topic=cloud-cli-install-ibmcloud-cli) with the following plugins
-```
-$ ibmcloud plugin install cloud-object-storage
-$ ibmcloud plugin install kubernetes-service
-```
-
-[jq cli](https://stedolan.github.io/jq/download/) - Used in the `install-cos.sh` script 
-
-if you are deploying into Openshift [oc](https://mirror.openshift.com/pub/openshift-v4/clients/oc/) is also required as well as the IBM Cloud CLI.
-
-
+A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
 
 ### Permissions
 To install the Helm chart in your cluster, you must have the **Administrator** platform role.
 
 ## Security implications
-This chart deploys privileged kubernetes daemon-set. The implications are the automatic creation of privileged container per kubernetes node capable of reading core files querying the crictl for pod info. The daemon-set also uses hostpath feature interacting with the underlying Linux OS.
+This chart deploys privileged kubernetes daemonset with the following implications: 
+
+1. the automatic creation of privileged container per kubernetes node capable of reading core files querying the crictl for pod info. 
+
+2. The daemonset uses hostpath feature interacting with the underlying Linux OS.
+
+3. The composer binary is deployed and ran on the host server
+
+4. Core dumps can contain sensitive runtime data and the storage bucket access must be managed accordingly.
+
+5. Object storage keys are stored as environment variables in the daemonset
 
 ## Resources Required
 The IBM Cloud Core Dump Handler requires the following resources on each worker node to run successfully:
@@ -82,27 +83,18 @@ The IBM Cloud Core Dump Handler requires the following resources on each worker 
 
 ## Installing the Chart
 
-### Before you begin
-
-If you are just starting out then make sure you have [VRF enabled ](https://cloud.ibm.com/docs/account?topic=account-vrf-service-endpoint) and a [cluster provisioned](https://cloud.ibm.com/kubernetes/catalog/create).
-
-If you're taking the default install then take the following steps:
-
-1. Set up the connection to your target cluster
-`ibmlcoud ks cluster config -c YOURCLUSTER` or `$ oc login --token=XXX --server=https://XXX`
-
-2. Run the install cos scipt
-`./install-cos.sh
-
-If you require specific configuration then [IBM Cloud Object Storage](https://hub.helm.sh/charts/ibm-charts/ibm-object-storage-plugin) can be configured outside of this script and the properties set in this charts `values.yaml` 
-
-### Installing the chart
-
 ```
-helm install coredump-handler . --namespace ibm-observe --set pvc.bucketName=A_UNIQUE_NAME
+git clone https://github.com/IBM/core-dump-handler
+cd core-dump-handler/charts
+helm install core-dump-handler . --namespace observe \
+--set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
+--set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
 ```
 
-### Verifying the chart
+Where the `--set` options are configuration for your S3 compatible provider
+Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
+
+### Verifying the chart installation
 
 1. Create a container 
 ```
@@ -122,19 +114,31 @@ $ kubectl exec -it busybox -- /bin/sh
 
 1. Delete the chart. Don't worry this won't impact the data stored in object storage.
 ```
-$ helm delete coredump-handler . --namespace ibm-observe
+$ helm delete coredump-handler . --namespace observe
 ```
-2. Ensure the persitent volumes fot `tz-config` and `host-name` are deleted before continuing
+2. Ensure the persitent volume for`host-name` are deleted before continuing
 ```
-$ kubectl get pv -n ibm-observe
+$ kubectl get pv -n observe
 ```
 3. Install the chart using the same bucket name as per the first install but tell the chart not to creat it. 
 ```
-$ helm install coredump-handler . --namespace ibm-observe --set pvc.bucketName=SAME_UNIQUE_NAME --set pvc.autoCreateBucket=false
+$ helm install coredump-handler . --namespace observe 
 ```
 
 ## Removing the chart
 
 ```
-helm delete coredump-handler -n ibm-observe
+helm delete coredump-handler -n observe
 ```
+
+## Building the image.
+
+[![Docker Repository on Quay](https://quay.io/repository/number9/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/number9/core-dump-handler)
+
+The services are written in Rust using [rustup](https://rustup.rs/) and currently only support building on Linux.
+
+1. Build the binaries `cargo build --release`
+
+2. Build the image `docker build -t yourtagname .`
+
+3. Update the container in the `values.yaml` file to use it.

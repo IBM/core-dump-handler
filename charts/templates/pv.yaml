@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: host-volume
+  labels:
+    type: local
+spec:
+  storageClassName: hostclass 
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce 
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.daemonset.hostDirectory }}
+    

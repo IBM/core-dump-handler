@@ -1,0 +1,15 @@
+Verifying the chart
+
+1. Create a container 
+
+$ kubectl run -i -t busybox --image=busybox --restart=Never
+
+2. Login to the container
+
+$ kubectl exec -it busybox -- /bin/sh
+
+3. Generate a core dump by sending SIGSEGV to the terminal process.
+
+# kill -11 $$
+
+4. View the core dump tar file in the configured Cloud Object Store service instance.

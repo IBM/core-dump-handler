@@ -1,0 +1,1 @@
+{ "uuid":"2fd506c1-4030-4b91-a37e-0242941273d7", "dump_file":"2fd506c1-4030-4b91-a37e-0242941273d7-dump-1588462466-crashing-app-699c49b4ff-86wrh-node-10-4.core.gz", "ext": ".gz", "timestamp": "1588462466", "hostname": "crashing-app-699c49b4ff-86wrh", "exe": "node", "real_pid": "10", "signal": "4" }

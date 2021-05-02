@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.daemonset.name }}
+spec:
+  selector:
+    matchLabels:
+      name: {{ .Values.daemonset.label }}
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.daemonset.label }}
+    spec:
+      containers:
+      - name: coredump-container
+        image: {{ .Values.image.repository }}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: host-volume
+          mountPath:  {{ .Values.daemonset.hostDirectory }}
+          mountPropagation: Bidirectional
+        env:
+          - name: HOST_DIR
+            value: {{ .Values.daemonset.hostDirectory }}
+          - name: S3_ACCESS_KEY
+            value: {{ .Values.daemonset.s3AccessKey }}
+          - name: S3_SECRET
+            value: {{ .Values.daemonset.s3Secret }}
+          - name: S3_BUCKET_NAME
+            value: {{ .Values.daemonset.s3BucketName }}
+          - name: S3_REGION
+            value: {{ .Values.daemonset.s3Region }}
+        command: ["/app/core-dump-agent"]
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/app/core-dump-agent remove"]
+      serviceAccountName: {{ include "ibm-core-dump-handler.serviceAccountName" . }}
+      volumes:
+      - name: host-volume
+        persistentVolumeClaim:
+          claimName:  host-path-pvc

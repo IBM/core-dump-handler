@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/number9/core-dump-handler:v2.0.3-beta 
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+daemonset:
+    name: "core-dump-handler"
+    label: "core-dump-ds"
+    hostDirectory: "/core-dump-handler"
+    s3AccessKey : XXX
+    s3Secret : XXX
+    s3BucketName : XXX
+    s3Region : XXX
+         
+serviceAccount:
+  create: true
+  name: "core-dump-admin"
+
+clusterRole:
+  name: "core-dump-event-reporter"
+
+clusterRoleBinding:
+  name: "core-dump-event-report"

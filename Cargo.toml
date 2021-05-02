@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+"core-dump-composer",
+"core-dump-agent",
+]
+
+[profile.release]
+debug = true
