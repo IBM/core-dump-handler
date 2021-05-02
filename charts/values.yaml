@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/number9/core-dump-handler:v2.0.3-beta 
+  repository: quay.io/number9/core-dump-handler:v2.0.4-beta 
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -16,6 +16,7 @@ daemonset:
     s3Secret : XXX
     s3BucketName : XXX
     s3Region : XXX
+    vendor: default
          
 serviceAccount:
   create: true

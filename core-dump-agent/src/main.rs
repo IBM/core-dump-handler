@@ -178,8 +178,10 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
             fs::copy(location, destination)?;
         }
         "rhel7" => {
-            error!("{} not available", version);
-            process::exit(1);
+            let location = format!("./vendor/rhel7/{}", CDC_NAME);
+            let destination = format!("{}/{}", host_location, CDC_NAME);
+            info!("Copying the composer from {} to {}", location, destination);
+            fs::copy(location, destination)?;
         }
         _ => {
             error!("Unknown version: {}", version);

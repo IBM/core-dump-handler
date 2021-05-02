@@ -15,8 +15,12 @@ RUN apk add --no-cache libgcc
 WORKDIR "/app"
 COPY --from=builder /app-build/target/release/core-dump-agent ./
 RUN mkdir -p vendor/default
+RUN mkdir -p vendor/rhel7
 WORKDIR "/app/vendor/default"
 COPY ./target/release/core-dump-composer ./
+RUN mv core-dump-composer cdc
+WORKDIR "/app/vendor/rhel7"
+COPY ./vendor/rhel7/core-dump-composer ./
 RUN mv core-dump-composer cdc
 WORKDIR "/app"
 CMD ["./core-dump-agent"]

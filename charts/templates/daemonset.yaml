@@ -31,6 +31,8 @@ spec:
             value: {{ .Values.daemonset.s3BucketName }}
           - name: S3_REGION
             value: {{ .Values.daemonset.s3Region }}
+          - name: VENDOR
+            value: {{ .Values.daemonset.vendor }}
         command: ["/app/core-dump-agent"]
         lifecycle:
           preStop:

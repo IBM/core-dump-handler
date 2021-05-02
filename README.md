@@ -2,7 +2,57 @@
 
 This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kuberenetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
 
-## Introduction
+## Prerequisites
+
+The [Helm](https://helm.sh/) cli to run the chart
+
+An [S3](https://en.wikipedia.org/wiki/Amazon_S3) compatible object storage solution such as [IBM Cloud Object Storage](https://cloud.ibm.com/objectstorage/create)
+
+A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
+
+## Installing the Chart
+
+```
+git clone https://github.com/IBM/core-dump-handler
+cd core-dump-handler/charts
+helm install core-dump-handler . --namespace observe \
+--set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
+--set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
+```
+
+Where the `--set` options are configuration for your S3 compatible provider
+Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
+
+## OpenShift
+
+As the agent runs in privileged mode the following command is needed on OpenShift
+```
+oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
+```
+Some OpenShift services run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml. 
+```
+--set daemonset.vendor=rhel7
+```
+
+### Verifying the chart installation
+
+1. Create a container 
+```
+$ kubectl run -i -t busybox --image=busybox --restart=Never
+```
+2. Login to the container
+```
+$ kubectl exec -it busybox -- /bin/sh
+```
+3. Generate a core dump by sending SIGSEGV to the terminal process.
+```
+# kill -11 $$
+```
+4. View the core dump tar file in the configured Cloud Object Store service instance.
+
+5. Troubleshoot by looking at the core-dump-composer logs in the observe namespace
+
+## Background
 
 [Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability.
 
@@ -52,14 +102,6 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 ## Component Diagram
 ![Component Diagram](charts/assets/topology.png)
 
-## Prerequisites
-
-The [Helm](https://helm.sh/) cli to run the chart
-
-An [S3](https://en.wikipedia.org/wiki/Amazon_S3) compatible object storage solution such as [IBM Cloud Object Storage](https://cloud.ibm.com/objectstorage/create)
-
-A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
-
 ### Permissions
 To install the Helm chart in your cluster, you must have the **Administrator** platform role.
 
@@ -80,35 +122,6 @@ This chart deploys privileged kubernetes daemonset with the following implicatio
 The IBM Cloud Core Dump Handler requires the following resources on each worker node to run successfully:
 - CPU: 0.2 vCPU
 - Memory: 128MB
-
-## Installing the Chart
-
-```
-git clone https://github.com/IBM/core-dump-handler
-cd core-dump-handler/charts
-helm install core-dump-handler . --namespace observe \
---set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
---set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
-```
-
-Where the `--set` options are configuration for your S3 compatible provider
-Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
-
-### Verifying the chart installation
-
-1. Create a container 
-```
-$ kubectl run -i -t busybox --image=busybox --restart=Never
-```
-2. Login to the container
-```
-$ kubectl exec -it busybox -- /bin/sh
-```
-3. Generate a core dump by sending SIGSEGV to the terminal process.
-```
-# kill -11 $$
-```
-4. View the core dump tar file in the configured Cloud Object Store service instance.
 
 ## Updating the chart
 
@@ -142,3 +155,12 @@ The services are written in Rust using [rustup](https://rustup.rs/) and currentl
 2. Build the image `docker build -t yourtagname .`
 
 3. Update the container in the `values.yaml` file to use it.
+
+### Build composer for RHEL7
+
+```
+docker run -it --security-opt label=disable -v $HOME/code/core-dump-handler:/core-dump-handler registry.access.redhat.com/devtools/rust-toolset-rhel7 /bin/bash
+cd core-dump-handler
+cargo build --release
+```
+This will put the build into the target/release/core-dump-composer folder copy it to the the vendor/rhel7 folder before running the main build.
