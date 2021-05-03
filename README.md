@@ -23,18 +23,20 @@ helm install core-dump-handler . --namespace observe \
 Where the `--set` options are configuration for your S3 compatible provider
 Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
 
-## OpenShift
+### OpenShift
 
-As the agent runs in privileged mode the following command is needed on OpenShift
+As the agent runs in privileged mode the following command is needed on OpenShift.
+`-z` is the service account name and `-n` is the namespace.
 ```
 oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
 ```
-Some OpenShift services run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml. 
+Some OpenShift services run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
+This will be apparent if you see errors relating to glibc in the output.log in the host directory core folder which can be accessed from the agent pod at `/core-dump-handler/core`
 ```
 --set daemonset.vendor=rhel7
 ```
 
-### Verifying the chart installation
+### Verifying the Chart Installation
 
 1. Create a container 
 ```
@@ -159,8 +161,6 @@ The services are written in Rust using [rustup](https://rustup.rs/) and currentl
 ### Build composer for RHEL7
 
 ```
-docker run -it --security-opt label=disable -v $HOME/code/core-dump-handler:/core-dump-handler registry.access.redhat.com/devtools/rust-toolset-rhel7 /bin/bash
-cd core-dump-handler
-cargo build --release
+docker run -it --security-opt label=disable -v $HOME/code/core-dump-handler:/core-dump-handler registry.access.redhat.com/devtools/rust-toolset-rhel7 cd /core-dump-handler && cargo build --release
 ```
 This will put the build into the target/release/core-dump-composer folder copy it to the the vendor/rhel7 folder before running the main build.

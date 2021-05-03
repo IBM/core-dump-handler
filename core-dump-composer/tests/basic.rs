@@ -97,7 +97,7 @@ fn run_with_mocks() -> Result<(), std::io::Error> {
             assert_eq!("10", signal);
         }
     }
-    assert_eq!(6, file_counter);
+    assert_eq!(7, file_counter);
     fs::remove_dir_all("./output")?;
     Ok(())
 }

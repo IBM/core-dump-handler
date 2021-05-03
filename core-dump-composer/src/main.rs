@@ -311,6 +311,16 @@ fn main() -> Result<(), anyhow::Error> {
                     json!({})
                 }
             };
+            let ps_info_name = format!("{}-ps-info.json", dump_name);
+            match zip.start_file(ps_info_name, options) {
+                Ok(v) => v,
+                Err(e) => error!("Errer starting zip file{}", e),
+            };
+            let ps_info_content = serde_json::to_string(&ps_object).unwrap_or_default();
+            match zip.write_all(&ps_info_content.as_bytes()) {
+                Ok(v) => v,
+                Err(e) => error!("Errer writing zip file{}", e),
+            };
         }
         Err(e) => {
             error!("Failed to get ps details {}", e);

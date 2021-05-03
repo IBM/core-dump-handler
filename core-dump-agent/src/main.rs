@@ -25,7 +25,7 @@ struct Storage {
 
 const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
-static DEFAULT_BASE_DIR: &str= "/core-dump-handler";
+static DEFAULT_BASE_DIR: &str = "/core-dump-handler";
 
 fn main() -> Result<(), std::io::Error> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -116,16 +116,15 @@ fn run_agent(core_location: &str) {
         }
     };
 
-    
     let dir = fs::read_dir(core_location).unwrap();
-    
+
     let paths: Vec<PathBuf> = dir
         .into_iter()
         .filter(|r| r.is_ok())
         .map(|r| r.unwrap().path())
         .filter(|r| !r.is_dir())
         .collect();
-    
+
     info!("Dir Content {:?}", paths);
     for zip_path in paths {
         info!("Uploading: {}", zip_path.display());
@@ -142,7 +141,7 @@ fn run_agent(core_location: &str) {
                 continue;
             }
         };
-        let upload_file_name : &str = match zip_path.file_name().unwrap().to_str() {
+        let upload_file_name: &str = match zip_path.file_name().unwrap().to_str() {
             Some(v) => v,
             None => {
                 error!("Failed to get file name for upload");
