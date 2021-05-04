@@ -54,6 +54,34 @@ $ kubectl exec -it busybox -- /bin/sh
 
 5. Troubleshoot by looking at the core-dump-composer logs in the observe namespace
 
+## Validated Kubernetes Services
+
+This is a matrix of confirmed test targets. Please PR environments that are also known to work
+
+<table><thead><td>Provider</td><td>Product</td><td>Version</td><td>Validated?</td><td>Working?</td><td>Notes</td></thead>
+<tr>
+    <td>IBM</td><td>IKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
+</tr>
+<tr>
+    <td>IBM</td><td>ROKS</td><td>4.6</td><td>Yes</td><td>Yes</td><td>Must enable privileged policy <a href="#openshift">See OpenShift Section</a></td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>ARO</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+</tr>
+<tr>
+    <td>AWS</td><td>EKS</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+</tr>
+<tr>
+    <td>AWS</td><td>ROSA</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+</tr>
+<tr>
+    <td>Google</td><td>GKE</td><td>1.19</td><td>Yes</td><td>Possible</td><td>Default HostPath Fails A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local">local PV</a> needs to be defined</td>
+</tr>
+</table>
+
 ## Background
 
 [Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability.
