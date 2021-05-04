@@ -37,7 +37,8 @@ spec:
         lifecycle:
           preStop:
             exec:
-              command: ["/app/core-dump-agent remove"]
+              command: ["/app/core-dump-agent"]
+              args: ['remove']
       serviceAccountName: {{ include "ibm-core-dump-handler.serviceAccountName" . }}
       volumes:
       - name: host-volume
