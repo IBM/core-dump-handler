@@ -130,7 +130,7 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 - **Cluster Role**: Created with an **event** resource and **create** verb and associated with the service account. 
 
 ## Component Diagram
-![Component Diagram](charts/assets/topology.png)
+![Component Diagram](assets/topology.png)
 
 ### Permissions
 To install the Helm chart in your cluster, you must have the **Administrator** platform role.
