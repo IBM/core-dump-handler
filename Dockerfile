@@ -1,26 +1,42 @@
-FROM docker.io/rust:1.51.0-alpine as builder
+FROM registry.access.redhat.com/ubi7/ubi as rhel7builder
+
+RUN yum install -y gcc openssl-devel && \
+    rm -rf /var/cache/dnf && \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
 
 COPY . /app-build
 
 WORKDIR "/app-build"
 
-ENV RUSTFLAGS="-C target-feature=-crt-static" 
+ENV PATH=/root/.cargo/bin:${PATH}
 
-RUN \
-  apk add --no-cache musl-dev openssl-dev && \
-  cargo build --release -p core-dump-agent
+RUN cargo build --release -p core-dump-composer
 
-FROM docker.io/alpine:3.13
-RUN apk add --no-cache libgcc
+FROM registry.access.redhat.com/ubi8/ubi as rhel8builder
+
+RUN yum install -y gcc openssl-devel && \
+    rm -rf /var/cache/dnf && \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+COPY . /app-build
+
+WORKDIR "/app-build"
+
+ENV PATH=/root/.cargo/bin:${PATH}
+
+RUN cargo build --release
+
+FROM registry.access.redhat.com/ubi8/ubi
+
+RUN yum install -y procps-ng
+
 WORKDIR "/app"
-COPY --from=builder /app-build/target/release/core-dump-agent ./
-RUN mkdir -p vendor/default
-RUN mkdir -p vendor/rhel7
+COPY --from=rhel8builder /app-build/target/release/core-dump-agent ./
 WORKDIR "/app/vendor/default"
-COPY ./target/release/core-dump-composer ./
+COPY --from=rhel8builder /app-build/target/release/core-dump-composer ./
 RUN mv core-dump-composer cdc
 WORKDIR "/app/vendor/rhel7"
-COPY ./vendor/rhel7/core-dump-composer ./
+COPY --from=rhel7builder /app-build/target/release/core-dump-composer ./
 RUN mv core-dump-composer cdc
 WORKDIR "/app"
 CMD ["./core-dump-agent"]

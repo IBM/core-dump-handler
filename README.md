@@ -15,7 +15,7 @@ A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts
 ```
 git clone https://github.com/IBM/core-dump-handler
 cd core-dump-handler/charts
-helm install core-dump-handler . --namespace observe \
+helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
 --set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
 ```
@@ -153,7 +153,7 @@ The IBM Cloud Core Dump Handler requires the following resources on each worker 
 - CPU: 0.2 vCPU
 - Memory: 128MB
 
-## Updating the chart
+## Updating the Chart
 
 1. Delete the chart. Don't worry this won't impact the data stored in object storage.
 ```
@@ -168,27 +168,26 @@ $ kubectl get pv -n observe
 $ helm install coredump-handler . --namespace observe 
 ```
 
-## Removing the chart
+## Removing the Chart
 
 ```
 helm delete coredump-handler -n observe
 ```
 
-## Building the image.
+## Build and Deploy a Custom Version
 
 [![Docker Repository on Quay](https://quay.io/repository/number9/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/number9/core-dump-handler)
 
-The services are written in Rust using [rustup](https://rustup.rs/) and currently only support building on Linux.
+The services are written in Rust using [rustup](https://rustup.rs/).
 
-1. Build the binaries `cargo build --release`
+1. Build the image `docker build -t YOUR_TAG_NAME .`
 
-2. Build the image `docker build -t yourtagname .`
+2. Push the image to your container registry
 
 3. Update the container in the `values.yaml` file to use it.
 
-### Build composer for RHEL7
-
+```yaml
+image:
+  repository: YOUR_TAG_NAME 
 ```
-docker run -it --security-opt label=disable -v $HOME/code/core-dump-handler:/core-dump-handler registry.access.redhat.com/devtools/rust-toolset-rhel7 cd /core-dump-handler && cargo build --release
-```
-This will put the build into the target/release/core-dump-composer folder copy it to the the vendor/rhel7 folder before running the main build.
+or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.

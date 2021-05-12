@@ -168,7 +168,7 @@ fn run_agent(core_location: &str) {
 }
 
 fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io::Error> {
-    let version = env::var("VERSION").unwrap_or_else(|_| "default".to_string());
+    let version = env::var("VENDOR").unwrap_or_else(|_| "default".to_string());
     match version.to_lowercase().as_str() {
         "default" => {
             let location = format!("./vendor/default/{}", CDC_NAME);
@@ -183,17 +183,25 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
             fs::copy(location, destination)?;
         }
         _ => {
-            error!("Unknown version: {}", version);
+            error!("Unknown vendor: {}", version);
             process::exit(1);
         }
     }
     Ok(())
 }
 fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error> {
-    let output = Command::new("sysctl")
+    info!("Starting sysctl for {} {}", name, location);
+    let output = match Command::new("sysctl")
         .env("PATH", BIN_PATH)
         .args(&["-n", name])
-        .output()?;
+        .output()
+    {
+        Ok(v) => v,
+        Err(e) => {
+            error!("Failed to run command {}", e);
+            panic!("Exiting copy sysctl")
+        }
+    };
 
     let line = match String::from_utf8(output.stdout) {
         Ok(v) => v,
