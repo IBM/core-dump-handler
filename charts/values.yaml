@@ -11,7 +11,7 @@ fullnameOverride: ""
 daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
-    hostDirectory: "/core-dump-handler"
+    hostDirectory: "/var/mnt/core-dump-handler"
     s3AccessKey : XXX
     s3Secret : XXX
     s3BucketName : XXX
