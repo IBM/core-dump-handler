@@ -72,7 +72,7 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>Microsoft</td><td>ARO</td><td>?</td><td>No</td><td>Unknown</td><td></td>
 </tr>
 <tr>
-    <td>AWS</td><td>EKS</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>No crictl client in the default AMI means that the metadata won't be captured</td><td></td>
 </tr>
 <tr>
     <td>AWS</td><td>ROSA</td><td>?</td><td>No</td><td>Unknown</td><td></td>

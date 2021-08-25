@@ -213,6 +213,7 @@ fn main() -> Result<(), anyhow::Error> {
         Ok(v) => v,
         Err(e) => {
             error!("failed to execute crictl pods {}", e);
+            zip.finish()?;
             process::exit(1)
         }
     };
