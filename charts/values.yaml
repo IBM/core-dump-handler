@@ -8,6 +8,9 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Size of the Persistent volume to create
+storage: 1Gi
+
 daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
