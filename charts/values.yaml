@@ -15,6 +15,7 @@ daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
     hostDirectory: "/var/mnt/core-dump-handler"
+    suidDumpable: "2"
     s3AccessKey : XXX
     s3Secret : XXX
     s3BucketName : XXX
