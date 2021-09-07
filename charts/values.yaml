@@ -8,6 +8,9 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Size of the Persistent volume to create
+storage: 1Gi
+
 daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
@@ -27,3 +30,19 @@ clusterRole:
 
 clusterRoleBinding:
   name: "core-dump-event-report"
+
+# nodeSelector & affinity for the daemonset's pod assignment
+# https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/#running-pods-on-select-nodes
+nodeSelector: {}
+# eg
+# gpu-enabled: true
+affinity: {}
+
+# Tolerations for the daemonset's pod assignment
+# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: {}
+# eg
+# - key: "key"
+#   operator: "Equal"
+#   value: "value"
+#   effect: "NoSchedule"

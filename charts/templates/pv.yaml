@@ -7,7 +7,7 @@ metadata:
 spec:
   storageClassName: hostclass 
   capacity:
-    storage: 1Gi
+    storage: {{ .Values.storage }}
   accessModes:
   - ReadWriteOnce 
   persistentVolumeReclaimPolicy: Retain
