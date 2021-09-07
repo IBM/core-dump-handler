@@ -25,11 +25,13 @@ struct Storage {
 
 const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
-static DEFAULT_BASE_DIR: &str = "/core-dump-handler";
+static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
+static DEFAULT_SUID_LIMIT: &str = "2";
 
 fn main() -> Result<(), std::io::Error> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
+    let suid = env::var("SUID_LIMIT").unwrap_or_else(|_| DEFAULT_SUID_LIMIT.to_string());
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -54,6 +56,11 @@ fn main() -> Result<(), std::io::Error> {
         format!("{}/core_pipe_limit.bak", host_location).as_str(),
     )?;
 
+    copy_sysctl_to_file(
+        "fs.suid_dumpable",
+        format!("{}/suid_dumpable.bak", host_location).as_str(),
+    )?;
+
     overwrite_sysctl(
         "kernel.core_pattern",
         format!(
@@ -63,6 +70,8 @@ fn main() -> Result<(), std::io::Error> {
         .as_str(),
     )?;
     overwrite_sysctl("kernel.core_pipe_limit", "128")?;
+
+    overwrite_sysctl("fs.suid_dumpable", &suid)?;
 
     let core_location = format!("{}/core", host_location);
 
