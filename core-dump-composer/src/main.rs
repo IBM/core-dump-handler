@@ -1,6 +1,6 @@
 extern crate dotenv;
 // extern crate s3;
-
+use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use clap::{App, Arg};
 use log::{debug, error, info, LevelFilter};
 use log4rs::append::file::FileAppender;
@@ -29,7 +29,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{l} - {d} - {m}\n")))
-        .build("/node/core/output.log")?;
+        .build("/var/mnt/core-dump-handler/output.log")?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
@@ -39,7 +39,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     debug!("Arguments: {:?}", env::args());
 
-    let env_path = Path::new("/node/.env");
+    let env_path = Path::new("/var/mnt/core-dump-handler/.env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
         Err(e) => info!("no .env file found so using error level logging {}", e),
@@ -162,8 +162,8 @@ fn main() -> Result<(), anyhow::Error> {
             process::exit(1);
         }
     };
-
-    let mut zip = ZipWriter::new(file);
+    file.lock(FileLockMode::Exclusive)?;
+    let mut zip = ZipWriter::new(&file);
 
     // Create a JSON file to store the dump meta data
     let dump_info_name = format!("{}-dump-info.json", dump_name);
@@ -214,6 +214,7 @@ fn main() -> Result<(), anyhow::Error> {
         Err(e) => {
             error!("failed to execute crictl pods {}", e);
             zip.finish()?;
+            file.unlock()?;
             process::exit(1)
         }
     };
@@ -384,5 +385,6 @@ fn main() -> Result<(), anyhow::Error> {
         }
     }
     zip.finish()?;
+    file.unlock()?;
     Ok(())
 }

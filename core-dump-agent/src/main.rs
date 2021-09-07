@@ -1,5 +1,6 @@
 extern crate s3;
 
+use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
 use log::{error, info};
 use s3::bucket::Bucket;
@@ -138,6 +139,15 @@ fn run_agent(core_location: &str) {
     for zip_path in paths {
         info!("Uploading: {}", zip_path.display());
         let mut f = File::open(&zip_path).expect("no file found");
+
+        match f.try_lock(FileLockMode::Shared) {
+            Ok(_) => { /* If we can lock then we are ok */ }
+            Err(e) => {
+                info!("file locked so we are ignoring it for this iteration {}", e);
+                continue;
+            }
+        }
+
         let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
         let mut buffer = vec![0; metadata.len() as usize];
         f.read_exact(&mut buffer)
