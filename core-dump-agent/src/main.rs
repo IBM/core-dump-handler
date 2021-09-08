@@ -77,6 +77,8 @@ fn main() -> Result<(), std::io::Error> {
     let core_location = format!("{}/core", host_location);
 
     fs::create_dir_all(&core_location)?;
+    
+    create_env_file(host_location)?;
 
     loop {
         let interval = match env::var("INTERVAL")
@@ -208,6 +210,17 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
     }
     Ok(())
 }
+
+fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
+    let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "error".to_string());
+    let destination = format!("{}/{}", host_location, ".env");
+    let mut env_file = fs::OpenOptions::new().write(true).truncate(true).open(destination)?;
+    let text = format!("LOG_LEVEL={}", loglevel);
+    env_file.write_all(text.as_bytes())?;
+    env_file.flush()?;
+    Ok(())
+}
+
 fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error> {
     info!("Starting sysctl for {} {}", name, location);
     let output = match Command::new("sysctl")
@@ -257,7 +270,9 @@ fn remove() -> Result<(), std::io::Error> {
     restore_sysctl("core_pipe_limit")?;
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let exe = format!("{}/{}", host_dir, CDC_NAME);
+    let env_file = format!("{}/{}", host_dir, ".env");
     fs::remove_file(exe)?;
+    fs::remove_file(env_file)?;
     Ok(())
 }
 fn restore_sysctl(name: &str) -> Result<(), std::io::Error> {

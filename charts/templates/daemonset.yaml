@@ -21,6 +21,8 @@ spec:
           mountPath:  {{ .Values.daemonset.hostDirectory }}
           mountPropagation: Bidirectional
         env:
+          - name: COMP_LOG_LEVEL
+            value: {{ .Values.daemonset.composerLogLevel }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: SUID_LIMIT
@@ -35,6 +37,8 @@ spec:
             value: {{ .Values.daemonset.s3Region }}
           - name: VENDOR
             value: {{ .Values.daemonset.vendor }}
+          - name: INTERVAL
+            value: "{{ .Values.daemonset.interval }}"
         command: ["/app/core-dump-agent"]
         lifecycle:
           preStop:
