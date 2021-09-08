@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/number9/core-dump-handler:v2.0.11
+  repository: quay.io/icdh/core-dump-handler:suid-support
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -15,7 +15,7 @@ daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
     hostDirectory: "/var/mnt/core-dump-handler"
-    suidDumpable: "2"
+    suidDumpable: 2
     s3AccessKey : XXX
     s3Secret : XXX
     s3BucketName : XXX

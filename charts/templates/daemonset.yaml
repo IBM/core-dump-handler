@@ -24,7 +24,7 @@ spec:
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: SUID_LIMIT
-            value: {{ .Values.daemonset.suidDumpable }}
+            value: "{{ .Values.daemonset.suidDumpable }}"
           - name: S3_ACCESS_KEY
             value: {{ .Values.daemonset.s3AccessKey }}
           - name: S3_SECRET
