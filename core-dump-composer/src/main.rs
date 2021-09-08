@@ -27,9 +27,13 @@ fn main() -> Result<(), anyhow::Error> {
         Err(_) => LevelFilter::Warn,
     };
 
+    let mut log_path = env::current_exe()?;
+    log_path.pop(); 
+    log_path.push("composer.log");
+
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{l} - {d} - {m}\n")))
-        .build("./composer.log")?;
+        .build(log_path)?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
@@ -38,8 +42,10 @@ fn main() -> Result<(), anyhow::Error> {
     log4rs::init_config(config)?;
 
     debug!("Arguments: {:?}", env::args());
-
-    let env_path = Path::new(".env");
+    let mut env_path = env::current_exe()?;
+    env_path.pop(); 
+    env_path.push(".env");
+    
     match dotenv::from_path(env_path) {
         Ok(v) => v,
         Err(e) => info!("no .env file found so using error level logging {}", e),

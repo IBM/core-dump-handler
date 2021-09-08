@@ -220,11 +220,11 @@ fs.suid_dumpable = 2
 ```
 
 If the agent is running successfully then there may be a problem with the composer configuration.
-To check the logs for the composer open a shell into the agent and cat the output.log to see if there are any error messages.
+To check the logs for the composer open a shell into the agent and cat the composer.log to see if there are any error messages.
 
 ```
-cat /var/mnt/core-dump-handler/output.log
+cat /var/mnt/core-dump-handler/composer.log
 ```
 
-If there are no errors then you should change the default log from error to info in the values.yaml and redeploy the chart.
+If there are no errors then you should change the default log from `error` to `debug` in the values.yaml and redeploy the chart.
 Create a core dump again and `/var/mnt/core-dump-handler/composer.log"` should contain specific detail on the each upload.
