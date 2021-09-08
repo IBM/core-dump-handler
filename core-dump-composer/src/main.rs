@@ -20,10 +20,23 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 fn main() -> Result<(), anyhow::Error> {
+
+    let mut env_path = env::current_exe()?;
+    env_path.pop(); 
+    env_path.push(".env");
+    
+    let mut envloadmsg = "Loading .env";
+    match dotenv::from_path(env_path) {
+        Ok(v) => v,
+        Err(e) => envloadmsg = format!("no .env file found so using Debug level logging {}", e),
+    }
+
+    debug!("Arguments: {:?}", env::args());
+    
     let loglevel = env::var("LOG_LEVEL").unwrap_or_default();
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
-        Err(_) => LevelFilter::Warn,
+        Err(_) => LevelFilter::Debug,
     };
 
     let mut log_path = env::current_exe()?;
@@ -40,15 +53,8 @@ fn main() -> Result<(), anyhow::Error> {
 
     log4rs::init_config(config)?;
 
-    debug!("Arguments: {:?}", env::args());
-    let mut env_path = env::current_exe()?;
-    env_path.pop(); 
-    env_path.push(".env");
-    
-    match dotenv::from_path(env_path) {
-        Ok(v) => v,
-        Err(e) => info!("no .env file found so using error level logging {}", e),
-    }
+    info!("{}", envloadmsg);
+    info!("Set logfile to: {:?}", log_path);
 
     let matches = match App::new("Kubernetes Core Dump Daemon")
         .version("0.1.0")
