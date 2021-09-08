@@ -214,7 +214,8 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
 fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "error".to_string());
     let destination = format!("{}/{}", host_location, ".env");
-    let mut env_file = fs::OpenOptions::new().write(true).truncate(true).open(destination)?;
+    info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
+    let mut env_file = File::create(destination)?;
     let text = format!("LOG_LEVEL={}", loglevel);
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
@@ -248,6 +249,7 @@ fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error>
             .expect("Failed to get line for sysctl file")
             .as_bytes(),
     )?;
+    file.flush()?;
     info!("Created Backup of {}", location);
     Ok(())
 }

@@ -15,7 +15,7 @@ daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
     hostDirectory: "/var/mnt/core-dump-handler"
-    composerLogLevel: "error"
+    composerLogLevel: "info"
     suidDumpable: 2
     s3AccessKey : XXX
     s3Secret : XXX
