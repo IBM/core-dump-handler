@@ -21,7 +21,7 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 fn main() -> Result<(), anyhow::Error> {
-    let loglevel = env::var("LOGLEVEL").unwrap_or_default();
+    let loglevel = env::var("LOG_LEVEL").unwrap_or_default();
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
         Err(_) => LevelFilter::Warn,
@@ -29,7 +29,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{l} - {d} - {m}\n")))
-        .build("/var/mnt/core-dump-handler/output.log")?;
+        .build("./composer.log")?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
@@ -39,7 +39,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     debug!("Arguments: {:?}", env::args());
 
-    let env_path = Path::new("/var/mnt/core-dump-handler/.env");
+    let env_path = Path::new(".env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
         Err(e) => info!("no .env file found so using error level logging {}", e),

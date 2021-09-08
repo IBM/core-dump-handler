@@ -176,7 +176,7 @@ helm delete coredump-handler -n observe
 
 ## Build and Deploy a Custom Version
 
-[![Docker Repository on Quay](https://quay.io/repository/number9/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/number9/core-dump-handler)
+[![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 
 The services are written in Rust using [rustup](https://rustup.rs/).
 
@@ -198,23 +198,25 @@ The first place to look for issues is in the agent console.
 A successful install should look like this
 
 ```
-[2021-09-08T21:20:31Z INFO core_dump_agent] Setting host location to: /var/mnt/core-dump-handler
-[2021-09-08T21:20:31Z INFO core_dump_agent] Current Directory for setup is /app
-[2021-09-08T21:20:31Z INFO core_dump_agent] Copying the composer from ./vendor/default/cdc to /var/mnt/core-dump-handler/cdc
-[2021-09-08T21:20:32Z INFO core_dump_agent] Starting sysctl for kernel.core_pattern /var/mnt/core-dump-handler/core_pattern.bak
-[2021-09-08T21:20:32Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/core_pattern.bak
-[2021-09-08T21:20:32Z INFO core_dump_agent] Starting sysctl for kernel.core_pipe_limit /var/mnt/core-dump-handler/core_pipe_limit.bak
-[2021-09-08T21:20:32Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/core_pipe_limit.bak
-[2021-09-08T21:20:32Z INFO core_dump_agent] Starting sysctl for fs.suid_dumpable /var/mnt/core-dump-handler/suid_dumpable.bak
-[2021-09-08T21:20:32Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/suid_dumpable.bak
+
+[2021-09-08T22:28:43Z INFO core_dump_agent] Setting host location to: /var/mnt/core-dump-handler
+[2021-09-08T22:28:43Z INFO core_dump_agent] Current Directory for setup is /app
+[2021-09-08T22:28:43Z INFO core_dump_agent] Copying the composer from ./vendor/default/cdc to /var/mnt/core-dump-handler/cdc
+[2021-09-08T22:28:43Z INFO core_dump_agent] Starting sysctl for kernel.core_pattern /var/mnt/core-dump-handler/core_pattern.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/core_pattern.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Starting sysctl for kernel.core_pipe_limit /var/mnt/core-dump-handler/core_pipe_limit.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/core_pipe_limit.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Starting sysctl for fs.suid_dumpable /var/mnt/core-dump-handler/suid_dumpable.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/suid_dumpable.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created sysctl of kernel.core_pattern=|/var/mnt/core-dump-handler/cdc -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/mnt/core-dump-handler/core -h=%h -E=%E
 kernel.core_pattern = |/var/mnt/core-dump-handler/cdc -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/mnt/core-dump-handler/core -h=%h -E=%E
-[2021-09-08T21:20:32Z INFO core_dump_agent] Created sysctl of kernel.core_pattern=|/var/mnt/core-dump-handler/cdc -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/mnt/core-dump-handler/core -h=%h -E=%E
 kernel.core_pipe_limit = 128
-[2021-09-08T21:20:32Z INFO core_dump_agent] Created sysctl of kernel.core_pipe_limit=128
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created sysctl of kernel.core_pipe_limit=128
 fs.suid_dumpable = 2
-[2021-09-08T21:20:32Z INFO core_dump_agent] Created sysctl of fs.suid_dumpable=2
-[2021-09-08T21:20:32Z INFO core_dump_agent] Executing Agent with location : /var/mnt/core-dump-handler/core
-[2021-09-08T21:20:32Z INFO core_dump_agent] Dir Content []
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created sysctl of fs.suid_dumpable=2
+[2021-09-08T22:28:43Z INFO core_dump_agent] Creating /var/mnt/core-dump-handler/.env file with LOG_LEVEL=info
+[2021-09-08T22:28:43Z INFO core_dump_agent] Executing Agent with location : /var/mnt/core-dump-handler/core
+[2021-09-08T22:28:43Z INFO core_dump_agent] Dir Content []
 ```
 
 If the agent is running successfully then there may be a problem with the composer configuration.
@@ -225,4 +227,4 @@ cat /var/mnt/core-dump-handler/output.log
 ```
 
 If there are no errors then you should change the default log from error to info in the values.yaml and redeploy the chart.
-Create a core dump again and `/var/mnt/core-dump-handler/output.log` should contain specific detail on the each upload.
+Create a core dump again and `/var/mnt/core-dump-handler/composer.log"` should contain specific detail on the each upload.
