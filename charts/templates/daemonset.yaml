@@ -25,8 +25,8 @@ spec:
             value: {{ .Values.daemonset.composerLogLevel }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
-          - name: SUID_LIMIT
-            value: "{{ .Values.daemonset.suidDumpable }}"
+          - name: SUID_DUMPABLE
+            value: {{ .Values.daemonset.suidDumpable | quote }}
           - name: S3_ACCESS_KEY
             value: {{ .Values.daemonset.s3AccessKey }}
           - name: S3_SECRET
@@ -38,7 +38,7 @@ spec:
           - name: VENDOR
             value: {{ .Values.daemonset.vendor }}
           - name: INTERVAL
-            value: "{{ .Values.daemonset.interval }}"
+            value: {{ .Values.daemonset.interval | quote }}
         command: ["/app/core-dump-agent"]
         lifecycle:
           preStop:
