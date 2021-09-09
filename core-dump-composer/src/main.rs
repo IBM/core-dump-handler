@@ -25,7 +25,7 @@ fn main() -> Result<(), anyhow::Error> {
     env_path.pop(); 
     env_path.push(".env");
     
-    let mut envloadmsg = "Loading .env";
+    let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
         Err(e) => envloadmsg = format!("no .env file found so using Debug level logging {}", e),
@@ -45,7 +45,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{l} - {d} - {m}\n")))
-        .build(log_path)?;
+        .build(&log_path)?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
@@ -54,7 +54,7 @@ fn main() -> Result<(), anyhow::Error> {
     log4rs::init_config(config)?;
 
     info!("{}", envloadmsg);
-    info!("Set logfile to: {:?}", log_path);
+    info!("Set logfile to: {:?}", &log_path);
 
     let matches = match App::new("Kubernetes Core Dump Daemon")
         .version("0.1.0")
