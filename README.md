@@ -69,13 +69,13 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
 </tr>
 <tr>
-    <td>Microsoft</td><td>ARO</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+    <td>Microsoft</td><td>ARO</td><td>?</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
-    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>No crictl client in the default AMI means that the metadata won't be captured</td><td></td>
+    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>crictl client in the default AMI means that the metadata won't be captured</td>
 </tr>
 <tr>
-    <td>AWS</td><td>ROSA</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+    <td>AWS</td><td>ROSA</td><td>?</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
     <td>Google</td><td>GKE</td><td>1.19</td><td>Yes</td><td>Possible</td><td>Default HostPath Fails A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local">local PV</a> needs to be defined</td>
