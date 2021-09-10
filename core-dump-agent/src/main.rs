@@ -77,7 +77,7 @@ fn main() -> Result<(), std::io::Error> {
     let core_location = format!("{}/core", host_location);
 
     fs::create_dir_all(&core_location)?;
-    
+
     create_env_file(host_location)?;
 
     loop {

@@ -20,11 +20,10 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 fn main() -> Result<(), anyhow::Error> {
-
     let mut env_path = env::current_exe()?;
-    env_path.pop(); 
+    env_path.pop();
     env_path.push(".env");
-    
+
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
@@ -32,7 +31,7 @@ fn main() -> Result<(), anyhow::Error> {
     }
 
     debug!("Arguments: {:?}", env::args());
-    
+
     let loglevel = env::var("LOG_LEVEL").unwrap_or_default();
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
@@ -40,7 +39,7 @@ fn main() -> Result<(), anyhow::Error> {
     };
 
     let mut log_path = env::current_exe()?;
-    log_path.pop(); 
+    log_path.pop();
     log_path.push("composer.log");
 
     let logfile = FileAppender::builder()
