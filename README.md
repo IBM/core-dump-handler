@@ -227,4 +227,4 @@ cat /var/mnt/core-dump-handler/composer.log
 ```
 
 If there are no errors then you should change the default log from `error` to `debug` in the values.yaml and redeploy the chart.
-Create a core dump again and `/var/mnt/core-dump-handler/composer.log"` should contain specific detail on the each upload.
+Create a core dump again and `/var/mnt/core-dump-handler/composer.log` should contain specific detail on each upload.
