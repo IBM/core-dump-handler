@@ -30,8 +30,8 @@ As the agent runs in privileged mode the following command is needed on OpenShif
 ```
 oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
 ```
-Some OpenShift services run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
-This will be apparent if you see errors relating to glibc in the output.log in the host directory core folder which can be accessed from the agent pod at `/core-dump-handler/core`
+Some OpenShift services such asOpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
+This will be apparent if you see errors relating to glibc in the composer.log in the install folder of the agent. [See Troubleshooting below](#troubleshooting)
 ```
 --set daemonset.vendor=rhel7
 ```
