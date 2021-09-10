@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/number9/core-dump-handler:v2.0.11
+  repository: quay.io/icdh/core-dump-handler@sha256:b8f5c392640c9d228b0e32c5889b29c37bc330adace0c2f2d8464d6664e644ef
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -15,11 +15,14 @@ daemonset:
     name: "core-dump-handler"
     label: "core-dump-ds"
     hostDirectory: "/var/mnt/core-dump-handler"
+    composerLogLevel: "Warn"
+    suidDumpable: 2
     s3AccessKey : XXX
     s3Secret : XXX
     s3BucketName : XXX
     s3Region : XXX
     vendor: default
+    interval: 60000
          
 serviceAccount:
   create: true

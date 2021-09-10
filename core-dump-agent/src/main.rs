@@ -1,5 +1,6 @@
 extern crate s3;
 
+use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
 use log::{error, info};
 use s3::bucket::Bucket;
@@ -25,11 +26,13 @@ struct Storage {
 
 const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
-static DEFAULT_BASE_DIR: &str = "/core-dump-handler";
+static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
+static DEFAULT_SUID_DUMPABLE: &str = "2";
 
 fn main() -> Result<(), std::io::Error> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
+    let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -54,6 +57,11 @@ fn main() -> Result<(), std::io::Error> {
         format!("{}/core_pipe_limit.bak", host_location).as_str(),
     )?;
 
+    copy_sysctl_to_file(
+        "fs.suid_dumpable",
+        format!("{}/suid_dumpable.bak", host_location).as_str(),
+    )?;
+
     overwrite_sysctl(
         "kernel.core_pattern",
         format!(
@@ -64,9 +72,13 @@ fn main() -> Result<(), std::io::Error> {
     )?;
     overwrite_sysctl("kernel.core_pipe_limit", "128")?;
 
+    overwrite_sysctl("fs.suid_dumpable", &suid)?;
+
     let core_location = format!("{}/core", host_location);
 
     fs::create_dir_all(&core_location)?;
+
+    create_env_file(host_location)?;
 
     loop {
         let interval = match env::var("INTERVAL")
@@ -129,6 +141,15 @@ fn run_agent(core_location: &str) {
     for zip_path in paths {
         info!("Uploading: {}", zip_path.display());
         let mut f = File::open(&zip_path).expect("no file found");
+
+        match f.try_lock(FileLockMode::Shared) {
+            Ok(_) => { /* If we can lock then we are ok */ }
+            Err(e) => {
+                info!("file locked so we are ignoring it for this iteration {}", e);
+                continue;
+            }
+        }
+
         let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
         let mut buffer = vec![0; metadata.len() as usize];
         f.read_exact(&mut buffer)
@@ -189,6 +210,18 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
     }
     Ok(())
 }
+
+fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
+    let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "error".to_string());
+    let destination = format!("{}/{}", host_location, ".env");
+    info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
+    let mut env_file = File::create(destination)?;
+    let text = format!("LOG_LEVEL={}", loglevel);
+    env_file.write_all(text.as_bytes())?;
+    env_file.flush()?;
+    Ok(())
+}
+
 fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error> {
     info!("Starting sysctl for {} {}", name, location);
     let output = match Command::new("sysctl")
@@ -216,6 +249,7 @@ fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error>
             .expect("Failed to get line for sysctl file")
             .as_bytes(),
     )?;
+    file.flush()?;
     info!("Created Backup of {}", location);
     Ok(())
 }
@@ -238,7 +272,9 @@ fn remove() -> Result<(), std::io::Error> {
     restore_sysctl("core_pipe_limit")?;
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let exe = format!("{}/{}", host_dir, CDC_NAME);
+    let env_file = format!("{}/{}", host_dir, ".env");
     fs::remove_file(exe)?;
+    fs::remove_file(env_file)?;
     Ok(())
 }
 fn restore_sysctl(name: &str) -> Result<(), std::io::Error> {

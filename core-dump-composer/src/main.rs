@@ -1,6 +1,6 @@
 extern crate dotenv;
 // extern crate s3;
-
+use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use clap::{App, Arg};
 use log::{debug, error, info, LevelFilter};
 use log4rs::append::file::FileAppender;
@@ -12,7 +12,6 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::io::Write;
-use std::path::Path;
 use std::process;
 use std::process::Command;
 use std::str::FromStr;
@@ -21,15 +20,31 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 fn main() -> Result<(), anyhow::Error> {
-    let loglevel = env::var("LOGLEVEL").unwrap_or_default();
+    let mut env_path = env::current_exe()?;
+    env_path.pop();
+    env_path.push(".env");
+
+    let mut envloadmsg = String::from("Loading .env");
+    match dotenv::from_path(env_path) {
+        Ok(v) => v,
+        Err(e) => envloadmsg = format!("no .env file found so using Debug level logging {}", e),
+    }
+
+    debug!("Arguments: {:?}", env::args());
+
+    let loglevel = env::var("LOG_LEVEL").unwrap_or_default();
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
-        Err(_) => LevelFilter::Warn,
+        Err(_) => LevelFilter::Debug,
     };
+
+    let mut log_path = env::current_exe()?;
+    log_path.pop();
+    log_path.push("composer.log");
 
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{l} - {d} - {m}\n")))
-        .build("/node/core/output.log")?;
+        .build(&log_path)?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
@@ -37,13 +52,8 @@ fn main() -> Result<(), anyhow::Error> {
 
     log4rs::init_config(config)?;
 
-    debug!("Arguments: {:?}", env::args());
-
-    let env_path = Path::new("/node/.env");
-    match dotenv::from_path(env_path) {
-        Ok(v) => v,
-        Err(e) => info!("no .env file found so using error level logging {}", e),
-    }
+    info!("{}", envloadmsg);
+    info!("Set logfile to: {:?}", &log_path);
 
     let matches = match App::new("Kubernetes Core Dump Daemon")
         .version("0.1.0")
@@ -162,8 +172,8 @@ fn main() -> Result<(), anyhow::Error> {
             process::exit(1);
         }
     };
-
-    let mut zip = ZipWriter::new(file);
+    file.lock(FileLockMode::Exclusive)?;
+    let mut zip = ZipWriter::new(&file);
 
     // Create a JSON file to store the dump meta data
     let dump_info_name = format!("{}-dump-info.json", dump_name);
@@ -214,6 +224,7 @@ fn main() -> Result<(), anyhow::Error> {
         Err(e) => {
             error!("failed to execute crictl pods {}", e);
             zip.finish()?;
+            file.unlock()?;
             process::exit(1)
         }
     };
@@ -384,5 +395,6 @@ fn main() -> Result<(), anyhow::Error> {
         }
     }
     zip.finish()?;
+    file.unlock()?;
     Ok(())
 }

@@ -30,8 +30,8 @@ As the agent runs in privileged mode the following command is needed on OpenShif
 ```
 oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
 ```
-Some OpenShift services run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
-This will be apparent if you see errors relating to glibc in the output.log in the host directory core folder which can be accessed from the agent pod at `/core-dump-handler/core`
+Some OpenShift services such asOpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
+This will be apparent if you see errors relating to glibc in the composer.log in the install folder of the agent. [See Troubleshooting below](#troubleshooting)
 ```
 --set daemonset.vendor=rhel7
 ```
@@ -69,16 +69,16 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
 </tr>
 <tr>
-    <td>Microsoft</td><td>ARO</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+    <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
-    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>No crictl client in the default AMI means that the metadata won't be captured</td><td></td>
+    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>crictl client in the default AMI means that the metadata won't be captured</td>
 </tr>
 <tr>
-    <td>AWS</td><td>ROSA</td><td>?</td><td>No</td><td>Unknown</td><td></td>
+    <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
-    <td>Google</td><td>GKE</td><td>1.19</td><td>Yes</td><td>Possible</td><td>Default HostPath Fails A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local">local PV</a> needs to be defined</td>
+    <td>Google</td><td>GKE</td><td>1.19</td><td>Yes</td><td>Possible</td><td>Default HostPath Fails A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local">local PV</a> needs to be defined. Please [see issue 5](https://github.com/IBM/core-dump-handler/issues/5) for updates</td>
 </tr>
 </table>
 
@@ -176,7 +176,7 @@ helm delete coredump-handler -n observe
 
 ## Build and Deploy a Custom Version
 
-[![Docker Repository on Quay](https://quay.io/repository/number9/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/number9/core-dump-handler)
+[![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 
 The services are written in Rust using [rustup](https://rustup.rs/).
 
@@ -191,3 +191,40 @@ image:
   repository: YOUR_TAG_NAME 
 ```
 or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
+
+## Troubleshooting 
+
+The first place to look for issues is in the agent console.
+A successful install should look like this
+
+```
+
+[2021-09-08T22:28:43Z INFO core_dump_agent] Setting host location to: /var/mnt/core-dump-handler
+[2021-09-08T22:28:43Z INFO core_dump_agent] Current Directory for setup is /app
+[2021-09-08T22:28:43Z INFO core_dump_agent] Copying the composer from ./vendor/default/cdc to /var/mnt/core-dump-handler/cdc
+[2021-09-08T22:28:43Z INFO core_dump_agent] Starting sysctl for kernel.core_pattern /var/mnt/core-dump-handler/core_pattern.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/core_pattern.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Starting sysctl for kernel.core_pipe_limit /var/mnt/core-dump-handler/core_pipe_limit.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/core_pipe_limit.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Starting sysctl for fs.suid_dumpable /var/mnt/core-dump-handler/suid_dumpable.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created Backup of /var/mnt/core-dump-handler/suid_dumpable.bak
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created sysctl of kernel.core_pattern=|/var/mnt/core-dump-handler/cdc -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/mnt/core-dump-handler/core -h=%h -E=%E
+kernel.core_pattern = |/var/mnt/core-dump-handler/cdc -c=%c -e=%e -p=%p -s=%s -t=%t -d=/var/mnt/core-dump-handler/core -h=%h -E=%E
+kernel.core_pipe_limit = 128
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created sysctl of kernel.core_pipe_limit=128
+fs.suid_dumpable = 2
+[2021-09-08T22:28:43Z INFO core_dump_agent] Created sysctl of fs.suid_dumpable=2
+[2021-09-08T22:28:43Z INFO core_dump_agent] Creating /var/mnt/core-dump-handler/.env file with LOG_LEVEL=info
+[2021-09-08T22:28:43Z INFO core_dump_agent] Executing Agent with location : /var/mnt/core-dump-handler/core
+[2021-09-08T22:28:43Z INFO core_dump_agent] Dir Content []
+```
+
+If the agent is running successfully then there may be a problem with the composer configuration.
+To check the logs for the composer open a shell into the agent and cat the composer.log to see if there are any error messages.
+
+```
+cat /var/mnt/core-dump-handler/composer.log
+```
+
+If there are no errors then you should change the default log from `error` to `debug` in the values.yaml and redeploy the chart.
+Create a core dump again and `/var/mnt/core-dump-handler/composer.log` should contain specific detail on each upload.
