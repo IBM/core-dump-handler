@@ -1,6 +1,6 @@
 # IBM Core Dump Handler
 
-This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kuberenetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
+This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kubernetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
 
 ## Prerequisites
 
@@ -69,13 +69,13 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
 </tr>
 <tr>
-    <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building building compatable binaries seems to be the next step</td>
+    <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
     <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>No crictl client in the default AMI means that the metadata won't be captured</td>
 </tr>
 <tr>
-    <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building building compatable binaries seems to be the next step</td>
+    <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
     <td>Google</td><td>GKE</td><td>1.19</td><td>Yes</td><td>Possible</td><td>Default HostPath Fails A <a href="https://kubernetes.io/docs/concepts/storage/volumes/#local">local PV</a> needs to be defined. Please [see issue 5](https://github.com/IBM/core-dump-handler/issues/5) for updates</td>
