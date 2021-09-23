@@ -146,7 +146,7 @@ This chart deploys privileged kubernetes daemonset with the following implicatio
 
 4. Core dumps can contain sensitive runtime data and the storage bucket access must be managed accordingly.
 
-5. Object storage keys are stored as environment variables in the daemonset
+5. Object storage keys are stored as secrets and used as environment variables in the daemonset
 
 ## Resources Required
 The IBM Cloud Core Dump Handler requires the following resources on each worker node to run successfully:
