@@ -387,6 +387,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "core-dump-client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "log",
+ "uuid",
+]
+
+[[package]]
 name = "core-dump-composer"
 version = "0.1.0"
 dependencies = [
