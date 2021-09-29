@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2018"
 
+[[bin]]
+name="cdc"
+path="./src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 fn main() -> Result<(), anyhow::Error> {
     // corezipfilename - the name of the zip file containing the core dump"
-    // echo "  runtime - the runtime type - nodejs rust currently supported"
+    // echo "  runtime - the runtime type - nodejs rust and java currently supported"
     // echo "  exename - the name of the executable to be debugged"
     // echo "  image - image of the crashed container"
     // echo "  namespace - namespace of core dump handler"
@@ -42,7 +42,7 @@ fn main() -> Result<(), anyhow::Error> {
             .required(false)
             .takes_value(true)
             .about(
-                "the debug runtime to use. If not provided it will be derived from the exe name",
+                "the debug runtime to use. If not provided it will be derived from the exe name. java nodejs and default",
             ),
     )
     .arg(
@@ -60,13 +60,6 @@ fn main() -> Result<(), anyhow::Error> {
             .required(false)
             .takes_value(true)
             .about("The namespace containing the core-dump-handler. Defaults to observe if not supplied"),
-    ).arg(
-        Arg::new("silent")
-            .short('s')
-            .long("silent")
-            .required(false)
-            .takes_value(true)
-            .about("Set silent to silent mode."),
     )
     .try_get_matches()
 {
@@ -106,6 +99,8 @@ fn main() -> Result<(), anyhow::Error> {
     if runtime == "" {
         if core_exe_name == "node" {
             runtime = "nodejs";
+        } else if core_exe_name == "java" {
+            runtime = "java";
         } else {
             runtime = "default";
         }
@@ -113,6 +108,8 @@ fn main() -> Result<(), anyhow::Error> {
 
     if runtime == "nodejs" {
         img_debug = "quay.io/icdh/nodejs"
+    } else if runtime == "java" {
+        img_debug = "quay.io/icdh/java";
     } else {
         img_debug = "quay.io/icdh/default"
     }
@@ -124,18 +121,20 @@ fn main() -> Result<(), anyhow::Error> {
     println!(
         "
 Debugging: {} 
-Runtime :{} 
+Runtime: {} 
 Namespace: {}
 Debug Image: {} 
 App Image: {}",
         core_exe_name, runtime, namespace, img_debug, image
     );
     debug!(
-        "cmd: {}
-            image: {}
-            core_location {}",
+        "
+cmd: {}
+image: {}
+core_location {}",
         cmd, image, core_location
     );
+
     let pod = format!(
         r#"
 apiVersion: v1
@@ -263,13 +262,7 @@ spec:
     }
 
     let destroy_status = match Command::new("kubectl")
-        .args(&[
-            "delete",
-            "pod",
-            kube_output.as_str(),
-            "-n",
-            namespace
-        ])
+        .args(&["delete", "pod", kube_output.as_str(), "-n", namespace])
         .status()
     {
         Err(why) => panic!("couldn't spawn kubectl: {}", why),
