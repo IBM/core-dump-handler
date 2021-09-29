@@ -1,11 +1,8 @@
 use clap::{App, Arg};
-use log::{debug, error, info, LevelFilter};
-use std::io;
+use log::{debug, error};
 use std::io::prelude::*;
 use std::io::Write;
-use std::process;
 use std::process::{Command, Stdio};
-use std::str::FromStr;
 use uuid::Uuid;
 
 fn main() -> Result<(), anyhow::Error> {
