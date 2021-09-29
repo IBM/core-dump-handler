@@ -3,6 +3,7 @@ use log::{debug, error};
 use std::io::prelude::*;
 use std::io::Write;
 use std::process::{Command, Stdio};
+use std::{thread, time};
 use uuid::Uuid;
 
 fn main() -> Result<(), anyhow::Error> {
@@ -83,6 +84,9 @@ fn main() -> Result<(), anyhow::Error> {
     let img_debug;
     let mut namespace = matches.value_of("namespace").unwrap_or("");
 
+    // Extracting crash information based on file name:println
+    // e.g.a4e4da09-2d78-4402-b191-6d3e398f7df8-dump-1631309244-segfaulter-segfaulter-1-4.zip
+
     let split_zip_name: Vec<&str> = core_zip_name.split("-").collect();
     let basenames: Vec<&str> = core_zip_name.split(".").collect();
     let basename = basenames[0];
@@ -108,7 +112,7 @@ fn main() -> Result<(), anyhow::Error> {
     }
 
     if runtime == "nodejs" {
-        img_debug="quay.io/icdh/nodejs@sha256:ba165eabdfd63a668f41a47f9ffcc5c7a61ed618bfd0cb1dc65e27cc64308822"
+        img_debug = "quay.io/icdh/nodejs"
     } else {
         img_debug = "quay.io/icdh/default"
     }
@@ -119,11 +123,11 @@ fn main() -> Result<(), anyhow::Error> {
 
     println!(
         "
-         Debugging: {} 
-         Runtime :{} 
-         Namespace: {}
-         Debug Image: {} 
-         App Image: {}",
+Debugging: {} 
+Runtime :{} 
+Namespace: {}
+Debug Image: {} 
+App Image: {}",
         core_exe_name, runtime, namespace, img_debug, image
     );
     debug!(
@@ -132,8 +136,6 @@ fn main() -> Result<(), anyhow::Error> {
             core_location {}",
         cmd, image, core_location
     );
-    //a4e4da09-2d78-4402-b191-6d3e398f7df8-dump-1631309244-segfaulter-segfaulter-1-4.zip
-
     let pod = format!(
         r#"
 apiVersion: v1
@@ -195,7 +197,7 @@ spec:
         image = image,
         cmd = cmd
     );
-    //kubectl apply -n $5 --output=jsonpath={.metadata.name} -f -
+
     let pod_cmd = match Command::new("kubectl")
         .args(&[
             "apply",
@@ -214,28 +216,15 @@ spec:
         Ok(process) => process,
     };
 
-    // {
-    //     Ok(v) => v,
-    //     Err(e) => {
-    //         error!("failed to execute kubectl apply {}", e);
-    //         process::exit(1)
-    //     }
-    // };
     match pod_cmd.stdin.unwrap().write_all(pod.as_bytes()) {
         Err(why) => panic!("couldn't write to pod definition to stdin: {}", why),
-        Ok(_) => println!("sent pod to kubectl"),
+        Ok(_) => println!("Sending pod config using kubectl"),
     }
-
-    // let kubectl_error = String::from_utf8(pod_cmd.stderr)
-    // .unwrap_or_default();
-    // let pod_id = String::from_utf8(pod_output.stdout)
-    //                 .unwrap_or_default()
-    //                 .as_str();
 
     let mut kube_output = String::new();
     match pod_cmd.stdout.unwrap().read_to_string(&mut kube_output) {
         Err(why) => panic!("couldn't read kubectl stdout: {}", why),
-        Ok(_) => print!("kubectl responded with:\n{}", kube_output),
+        Ok(_) => print!("Response: {}", kube_output),
     }
 
     let mut kubectl_error = String::new();
@@ -246,6 +235,54 @@ spec:
                 println!("Error Applying Pod:\n{}", kubectl_error);
             }
         }
+    }
+    let mut connected = false;
+
+    while !connected {
+        let debug_status = match Command::new("kubectl")
+            .args(&[
+                "exec",
+                "-it",
+                kube_output.as_str(),
+                "-n",
+                namespace,
+                "--",
+                "/bin/bash",
+            ])
+            .status()
+        {
+            Err(why) => panic!("couldn't spawn kubectl: {}", why),
+            Ok(process) => process,
+        };
+        if debug_status.code().unwrap_or(1) == 0 {
+            connected = true;
+        } else {
+            println!("\nRetrying connection...");
+            thread::sleep(time::Duration::from_secs(3));
+        }
+    }
+
+    let destroy_status = match Command::new("kubectl")
+        .args(&[
+            "delete",
+            "pod",
+            kube_output.as_str(),
+            "-n",
+            namespace
+        ])
+        .status()
+    {
+        Err(why) => panic!("couldn't spawn kubectl: {}", why),
+        Ok(process) => process,
+    };
+
+    if destroy_status.code().unwrap_or(1) == 1 {
+        println!("Failed to delete container");
+        println!(
+            "Try running: kubectl delete pod {} -n {}",
+            kube_output.as_str(),
+            namespace
+        )
     }
 
     Ok(())
