@@ -31,3 +31,7 @@ To start a debug session in the environment run`rundebug.sh` command.
 ```
 
 To inspect the metadata that was saved with crash `ls` will list the folder container your core file and the metadata json.
+
+## demo
+
+<script id="asciicast-438878" src="https://asciinema.org/a/438878.js" async></script>
