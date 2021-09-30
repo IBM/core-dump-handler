@@ -55,7 +55,7 @@ fn main() -> Result<(), anyhow::Error> {
     info!("{}", envloadmsg);
     info!("Set logfile to: {:?}", &log_path);
 
-    let matches = match App::new("Kubernetes Core Dump Daemon")
+    let matches = match App::new("Core Dump Composer")
         .version("0.1.0")
         .author("Anton Whalley <anton@venshare.com>")
         .about("Processes Core Dumps in a K8s System")
