@@ -34,4 +34,4 @@ To inspect the metadata that was saved with crash `ls` will list the folder cont
 
 ## demo
 
-<script id="asciicast-438878" src="https://asciinema.org/a/438878.js" async></script>
+[![asciicast](https://asciinema.org/a/438878.svg)](https://asciinema.org/a/438878)
