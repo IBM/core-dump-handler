@@ -1,6 +1,6 @@
 [package]
 name = "core-dump-client"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2018"
 description = "A client for debugging core-dump-handler output"

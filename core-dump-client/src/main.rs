@@ -2,19 +2,15 @@ use clap::{App, Arg};
 use log::{debug, error};
 use std::io::prelude::*;
 use std::io::Write;
+use std::process;
 use std::process::{Command, Stdio};
 use std::{thread, time};
 use uuid::Uuid;
 
 fn main() -> Result<(), anyhow::Error> {
-    // corezipfilename - the name of the zip file containing the core dump"
-    // echo "  runtime - the runtime type - nodejs rust and java currently supported"
-    // echo "  exename - the name of the executable to be debugged"
-    // echo "  image - image of the crashed container"
-    // echo "  namespace - namespace of core dump handler"
 
     let matches = match App::new("Core Dump CLI")
-    .version("0.1.0")
+    .version("0.2.0")
     .author("Anton Whalley <anton@venshare.com>")
     .about("Analyse Core Dumps in a K8s System")
     .arg(
@@ -223,7 +219,11 @@ spec:
     let mut kube_output = String::new();
     match pod_cmd.stdout.unwrap().read_to_string(&mut kube_output) {
         Err(why) => panic!("couldn't read kubectl stdout: {}", why),
-        Ok(_) => print!("Response: {}", kube_output),
+        Ok(_) => {
+            if kube_output != "" {
+                print!("stdout: {}\n", kube_output);
+            }
+        }
     }
 
     let mut kubectl_error = String::new();
@@ -231,7 +231,8 @@ spec:
         Err(why) => panic!("couldn't read kubectl error: {}", why),
         Ok(_) => {
             if kubectl_error != "" {
-                println!("Error Applying Pod:\n{}", kubectl_error);
+                println!("stderr:\n{}", kubectl_error);
+                process::exit(1);
             }
         }
     }
