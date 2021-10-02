@@ -139,7 +139,7 @@ fn main() -> Result<(), anyhow::Error> {
         }
     };
 
-    let bin_path = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
+    let bin_path = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin";
     let _core_limit_size = matches.value_of("limit-size").unwrap_or("");
     let core_exe_name = matches.value_of("exe-name").unwrap_or("");
     let core_pid = matches.value_of("pid").unwrap_or("");
