@@ -198,7 +198,7 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
 
 1. Login to your kubernetes cluster so that `kubectl` can be ran from the script.
 
-1. Publish the container project to a registry 
+1. Publish the container definition for this project to a registry 
    
    ```
    docker build -t REPOSITORYNAME:YOUR_TAG .
