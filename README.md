@@ -198,6 +198,21 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
 
 1. Login to your kubernetes cluster so that `kubectl` can be ran from the script.
 
+1. Ensure you have an minio client in your PATH on your machine.
+    
+    ```
+    which mc
+    /usr/local/bin
+    ```
+1. If you don't have an minio client it can be installed on linux with
+
+    ```
+    wget https://dl.min.io/client/mc/release/linux-amd64/mc
+    chmod +x mc
+    sudo cp mc /usr/local/bin/mc
+    ```
+    Other OSes are detailed here https://docs.min.io/docs/minio-client-quickstart-guide.html
+    
 1. Publish the container definition for this project to a registry 
    
    ```
