@@ -211,7 +211,7 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
     image:
     repository: REPOSITORYNAME:YOUR_TAG 
     ```
-1. in the root of the project folder create a file called `.env` with the following configuration
+1. In the root of the project folder create a file called `.env` with the following configuration
 
     ```
     S3_ACCESS_KEY=XXXX
@@ -220,11 +220,12 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
     S3_REGION=XXXX
     ```
 
-1. change directory to the integration folder and run the test
+1. Change directory to the integration folder and run the test
 
-```
-./run.sh
-```
+    ```
+    cd integration
+    ./run.sh
+    ```
 
 
 ## Troubleshooting 
