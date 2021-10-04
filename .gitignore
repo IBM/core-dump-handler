@@ -2,3 +2,4 @@
 **/output/**
 coreos.Dockerfile
 *.vscode*
+.env
