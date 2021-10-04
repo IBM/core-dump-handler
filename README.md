@@ -196,24 +196,29 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
 
 ## Testing
 
-To test your changes 
+1. Login to your kubernetes cluster so that `kubectl` can be ran from the script.
 
-1. publish the container to a registry 
-
-1. modify the image definition in the yaml
+1. Publish the container project to a registry 
+   
+   ```
+   docker build -t REPOSITORYNAME:YOUR_TAG .
+   docker push REPOSITORYNAME:YOUR_TAG
+   ```
+   
+1. Modify the image definition in the yaml
 
     ```yaml
     image:
-    repository: YOUR_TAG_NAME 
+    repository: REPOSITORYNAME:YOUR_TAG 
     ```
 1. in the root of the project folder create a file called `.env` with the following configuration
 
-```
-S3_ACCESS_KEY=XXXX
-S3_SECRET=XXXX
-S3_BUCKET_NAME=XXXX
-S3_REGION=XXXX
-```
+    ```
+    S3_ACCESS_KEY=XXXX
+    S3_SECRET=XXXX
+    S3_BUCKET_NAME=XXXX
+    S3_REGION=XXXX
+    ```
 
 1. change directory to the integration folder and run the test
 
