@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:v3.1.0
+  repository: quay.io/icdh/core-dump-handler:v3.2.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
