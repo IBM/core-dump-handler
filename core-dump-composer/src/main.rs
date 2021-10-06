@@ -1,5 +1,5 @@
 extern crate dotenv;
-// extern crate s3;
+
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use clap::{App, Arg};
 use log::{debug, error, info, LevelFilter};
@@ -33,6 +33,9 @@ fn main() -> Result<(), anyhow::Error> {
     debug!("Arguments: {:?}", env::args());
 
     let loglevel = env::var("LOG_LEVEL").unwrap_or_default();
+    let ignore_crio = env::var("IGNORE_CRIO")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
         Err(_) => LevelFilter::Debug,
@@ -214,6 +217,12 @@ fn main() -> Result<(), anyhow::Error> {
         Ok(v) => v,
         Err(e) => error!("Errer writing zip file{}", e),
     };
+
+    if FromStr::from_str(&ignore_crio) == Ok(true) {
+        zip.finish()?;
+        file.unlock()?;
+        process::exit(0)
+    }
 
     let pod_output = match Command::new("crictl")
         .env("PATH", bin_path)

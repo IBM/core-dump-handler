@@ -383,6 +383,7 @@ name = "core-dump-agent"
 version = "0.1.0"
 dependencies = [
  "advisory-lock",
+ "dotenv",
  "env_logger",
  "log",
  "rust-s3",

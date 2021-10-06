@@ -1,3 +1,4 @@
+extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
@@ -30,11 +31,28 @@ static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
 static DEFAULT_SUID_DUMPABLE: &str = "2";
 
 fn main() -> Result<(), std::io::Error> {
+    let mut env_path = env::current_exe()?;
+    env_path.pop();
+    env_path.push(".env");
+
+    let mut envloadmsg = String::from("Loading .env");
+    match dotenv::from_path(env_path) {
+        Ok(v) => v,
+        Err(e) => {
+            envloadmsg = format!(
+                "no .env file found \n That's ok if running in a container{}",
+                e
+            )
+        }
+    }
+
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
+
+    info!("{}", envloadmsg);
 
     if pattern == "remove" {
         info!("Removing {}", host_location);
@@ -213,10 +231,14 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
 
 fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "error".to_string());
+    let ignore_crio = env::var("COMP_IGNORE_CRIO")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
+
     let destination = format!("{}/{}", host_location, ".env");
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
-    let text = format!("LOG_LEVEL={}", loglevel);
+    let text = format!("LOG_LEVEL={}\nIGNORE_CRIO={}", loglevel, ignore_crio);
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
     Ok(())
@@ -268,8 +290,9 @@ fn overwrite_sysctl(name: &str, value: &str) -> Result<(), std::io::Error> {
 }
 
 fn remove() -> Result<(), std::io::Error> {
-    restore_sysctl("core_pattern")?;
-    restore_sysctl("core_pipe_limit")?;
+    restore_sysctl("kernel", "core_pattern")?;
+    restore_sysctl("kernel", "core_pipe_limit")?;
+    restore_sysctl("fs", "suid_dumpable")?;
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let exe = format!("{}/{}", host_dir, CDC_NAME);
     let env_file = format!("{}/{}", host_dir, ".env");
@@ -277,14 +300,14 @@ fn remove() -> Result<(), std::io::Error> {
     fs::remove_file(env_file)?;
     Ok(())
 }
-fn restore_sysctl(name: &str) -> Result<(), std::io::Error> {
+fn restore_sysctl(prefix: &str, name: &str) -> Result<(), std::io::Error> {
     info!("Restoring Backup of {}", name);
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let file_name = format!("{}/{}.bak", host_dir, name);
-    let sysctl_name = format!("kernel.{}", name);
+    let sysctl_name = format!("{}.{}", prefix, name);
     let line = match fs::read_to_string(&file_name) {
         Ok(l) => l,
-        Err(e) => panic!("{} does not contain a line", e),
+        Err(e) => panic!("{} does not contain a line\n {}", name, e),
     };
     overwrite_sysctl(sysctl_name.as_str(), line.as_str())?;
     fs::remove_file(file_name)?;

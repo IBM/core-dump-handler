@@ -23,6 +23,8 @@ spec:
         env:
           - name: COMP_LOG_LEVEL
             value: {{ .Values.daemonset.composerLogLevel }}
+          - name: COMP_IGNORE_CRIO
+            value: {{ .Values.daemonset.composerIgnoreCrio | quote }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: SUID_DUMPABLE
