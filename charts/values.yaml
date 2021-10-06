@@ -23,7 +23,8 @@ daemonset:
     s3Region : XXX
     vendor: default
     interval: 60000
-         
+    composerIgnoreCrio: "false"
+
 serviceAccount:
   create: true
   name: "core-dump-admin"

@@ -8,7 +8,6 @@ use std::{thread, time};
 use uuid::Uuid;
 
 fn main() -> Result<(), anyhow::Error> {
-
     let matches = match App::new("Core Dump CLI")
     .version("0.2.0")
     .author("Anton Whalley <anton@venshare.com>")
