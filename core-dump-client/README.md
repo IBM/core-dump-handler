@@ -11,8 +11,10 @@ Currently it support nodejs, java or default lldb tools.
 
 1. Ensure [core-dump-handler](https://github.com/IBM/core-dump-handler) is installed on your cluster.
 
-2. Install the cli `cargo install core-dump-client`
-
+2. Install the cli
+    * Download the latest build from releases https://github.com/IBM/core-dump-handler/releases
+    Rename it cdcli and place it in a folder that is in your $PATH
+    * Or build the client with `cargo install core-dump-client`
     If you don't have rust installed you can get it with [rustup](https://rustup.rs)
 
 3. Ensure your `kubectl` client is logged into the cluster
@@ -22,11 +24,11 @@ Currently it support nodejs, java or default lldb tools.
 
 Create a debug environment with 
 ```
-cdc -c [name-of-zipfile] -i [crashed-image-name]
+cdcli -c [name-of-zipfile] -i [crashed-image-name]
 ```
 e.g. 
 ```
-./cdc.sh 36c0d272-3295-4474-a16e-00885ba04fed-dump-1631477784-crashing-app-848dc79df4-srqkv-node-8-4.zip quay.io/number9/example-crashing-nodejs-app
+cdcli 36c0d272-3295-4474-a16e-00885ba04fed-dump-1631477784-crashing-app-848dc79df4-srqkv-node-8-4.zip quay.io/number9/example-crashing-nodejs-app
 ```
 
 This will log you into a running container with lldb tools and core file info available to you. 

@@ -20,16 +20,16 @@ jobs:
         include:
           - name: linux
             os: ubuntu-latest
-            artifact_name: target/release/cdc
-            asset_name: cdc-linux
+            artifact_name: target/release/cdcli
+            asset_name: cdcli-linux
           - name: windows
             os: windows-latest
-            artifact_name: target/release/cdc.exe
-            asset_name: cdc-windows
+            artifact_name: target/release/cdcli.exe
+            asset_name: cdcli-windows
           - name: macos
             os: macos-latest
-            artifact_name: target/release/cdc
-            asset_name: cdc-macos
+            artifact_name: target/release/cdcli
+            asset_name: cdcli-macos
 
     steps:
     - uses: actions/checkout@v1

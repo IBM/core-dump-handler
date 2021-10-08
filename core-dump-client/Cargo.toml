@@ -7,10 +7,10 @@ description = "A client for debugging core-dump-handler output"
 license = "MIT"
 documentation = "https://docs.rs/core-dump-client"
 homepage = "https://github.com/IBM/core-dump-handler/main/core-dump-client"
-repository = "https://github.com/IBM/core-dump-handler"
+repository = "https://github.com/IBM/core-dump-handler/main/core-dump-client"
 
 [[bin]]
-name="cdc"
+name="cdcli"
 path="./src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
