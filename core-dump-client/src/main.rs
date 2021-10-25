@@ -75,15 +75,15 @@ fn main() -> Result<(), anyhow::Error> {
     // Extracting crash information based on file name:println
     // e.g.a4e4da09-2d78-4402-b191-6d3e398f7df8-dump-1631309244-segfaulter-segfaulter-1-4.zip
 
-    let split_zip_name: Vec<&str> = core_zip_name.split("-").collect();
-    let basenames: Vec<&str> = core_zip_name.split(".").collect();
+    let split_zip_name: Vec<&str> = core_zip_name.split('-').collect();
+    let basenames: Vec<&str> = core_zip_name.split('.').collect();
     let basename = basenames[0];
 
     let core_location = format!("{}/{}.core", basename, basename);
 
     let pod_uuid = Uuid::new_v4();
 
-    if core_exe_name == "" {
+    if core_exe_name.is_empty() {
         core_exe_name = split_zip_name[split_zip_name.len() - 3];
     }
     let cmd = format!(
@@ -91,7 +91,7 @@ fn main() -> Result<(), anyhow::Error> {
         core_exe_name
     );
 
-    if runtime == "" {
+    if runtime.is_empty() {
         if core_exe_name == "node" {
             runtime = "nodejs";
         } else if core_exe_name == "java" {
@@ -109,7 +109,7 @@ fn main() -> Result<(), anyhow::Error> {
         img_debug = "quay.io/icdh/default"
     }
 
-    if namespace == "" {
+    if namespace.is_empty() {
         namespace = "observe";
     }
 
@@ -219,8 +219,8 @@ spec:
     match pod_cmd.stdout.unwrap().read_to_string(&mut kube_output) {
         Err(why) => panic!("couldn't read kubectl stdout: {}", why),
         Ok(_) => {
-            if kube_output != "" {
-                print!("stdout: {}\n", kube_output);
+            if !kube_output.is_empty() {
+                println!("stdout: {}", kube_output);
             }
         }
     }
@@ -229,7 +229,7 @@ spec:
     match pod_cmd.stderr.unwrap().read_to_string(&mut kubectl_error) {
         Err(why) => panic!("couldn't read kubectl error: {}", why),
         Ok(_) => {
-            if kubectl_error != "" {
+            if !kubectl_error.is_empty() {
                 println!("stderr:\n{}", kubectl_error);
                 process::exit(1);
             }

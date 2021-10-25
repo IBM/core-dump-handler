@@ -36,6 +36,7 @@ fn main() -> Result<(), anyhow::Error> {
     let ignore_crio = env::var("IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
+    let img = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
         Err(_) => LevelFilter::Debug,
@@ -189,7 +190,7 @@ fn main() -> Result<(), anyhow::Error> {
     \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\" }}",
         core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal
     );
-    match zip.write_all(&dump_info_content.as_bytes()) {
+    match zip.write_all(dump_info_content.as_bytes()) {
         Ok(v) => v,
         Err(e) => error!("Errer writing zip file{}", e),
     };
@@ -238,7 +239,7 @@ fn main() -> Result<(), anyhow::Error> {
         }
     };
 
-    let pod_object: Value = match serde_json::from_slice(&pod_output.stdout.as_slice()) {
+    let pod_object: Value = match serde_json::from_slice(pod_output.stdout.as_slice()) {
         Ok(v) => v,
         Err(e) => {
             error!("Failed to get container info {}", e);
@@ -254,7 +255,7 @@ fn main() -> Result<(), anyhow::Error> {
     };
 
     debug!("pod object {}", pod_object);
-    match zip.write_all(&pod_object.to_string().as_bytes()) {
+    match zip.write_all(pod_object.to_string().as_bytes()) {
         Ok(v) => v,
         Err(e) => error!("Errer writing zip file{}", e),
     };
@@ -338,7 +339,7 @@ fn main() -> Result<(), anyhow::Error> {
                 Err(e) => error!("Errer starting zip file{}", e),
             };
             let ps_info_content = serde_json::to_string(&ps_object).unwrap_or_default();
-            match zip.write_all(&ps_info_content.as_bytes()) {
+            match zip.write_all(ps_info_content.as_bytes()) {
                 Ok(v) => v,
                 Err(e) => error!("Errer writing zip file{}", e),
             };
@@ -363,11 +364,11 @@ fn main() -> Result<(), anyhow::Error> {
     let mut image_list: Value = json!({});
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["img", "-o", "json"])
+        .args(&[img.as_str(), "-o", "json"])
         .output()
     {
         Ok(img_output) => {
-            image_list = match serde_json::from_slice(&img_output.stdout.as_slice()) {
+            image_list = match serde_json::from_slice(img_output.stdout.as_slice()) {
                 Ok(v) => v,
                 Err(e) => {
                     error!("Failed to get imagelist info {}", e);
@@ -391,7 +392,7 @@ fn main() -> Result<(), anyhow::Error> {
                         Err(e) => error!("Errer starting zip file{}", e),
                     };
                     let img_info_content = serde_json::to_string(&line_obj).unwrap_or_default();
-                    match zip.write_all(&img_info_content.as_bytes()) {
+                    match zip.write_all(img_info_content.as_bytes()) {
                         Ok(v) => v,
                         Err(e) => error!("Errer writing zip file{}", e),
                     };

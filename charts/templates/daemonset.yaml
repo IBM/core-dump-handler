@@ -25,6 +25,10 @@ spec:
             value: {{ .Values.daemonset.composerLogLevel }}
           - name: COMP_IGNORE_CRIO
             value: {{ .Values.daemonset.composerIgnoreCrio | quote }}
+          - name: COMP_CRIO_IMAGE_CMD
+            mountPath:  {{ .Values.daemonset.composerCrioImageCmd }}
+          - name: DEPLOY_CRIO_CONFIG
+            mountPath:  {{ .Values.daemonset.DeployCrioConfig | quote }}  
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: SUID_DUMPABLE

@@ -49,6 +49,9 @@ fn main() -> Result<(), std::io::Error> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
+    let deploy_crio_config = env::var("DEPLOY_CRIO_CONFIG")
+    .unwrap_or_else(|_| "false".to_string())
+    .to_lowercase();
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -65,6 +68,10 @@ fn main() -> Result<(), std::io::Error> {
         "Current Directory for setup is {}",
         env::current_dir().unwrap().display()
     );
+
+    if deploy_crio_config == "true" {
+        generate_crio_config()?;
+    }
     copy_core_dump_composer_to_hostdir(host_location)?;
     copy_sysctl_to_file(
         "kernel.core_pattern",
@@ -206,6 +213,15 @@ fn run_agent(core_location: &str) {
     }
 }
 
+fn generate_crio_config() -> Result<(), std::io::Error> {
+    info!("Generating crio file");
+    let mut crictl_file = File::create("/etc/crictl.yaml")?;
+    let text = "runtime-endpoint: unix:///run/containerd/containerd.sock\nimage-endpoint: unix:///run/containerd/containerd.sock\ntimeout: 2\ndebug: false\npull-image-on-create: false";
+    crictl_file.write_all(text.as_bytes())?;
+    crictl_file.flush()?;
+    Ok(())
+}
+
 fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io::Error> {
     let version = env::var("VENDOR").unwrap_or_else(|_| "default".to_string());
     match version.to_lowercase().as_str() {
@@ -234,11 +250,14 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let ignore_crio = env::var("COMP_IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-
+    let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "error".to_string());
     let destination = format!("{}/{}", host_location, ".env");
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
-    let text = format!("LOG_LEVEL={}\nIGNORE_CRIO={}", loglevel, ignore_crio);
+    let text = format!(
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}",
+        loglevel, ignore_crio, crio_image
+    );
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
     Ok(())
