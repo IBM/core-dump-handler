@@ -24,6 +24,11 @@ fn main() -> Result<(), anyhow::Error> {
     env_path.pop();
     env_path.push(".env");
 
+    let config_path = env::current_exe()?;
+    env_path.pop();
+    env_path.push("crictl.yaml");
+    let config_path_str = config_path.into_os_string().into_string().unwrap();
+
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
@@ -37,6 +42,9 @@ fn main() -> Result<(), anyhow::Error> {
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
     let img = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
+    let use_crio_config =
+        env::var("USE_CRIO_CONF").unwrap_or_else(|_| "false".to_string().to_lowercase());
+
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
         Err(_) => LevelFilter::Debug,
@@ -224,10 +232,23 @@ fn main() -> Result<(), anyhow::Error> {
         file.unlock()?;
         process::exit(0)
     }
-
+    let pod_output_args;
+    if use_crio_config == "true" {
+        pod_output_args = vec![
+            "-c",
+            config_path_str.as_str(),
+            "pods",
+            "--name",
+            core_hostname,
+            "-o",
+            "json",
+        ];
+    } else {
+        pod_output_args = vec!["pods", "--name", core_hostname, "-o", "json"];
+    }
     let pod_output = match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["pods", "--name", core_hostname, "-o", "json"])
+        .args(&pod_output_args)
         .output()
     {
         Ok(v) => v,
@@ -271,10 +292,15 @@ fn main() -> Result<(), anyhow::Error> {
     // With the pod_id get the runtime information from crictl
 
     debug!("Using pod_id:{}", pod_id);
-
+    let inspect_output_args;
+    if use_crio_config == "true" {
+        inspect_output_args = vec!["-c", config_path_str.as_str(), "inspectp", pod_id];
+    } else {
+        inspect_output_args = vec!["inspectp", pod_id];
+    }
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["inspectp", pod_id])
+        .args(&inspect_output_args)
         .output()
     {
         Ok(inspectp_output) => {
@@ -306,9 +332,24 @@ fn main() -> Result<(), anyhow::Error> {
 
     // Get the container_image_name based on the pod_id
     let mut ps_object: Value = json!({});
+    let ps_output_args;
+    if use_crio_config == "true" {
+        ps_output_args = vec![
+            "-c",
+            config_path_str.as_str(),
+            "ps",
+            "-o",
+            "json",
+            "-p",
+            pod_id,
+        ];
+    } else {
+        ps_output_args = vec!["ps", "-o", "json", "-p", pod_id];
+    }
+
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["ps", "-o", "json", "-p", pod_id])
+        .args(&ps_output_args)
         .output()
     {
         Ok(ps_output) => {
@@ -362,9 +403,17 @@ fn main() -> Result<(), anyhow::Error> {
     debug!("found img_id {}", img_id);
 
     let mut image_list: Value = json!({});
+    let image_args;
+
+    if use_crio_config == "true" {
+        image_args = vec!["-c", config_path_str.as_str(), img.as_str(), "-o", "json"];
+    } else {
+        image_args = vec![img.as_str(), "-o", "json"];
+    }
+
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&[img.as_str(), "-o", "json"])
+        .args(&image_args)
         .output()
     {
         Ok(img_output) => {

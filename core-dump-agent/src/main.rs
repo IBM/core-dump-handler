@@ -50,8 +50,8 @@ fn main() -> Result<(), std::io::Error> {
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
     let deploy_crio_config = env::var("DEPLOY_CRIO_CONFIG")
-    .unwrap_or_else(|_| "false".to_string())
-    .to_lowercase();
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -70,7 +70,7 @@ fn main() -> Result<(), std::io::Error> {
     );
 
     if deploy_crio_config == "true" {
-        generate_crio_config()?;
+        generate_crio_config(host_location)?;
     }
     copy_core_dump_composer_to_hostdir(host_location)?;
     copy_sysctl_to_file(
@@ -213,9 +213,10 @@ fn run_agent(core_location: &str) {
     }
 }
 
-fn generate_crio_config() -> Result<(), std::io::Error> {
+fn generate_crio_config(host_location: &str) -> Result<(), std::io::Error> {
     info!("Generating crio file");
-    let mut crictl_file = File::create("/etc/crictl.yaml")?;
+    let destination = format!("{}/{}", host_location, "crictl.yaml");
+    let mut crictl_file = File::create(destination)?;
     let text = "runtime-endpoint: unix:///run/containerd/containerd.sock\nimage-endpoint: unix:///run/containerd/containerd.sock\ntimeout: 2\ndebug: false\npull-image-on-create: false";
     crictl_file.write_all(text.as_bytes())?;
     crictl_file.flush()?;
@@ -252,11 +253,15 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
         .to_lowercase();
     let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "error".to_string());
     let destination = format!("{}/{}", host_location, ".env");
+    let use_crio_config = env::var("DEPLOY_CRIO_CONFIG")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
+
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}",
-        loglevel, ignore_crio, crio_image
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
+        loglevel, ignore_crio, crio_image, use_crio_config
     );
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
