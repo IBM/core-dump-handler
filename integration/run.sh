@@ -12,7 +12,7 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 ## Poll until pod is up
 while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
 do 
-    echo "waiting for pod" && sleep 1; 
+    echo "waiting for core dump pod to setup pod" && sleep 1; 
 done
 
 kubectl run -it segfaulter --image=quay.io/icdh/segfaulter --restart=Never
