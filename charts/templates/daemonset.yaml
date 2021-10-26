@@ -14,6 +14,13 @@ spec:
       containers:
       - name: coredump-container
         image: {{ .Values.image.repository }}
+        resources:
+          requests:
+            memory: {{ .Values.image.request_mem }}
+            cpu: {{ .Values.image.request_cpu }} 
+          limits:
+            memory: {{ .Values.image.limit_mem }}
+            cpu: {{ .Values.image.limit_cpu }}
         securityContext:
           privileged: true
         volumeMounts:
