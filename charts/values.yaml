@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:do-support@sha256:dc07cfbaba9f973be82e358594baad5f8883879c65a1d4601c7125bc7b5991a9
+  repository: quay.io/icdh/core-dump-handler:do-support@sha256:7ef66f4cf085361e310f9a7457b9729809ae060fb22804548837c933fd119af2
   pullPolicy: Always
 
 imagePullSecrets: []

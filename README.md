@@ -78,7 +78,7 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
-    <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioConfig=true and --set daemonset.composerCrioImageCmd="image"</td>
+    <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioConfig=true and --set daemonset.composerCrioImageCmd="images"</td>
 </tr>
 <tr>
     <td>Google</td><td>GKE</td><td>	1.20.9-gke.1001</td><td>Yes</td><td>Yes</td><td><a href="https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants">Ubuntu containerd image</a> <b>must</b> be used for the worker nodes.
