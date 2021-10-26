@@ -260,9 +260,10 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\n",
         loglevel, ignore_crio, crio_image, use_crio_config
     );
+    info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
     Ok(())

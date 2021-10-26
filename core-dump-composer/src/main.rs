@@ -45,6 +45,10 @@ fn main() -> Result<(), anyhow::Error> {
     let use_crio_config =
         env::var("USE_CRIO_CONF").unwrap_or_else(|_| "false".to_string().to_lowercase());
 
+    info!(
+        "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
+        ignore_crio, img, use_crio_config
+    );
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
         Err(_) => LevelFilter::Debug,
@@ -246,6 +250,9 @@ fn main() -> Result<(), anyhow::Error> {
     } else {
         pod_output_args = vec!["pods", "--name", core_hostname, "-o", "json"];
     }
+
+    info!("Running crictl {:?}", pod_output_args);
+
     let pod_output = match Command::new("crictl")
         .env("PATH", bin_path)
         .args(&pod_output_args)
@@ -298,6 +305,7 @@ fn main() -> Result<(), anyhow::Error> {
     } else {
         inspect_output_args = vec!["inspectp", pod_id];
     }
+    info!("Running crictl {:?}", inspect_output_args);
     match Command::new("crictl")
         .env("PATH", bin_path)
         .args(&inspect_output_args)
@@ -346,7 +354,7 @@ fn main() -> Result<(), anyhow::Error> {
     } else {
         ps_output_args = vec!["ps", "-o", "json", "-p", pod_id];
     }
-
+    info!("Running crictl {:?}", ps_output_args);
     match Command::new("crictl")
         .env("PATH", bin_path)
         .args(&ps_output_args)
@@ -410,6 +418,7 @@ fn main() -> Result<(), anyhow::Error> {
     } else {
         image_args = vec![img.as_str(), "-o", "json"];
     }
+    info!("Running crictl {:?}", image_args);
 
     match Command::new("crictl")
         .env("PATH", bin_path)
