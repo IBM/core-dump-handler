@@ -24,9 +24,9 @@ fn main() -> Result<(), anyhow::Error> {
     env_path.pop();
     env_path.push(".env");
 
-    let config_path = env::current_exe()?;
-    env_path.pop();
-    env_path.push("crictl.yaml");
+    let mut config_path = env::current_exe()?;
+    config_path.pop();
+    config_path.push("crictl.yaml");
     let config_path_str = config_path.into_os_string().into_string().unwrap();
 
     let mut envloadmsg = String::from("Loading .env");
