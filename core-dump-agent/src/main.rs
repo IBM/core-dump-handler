@@ -11,6 +11,7 @@ use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 use std::path::PathBuf;
 use std::process;
 use std::process::Command;
@@ -321,8 +322,18 @@ fn remove() -> Result<(), std::io::Error> {
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let exe = format!("{}/{}", host_dir, CDC_NAME);
     let env_file = format!("{}/{}", host_dir, ".env");
+    let crictl_file = format!("{}/{}", host_dir, "crictl.yaml");
+    let composer_file = format!("{}/{}", host_dir, "composer.log");
+
     fs::remove_file(exe)?;
     fs::remove_file(env_file)?;
+    if !Path::new(&crictl_file).exists() {
+        fs::remove_file(crictl_file)?;
+    }
+    if !Path::new(&composer_file).exists() {
+        fs::remove_file(composer_file)?;
+    }
+
     Ok(())
 }
 fn restore_sysctl(prefix: &str, name: &str) -> Result<(), std::io::Error> {
