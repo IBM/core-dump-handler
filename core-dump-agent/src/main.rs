@@ -11,6 +11,7 @@ use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 use std::path::PathBuf;
 use std::process;
 use std::process::Command;
@@ -49,6 +50,9 @@ fn main() -> Result<(), std::io::Error> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
+    let deploy_crio_config = env::var("DEPLOY_CRIO_CONFIG")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -65,6 +69,10 @@ fn main() -> Result<(), std::io::Error> {
         "Current Directory for setup is {}",
         env::current_dir().unwrap().display()
     );
+
+    if deploy_crio_config == "true" {
+        generate_crio_config(host_location)?;
+    }
     copy_core_dump_composer_to_hostdir(host_location)?;
     copy_sysctl_to_file(
         "kernel.core_pattern",
@@ -206,6 +214,16 @@ fn run_agent(core_location: &str) {
     }
 }
 
+fn generate_crio_config(host_location: &str) -> Result<(), std::io::Error> {
+    info!("Generating crio file");
+    let destination = format!("{}/{}", host_location, "crictl.yaml");
+    let mut crictl_file = File::create(destination)?;
+    let text = "runtime-endpoint: unix:///run/containerd/containerd.sock\nimage-endpoint: unix:///run/containerd/containerd.sock\ntimeout: 2\ndebug: false\npull-image-on-create: false";
+    crictl_file.write_all(text.as_bytes())?;
+    crictl_file.flush()?;
+    Ok(())
+}
+
 fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io::Error> {
     let version = env::var("VENDOR").unwrap_or_else(|_| "default".to_string());
     match version.to_lowercase().as_str() {
@@ -234,11 +252,19 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let ignore_crio = env::var("COMP_IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-
+    let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "error".to_string());
     let destination = format!("{}/{}", host_location, ".env");
+    let use_crio_config = env::var("DEPLOY_CRIO_CONFIG")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
+
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
-    let text = format!("LOG_LEVEL={}\nIGNORE_CRIO={}", loglevel, ignore_crio);
+    let text = format!(
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\n",
+        loglevel, ignore_crio, crio_image, use_crio_config
+    );
+    info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
     Ok(())
@@ -296,8 +322,18 @@ fn remove() -> Result<(), std::io::Error> {
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let exe = format!("{}/{}", host_dir, CDC_NAME);
     let env_file = format!("{}/{}", host_dir, ".env");
+    let crictl_file = format!("{}/{}", host_dir, "crictl.yaml");
+    let composer_file = format!("{}/{}", host_dir, "composer.log");
+
     fs::remove_file(exe)?;
     fs::remove_file(env_file)?;
+    if !Path::new(&crictl_file).exists() {
+        fs::remove_file(crictl_file)?;
+    }
+    if !Path::new(&composer_file).exists() {
+        fs::remove_file(composer_file)?;
+    }
+
     Ok(())
 }
 fn restore_sysctl(prefix: &str, name: &str) -> Result<(), std::io::Error> {

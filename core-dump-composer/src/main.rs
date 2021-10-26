@@ -24,6 +24,11 @@ fn main() -> Result<(), anyhow::Error> {
     env_path.pop();
     env_path.push(".env");
 
+    let mut config_path = env::current_exe()?;
+    config_path.pop();
+    config_path.push("crictl.yaml");
+    let config_path_str = config_path.into_os_string().into_string().unwrap();
+
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
@@ -36,6 +41,14 @@ fn main() -> Result<(), anyhow::Error> {
     let ignore_crio = env::var("IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
+    let img = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
+    let use_crio_config =
+        env::var("USE_CRIO_CONF").unwrap_or_else(|_| "false".to_string().to_lowercase());
+
+    info!(
+        "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
+        ignore_crio, img, use_crio_config
+    );
     let logfilter = match LevelFilter::from_str(loglevel.as_str()) {
         Ok(v) => v,
         Err(_) => LevelFilter::Debug,
@@ -189,7 +202,7 @@ fn main() -> Result<(), anyhow::Error> {
     \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\" }}",
         core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal
     );
-    match zip.write_all(&dump_info_content.as_bytes()) {
+    match zip.write_all(dump_info_content.as_bytes()) {
         Ok(v) => v,
         Err(e) => error!("Errer writing zip file{}", e),
     };
@@ -223,10 +236,26 @@ fn main() -> Result<(), anyhow::Error> {
         file.unlock()?;
         process::exit(0)
     }
+    let pod_output_args;
+    if use_crio_config == "true" {
+        pod_output_args = vec![
+            "-c",
+            config_path_str.as_str(),
+            "pods",
+            "--name",
+            core_hostname,
+            "-o",
+            "json",
+        ];
+    } else {
+        pod_output_args = vec!["pods", "--name", core_hostname, "-o", "json"];
+    }
+
+    info!("Running crictl {:?}", pod_output_args);
 
     let pod_output = match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["pods", "--name", core_hostname, "-o", "json"])
+        .args(&pod_output_args)
         .output()
     {
         Ok(v) => v,
@@ -238,7 +267,7 @@ fn main() -> Result<(), anyhow::Error> {
         }
     };
 
-    let pod_object: Value = match serde_json::from_slice(&pod_output.stdout.as_slice()) {
+    let pod_object: Value = match serde_json::from_slice(pod_output.stdout.as_slice()) {
         Ok(v) => v,
         Err(e) => {
             error!("Failed to get container info {}", e);
@@ -254,7 +283,7 @@ fn main() -> Result<(), anyhow::Error> {
     };
 
     debug!("pod object {}", pod_object);
-    match zip.write_all(&pod_object.to_string().as_bytes()) {
+    match zip.write_all(pod_object.to_string().as_bytes()) {
         Ok(v) => v,
         Err(e) => error!("Errer writing zip file{}", e),
     };
@@ -270,10 +299,16 @@ fn main() -> Result<(), anyhow::Error> {
     // With the pod_id get the runtime information from crictl
 
     debug!("Using pod_id:{}", pod_id);
-
+    let inspect_output_args;
+    if use_crio_config == "true" {
+        inspect_output_args = vec!["-c", config_path_str.as_str(), "inspectp", pod_id];
+    } else {
+        inspect_output_args = vec!["inspectp", pod_id];
+    }
+    info!("Running crictl {:?}", inspect_output_args);
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["inspectp", pod_id])
+        .args(&inspect_output_args)
         .output()
     {
         Ok(inspectp_output) => {
@@ -305,9 +340,24 @@ fn main() -> Result<(), anyhow::Error> {
 
     // Get the container_image_name based on the pod_id
     let mut ps_object: Value = json!({});
+    let ps_output_args;
+    if use_crio_config == "true" {
+        ps_output_args = vec![
+            "-c",
+            config_path_str.as_str(),
+            "ps",
+            "-o",
+            "json",
+            "-p",
+            pod_id,
+        ];
+    } else {
+        ps_output_args = vec!["ps", "-o", "json", "-p", pod_id];
+    }
+    info!("Running crictl {:?}", ps_output_args);
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["ps", "-o", "json", "-p", pod_id])
+        .args(&ps_output_args)
         .output()
     {
         Ok(ps_output) => {
@@ -338,7 +388,7 @@ fn main() -> Result<(), anyhow::Error> {
                 Err(e) => error!("Errer starting zip file{}", e),
             };
             let ps_info_content = serde_json::to_string(&ps_object).unwrap_or_default();
-            match zip.write_all(&ps_info_content.as_bytes()) {
+            match zip.write_all(ps_info_content.as_bytes()) {
                 Ok(v) => v,
                 Err(e) => error!("Errer writing zip file{}", e),
             };
@@ -361,13 +411,22 @@ fn main() -> Result<(), anyhow::Error> {
     debug!("found img_id {}", img_id);
 
     let mut image_list: Value = json!({});
+    let image_args;
+
+    if use_crio_config == "true" {
+        image_args = vec!["-c", config_path_str.as_str(), img.as_str(), "-o", "json"];
+    } else {
+        image_args = vec![img.as_str(), "-o", "json"];
+    }
+    info!("Running crictl {:?}", image_args);
+
     match Command::new("crictl")
         .env("PATH", bin_path)
-        .args(&["img", "-o", "json"])
+        .args(&image_args)
         .output()
     {
         Ok(img_output) => {
-            image_list = match serde_json::from_slice(&img_output.stdout.as_slice()) {
+            image_list = match serde_json::from_slice(img_output.stdout.as_slice()) {
                 Ok(v) => v,
                 Err(e) => {
                     error!("Failed to get imagelist info {}", e);
@@ -391,7 +450,7 @@ fn main() -> Result<(), anyhow::Error> {
                         Err(e) => error!("Errer starting zip file{}", e),
                     };
                     let img_info_content = serde_json::to_string(&line_obj).unwrap_or_default();
-                    match zip.write_all(&img_info_content.as_bytes()) {
+                    match zip.write_all(img_info_content.as_bytes()) {
                         Ok(v) => v,
                         Err(e) => error!("Errer writing zip file{}", e),
                     };

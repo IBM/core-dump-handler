@@ -1,8 +1,8 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:v4.0.0
-  pullPolicy: IfNotPresent
+  repository: quay.io/icdh/core-dump-handler:v4.1.0
+  pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""
@@ -23,8 +23,9 @@ daemonset:
     s3Region : XXX
     vendor: default
     interval: 60000
-    composerIgnoreCrio: "false"
-
+    composerIgnoreCrio: false
+    composerCrioImageCmd: "img"
+    DeployCrioConfig: false
 serviceAccount:
   create: true
   name: "core-dump-admin"
