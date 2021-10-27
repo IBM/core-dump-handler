@@ -8,6 +8,7 @@ use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
 use serde_json::{json, Value};
 use std::env;
+use std::ffi::OsString;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
@@ -171,6 +172,12 @@ fn main() -> Result<(), anyhow::Error> {
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o444);
 
+    let os_hostname =
+        hostname::get().unwrap_or_else(|_| OsString::from_str("unknown").unwrap_or_default());
+    let node_hostname = os_hostname
+        .into_string()
+        .unwrap_or_else(|_| "unknown".to_string());
+
     let dump_name = format!(
         "{}-dump-{}-{}-{}-{}-{}",
         core_uuid, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal
@@ -199,8 +206,8 @@ fn main() -> Result<(), anyhow::Error> {
     };
     let dump_info_content = format!(
         "{{\"uuid\":\"{}\", \"dump_file\":\"{}.core\", \"timestamp\": \"{}\", 
-    \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\" }}",
-        core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal
+    \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\" \"node_hostname\": \"{}\" }}",
+        core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal, node_hostname
     );
     match zip.write_all(dump_info_content.as_bytes()) {
         Ok(v) => v,
