@@ -28,7 +28,7 @@ daemonset:
     DeployCrioConfig: false
     includeCrioExe: false
     # S3 access
-    manageSecretEnvVars: true
+    manageStoreSecret: true
     s3AccessKey : XXX
     s3Secret : XXX
     s3BucketName : XXX
