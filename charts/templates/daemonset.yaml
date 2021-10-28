@@ -14,6 +14,13 @@ spec:
       containers:
       - name: coredump-container
         image: {{ .Values.image.repository }}
+        resources:
+          requests:
+            memory: {{ .Values.image.request_mem }}
+            cpu: {{ .Values.image.request_cpu }} 
+          limits:
+            memory: {{ .Values.image.limit_mem }}
+            cpu: {{ .Values.image.limit_cpu }}
         securityContext:
           privileged: true
         volumeMounts:
@@ -33,6 +40,8 @@ spec:
             value: {{ .Values.daemonset.hostDirectory }}
           - name: SUID_DUMPABLE
             value: {{ .Values.daemonset.suidDumpable | quote }}
+          - name: DEPLOY_CRIO_EXE
+            value: {{ .Values.daemonset.includeCrioExe | quote }}
           - name: S3_ACCESS_KEY
             valueFrom:
               secretKeyRef:

@@ -8,6 +8,7 @@ use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
 use serde_json::{json, Value};
 use std::env;
+use std::ffi::OsString;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
@@ -29,6 +30,9 @@ fn main() -> Result<(), anyhow::Error> {
     config_path.push("crictl.yaml");
     let config_path_str = config_path.into_os_string().into_string().unwrap();
 
+    let mut base_path = env::current_exe()?;
+    base_path.pop();
+    let base_path_str = base_path.into_os_string().into_string().unwrap_or_else(|_| "/var/mnt/core-dump-handler".to_string());
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
@@ -44,7 +48,7 @@ fn main() -> Result<(), anyhow::Error> {
     let img = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
     let use_crio_config =
         env::var("USE_CRIO_CONF").unwrap_or_else(|_| "false".to_string().to_lowercase());
-
+    
     info!(
         "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
         ignore_crio, img, use_crio_config
@@ -154,8 +158,8 @@ fn main() -> Result<(), anyhow::Error> {
             e.exit()
         }
     };
-
-    let bin_path = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin";
+    let bin_path_string = format!("/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{}", base_path_str); 
+    let bin_path = bin_path_string.as_str();
     let _core_limit_size = matches.value_of("limit-size").unwrap_or("");
     let core_exe_name = matches.value_of("exe-name").unwrap_or("");
     let core_pid = matches.value_of("pid").unwrap_or("");
@@ -170,6 +174,12 @@ fn main() -> Result<(), anyhow::Error> {
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o444);
+
+    let os_hostname =
+        hostname::get().unwrap_or_else(|_| OsString::from_str("unknown").unwrap_or_default());
+    let node_hostname = os_hostname
+        .into_string()
+        .unwrap_or_else(|_| "unknown".to_string());
 
     let dump_name = format!(
         "{}-dump-{}-{}-{}-{}-{}",
@@ -199,8 +209,8 @@ fn main() -> Result<(), anyhow::Error> {
     };
     let dump_info_content = format!(
         "{{\"uuid\":\"{}\", \"dump_file\":\"{}.core\", \"timestamp\": \"{}\", 
-    \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\" }}",
-        core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal
+    \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\", \"node_hostname\": \"{}\" }}",
+        core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal, node_hostname
     );
     match zip.write_all(dump_info_content.as_bytes()) {
         Ok(v) => v,
