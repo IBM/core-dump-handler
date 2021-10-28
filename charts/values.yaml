@@ -4,7 +4,7 @@ image:
   repository: quay.io/icdh/core-dump-handler:v4.2.0
   pullPolicy: Always
   request_mem: "64Mi"
-  request_cpu: "250m" 
+  request_cpu: "250m"
   limit_mem: "128Mi"
   limit_cpu: "500m"
 
@@ -21,16 +21,20 @@ daemonset:
     hostDirectory: "/var/mnt/core-dump-handler"
     composerLogLevel: "Warn"
     suidDumpable: 2
-    s3AccessKey : XXX
-    s3Secret : XXX
-    s3BucketName : XXX
-    s3Region : XXX
     vendor: default
     interval: 60000
     composerIgnoreCrio: false
     composerCrioImageCmd: "img"
     DeployCrioConfig: false
     includeCrioExe: false
+    # S3 access
+    manageSecretEnvVars: true
+    s3AccessKey : XXX
+    s3Secret : XXX
+    s3BucketName : XXX
+    s3Region : XXX
+    extraEnvVars: ""
+
 serviceAccount:
   create: true
   name: "core-dump-admin"
