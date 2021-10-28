@@ -30,6 +30,9 @@ fn main() -> Result<(), anyhow::Error> {
     config_path.push("crictl.yaml");
     let config_path_str = config_path.into_os_string().into_string().unwrap();
 
+    let mut base_path = env::current_exe()?;
+    base_path.pop();
+    let base_path_str = base_path.into_os_string().into_string().unwrap_or_else(|_| "/var/mnt/core-dump-handler".to_string());
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
@@ -45,7 +48,7 @@ fn main() -> Result<(), anyhow::Error> {
     let img = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
     let use_crio_config =
         env::var("USE_CRIO_CONF").unwrap_or_else(|_| "false".to_string().to_lowercase());
-
+    
     info!(
         "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
         ignore_crio, img, use_crio_config
@@ -155,8 +158,8 @@ fn main() -> Result<(), anyhow::Error> {
             e.exit()
         }
     };
-
-    let bin_path = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin";
+    let bin_path_string = format!("/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{}", base_path_str); 
+    let bin_path = bin_path_string.as_str();
     let _core_limit_size = matches.value_of("limit-size").unwrap_or("");
     let core_exe_name = matches.value_of("exe-name").unwrap_or("");
     let core_pid = matches.value_of("pid").unwrap_or("");

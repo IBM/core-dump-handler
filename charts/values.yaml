@@ -30,6 +30,7 @@ daemonset:
     composerIgnoreCrio: false
     composerCrioImageCmd: "img"
     DeployCrioConfig: false
+    includeCrioExe: false
 serviceAccount:
   create: true
   name: "core-dump-admin"

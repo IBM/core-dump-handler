@@ -53,6 +53,11 @@ fn main() -> Result<(), std::io::Error> {
     let deploy_crio_config = env::var("DEPLOY_CRIO_CONFIG")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
+
+    let deploy_crio_exe = env::var("DEPLOY_CRIO_EXE")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
+        
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -72,6 +77,10 @@ fn main() -> Result<(), std::io::Error> {
 
     if deploy_crio_config == "true" {
         generate_crio_config(host_location)?;
+    }
+
+    if deploy_crio_exe == "true" {
+        copy_crictl_to_hostdir(host_location)?;
     }
     copy_core_dump_composer_to_hostdir(host_location)?;
     copy_sysctl_to_file(
@@ -224,6 +233,14 @@ fn generate_crio_config(host_location: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+fn copy_crictl_to_hostdir(host_location: &str) -> Result<(), std::io::Error> {
+    let location = format!("./crictl");
+    let destination = format!("{}/{}", host_location, "crictl");
+    info!("Copying the crictl from {} to {}", location, destination);
+    fs::copy(location, destination)?;
+    Ok(())
+}
+
 fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io::Error> {
     let version = env::var("VENDOR").unwrap_or_else(|_| "default".to_string());
     match version.to_lowercase().as_str() {
@@ -324,9 +341,14 @@ fn remove() -> Result<(), std::io::Error> {
     let env_file = format!("{}/{}", host_dir, ".env");
     let crictl_file = format!("{}/{}", host_dir, "crictl.yaml");
     let composer_file = format!("{}/{}", host_dir, "composer.log");
+    let crictl_exe = format!("{}/{}", host_dir, "crictl");
 
     fs::remove_file(exe)?;
     fs::remove_file(env_file)?;
+
+    if !Path::new(&crictl_exe).exists() {
+        fs::remove_file(crictl_exe)?;
+    }
     if !Path::new(&crictl_file).exists() {
         fs::remove_file(crictl_file)?;
     }

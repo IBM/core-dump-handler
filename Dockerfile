@@ -39,4 +39,6 @@ WORKDIR "/app/vendor/rhel7"
 COPY --from=rhel7builder /app-build/target/release/core-dump-composer ./
 RUN mv core-dump-composer cdc
 WORKDIR "/app"
+RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-v1.22.0-linux-amd64.tar.gz --output crictl-v1.22.0-linux-amd64.tar.gz
+RUN tar zxvf crictl-v1.22.0-linux-amd64.tar.gz
 CMD ["./core-dump-agent"]
