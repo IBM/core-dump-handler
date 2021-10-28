@@ -72,7 +72,7 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
 </tr>
 <tr>
-    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioExe=true</td>
+    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.includeCrioExe=true</td>
 </tr>
 <tr>
     <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
