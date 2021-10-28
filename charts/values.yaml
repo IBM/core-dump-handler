@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:v4.1.0
+  repository: quay.io/icdh/core-dump-handler:resources-secrets
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m" 

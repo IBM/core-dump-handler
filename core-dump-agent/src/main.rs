@@ -41,7 +41,7 @@ fn main() -> Result<(), std::io::Error> {
         Ok(v) => v,
         Err(e) => {
             envloadmsg = format!(
-                "no .env file found \n That's ok if running in a container{}",
+                "no .env file found \n That's ok if running in kubernetes\n{}",
                 e
             )
         }
