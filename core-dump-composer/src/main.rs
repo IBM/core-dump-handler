@@ -209,7 +209,7 @@ fn main() -> Result<(), anyhow::Error> {
     };
     let dump_info_content = format!(
         "{{\"uuid\":\"{}\", \"dump_file\":\"{}.core\", \"timestamp\": \"{}\", 
-    \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\" \"node_hostname\": \"{}\" }}",
+    \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\", \"node_hostname\": \"{}\" }}",
         core_uuid, dump_name, core_timestamp, core_hostname, core_exe_name, core_pid, core_signal, node_hostname
     );
     match zip.write_all(dump_info_content.as_bytes()) {
