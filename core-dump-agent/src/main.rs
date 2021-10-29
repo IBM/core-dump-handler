@@ -142,14 +142,14 @@ fn run_agent(core_location: &str) {
 
     let custom_endpoint = env::var("S3_ENDPOINT").unwrap_or_default();
 
-    let region = if custom_endpoint == "" {
+    let region = if custom_endpoint.is_empty() {
         s3_region.parse().unwrap()
     } else {
         info!("Setting s3 endpoint location to: {}", custom_endpoint);
 
         Region::Custom {
-            region: s3_region.into(),
-            endpoint: custom_endpoint.into(),
+            region: s3_region,
+            endpoint: custom_endpoint,
         }
     };
 
@@ -247,7 +247,7 @@ fn generate_crio_config(host_location: &str) -> Result<(), std::io::Error> {
 }
 
 fn copy_crictl_to_hostdir(host_location: &str) -> Result<(), std::io::Error> {
-    let location = format!("./crictl");
+    let location = "./crictl".to_string();
     let destination = format!("{}/{}", host_location, "crictl");
     info!("Copying the crictl from {} to {}", location, destination);
     fs::copy(location, destination)?;
