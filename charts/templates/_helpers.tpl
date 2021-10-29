@@ -61,3 +61,15 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Render values given either as string or yaml structure.
+Basically copied from https://github.com/bitnami/charts/blob/master/bitnami/common/templates/_tplvalues.tpl
+*/}}
+{{- define "ibm-core-dump-handler.tplvalues.render" -}}
+    {{- if typeIs "string" .value }}
+        {{- tpl .value .context }}
+    {{- else }}
+        {{- tpl (.value | toYaml) .context }}
+    {{- end }}
+{{- end -}}

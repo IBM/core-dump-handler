@@ -5,4 +5,9 @@ metadata:
 rules:
 - apiGroups: [""]
   resources: ["events"]
-  verbs: ["create"] 
+  verbs: ["create"]
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - privileged

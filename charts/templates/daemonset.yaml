@@ -17,7 +17,7 @@ spec:
         resources:
           requests:
             memory: {{ .Values.image.request_mem }}
-            cpu: {{ .Values.image.request_cpu }} 
+            cpu: {{ .Values.image.request_cpu }}
           limits:
             memory: {{ .Values.image.limit_mem }}
             cpu: {{ .Values.image.limit_cpu }}
@@ -35,13 +35,14 @@ spec:
           - name: COMP_CRIO_IMAGE_CMD
             value:  {{ .Values.daemonset.composerCrioImageCmd }}
           - name: DEPLOY_CRIO_CONFIG
-            value:  {{ .Values.daemonset.DeployCrioConfig | quote }}  
+            value:  {{ .Values.daemonset.DeployCrioConfig | quote }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: SUID_DUMPABLE
             value: {{ .Values.daemonset.suidDumpable | quote }}
           - name: DEPLOY_CRIO_EXE
             value: {{ .Values.daemonset.includeCrioExe | quote }}
+          {{- if .Values.daemonset.manageStoreSecret }}
           - name: S3_ACCESS_KEY
             valueFrom:
               secretKeyRef:
@@ -62,10 +63,14 @@ spec:
               secretKeyRef:
                 name: s3config
                 key: s3Region
+          {{- end }}
           - name: VENDOR
             value: {{ .Values.daemonset.vendor }}
           - name: INTERVAL
             value: {{ .Values.daemonset.interval | quote }}
+          {{- if .Values.daemonset.extraEnvVars }}
+          {{ include "ibm-core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
+          {{- end }}
         command: ["/app/core-dump-agent"]
         lifecycle:
           preStop:
