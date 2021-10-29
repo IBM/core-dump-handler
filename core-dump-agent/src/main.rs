@@ -146,7 +146,7 @@ fn run_agent(core_location: &str) {
         s3_region.parse().unwrap()
     } else {
         Region::Custom {
-            region: "".into(),
+            region: s3_region.into(),
             endpoint: custom_location.into(),
         }
     };
