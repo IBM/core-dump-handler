@@ -57,7 +57,7 @@ fn main() -> Result<(), std::io::Error> {
     let deploy_crio_exe = env::var("DEPLOY_CRIO_EXE")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-        
+
     let host_location = host_dir.as_str();
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
@@ -140,9 +140,20 @@ fn run_agent(core_location: &str) {
     let s3_bucket_name = env::var("S3_BUCKET_NAME").unwrap_or_default();
     let s3_region = env::var("S3_REGION").unwrap_or_default();
 
+    let custom_location = env::var("S3_ACCESS_KEY").unwrap_or_default();
+
+    let region = if custom_location == "" {
+        s3_region.parse().unwrap()
+    } else {
+        Region::Custom {
+            region: "".into(),
+            endpoint: custom_location.into(),
+        }
+    };
+
     let s3 = Storage {
         name: "aws".into(),
-        region: s3_region.parse().unwrap(),
+        region,
         credentials: Credentials::new(
             Some(s3_access_key.as_str()),
             Some(s3_secret.as_str()),
