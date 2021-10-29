@@ -140,14 +140,16 @@ fn run_agent(core_location: &str) {
     let s3_bucket_name = env::var("S3_BUCKET_NAME").unwrap_or_default();
     let s3_region = env::var("S3_REGION").unwrap_or_default();
 
-    let custom_location = env::var("S3_LOCATION").unwrap_or_default();
+    let custom_endpoint = env::var("S3_ENDPOINT").unwrap_or_default();
 
-    let region = if custom_location == "" {
+    let region = if custom_endpoint == "" {
         s3_region.parse().unwrap()
     } else {
+        info!("Setting s3 endpoint location to: {}", custom_endpoint);
+
         Region::Custom {
             region: s3_region.into(),
-            endpoint: custom_location.into(),
+            endpoint: custom_endpoint.into(),
         }
     };
 
@@ -166,7 +168,7 @@ fn run_agent(core_location: &str) {
         location_supported: false,
     };
 
-    let bucket = match Bucket::new(&s3.bucket, s3.region, s3.credentials) {
+    let bucket = match Bucket::new_with_path_style(&s3.bucket, s3.region, s3.credentials) {
         Ok(v) => v,
         Err(e) => {
             error!("Bucket Creation Failed: {}", e);
