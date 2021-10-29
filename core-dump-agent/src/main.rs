@@ -140,7 +140,7 @@ fn run_agent(core_location: &str) {
     let s3_bucket_name = env::var("S3_BUCKET_NAME").unwrap_or_default();
     let s3_region = env::var("S3_REGION").unwrap_or_default();
 
-    let custom_location = env::var("S3_ACCESS_KEY").unwrap_or_default();
+    let custom_location = env::var("S3_LOCATION").unwrap_or_default();
 
     let region = if custom_location == "" {
         s3_region.parse().unwrap()
