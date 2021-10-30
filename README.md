@@ -14,7 +14,7 @@ A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts
 
 ```
 git clone https://github.com/IBM/core-dump-handler
-cd core-dump-handler/charts
+cd core-dump-handler/charts/core-dump-handler
 helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
 --set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
@@ -124,7 +124,7 @@ When you install the IBM Cloud Core Dump Handler Helm chart, the following Kuber
 
 - **Namespace**: A specific namespace is created to install the components into - defaults to ibm-observe
 
-- **Handler Daemonset**: The daemonset deploys a [pod](./charts/templates/daemonset.yaml) on every worker node in your cluster. The daemonset contains configuration to enable the elevated process to define the core pattern  to place the core dump into object storage as well as gather pod information if available.
+- **Handler Daemonset**: The daemonset deploys a [pod](./charts/core-dump-handler/templates/daemonset.yaml) on every worker node in your cluster. The daemonset contains configuration to enable the elevated process to define the core pattern  to place the core dump into object storage as well as gather pod information if available.
 
 - **Privileged Policy**: The daemonset configures the host node so priviledges are required.
 

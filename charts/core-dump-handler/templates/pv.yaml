@@ -5,7 +5,7 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: hostclass 
+  storageClassName: {{ .Values.storageClass }} 
   capacity:
     storage: {{ .Values.storage }}
   accessModes:
