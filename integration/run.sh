@@ -3,7 +3,7 @@
 cd ../
 export $(grep -v '^#' .env | xargs)
 
-cd ./charts
+cd ./charts/core-dump-handler
 
 helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3BucketName=${S3_BUCKET_NAME} --set daemonset.s3Region=${S3_REGION} \
