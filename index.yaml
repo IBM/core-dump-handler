@@ -27,16 +27,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-  ibm-core-dump-handler:
-  - apiVersion: v2
-    appVersion: v5.0.0
-    created: "2021-10-30T14:46:36.91713894Z"
-    description: A Helm chart for deploying a core dump handler to Kubernetes
-    digest: 3652e749fa0903216cad72a7604dbb06c69642b0d4626bd413e9b267b772e83f
-    icon: https://raw.githubusercontent.com/No9/ibm-core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
-    name: ibm-core-dump-handler
-    type: application
-    urls:
-    - https://github.com/IBM/core-dump-handler/releases/download/v5.0.0/ibm-core-dump-handler-v5.0.0.tgz
-    version: v5.0.0
 generated: "2021-10-31T01:08:53.17468338Z"
