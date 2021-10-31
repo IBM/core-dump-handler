@@ -1,6 +1,14 @@
-# IBM Core Dump Handler
+# Core Dump Handler
 
 This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kubernetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
+
+## Status 
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler) 
+[![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
+
+## Code Of Conduct 
+https://github.com/cncf/foundation/blob/master/code-of-conduct.md 
 
 ## Prerequisites
 
@@ -30,7 +38,7 @@ As the agent runs in privileged mode the following command is needed on OpenShif
 ```
 oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
 ```
-Some OpenShift services such asOpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
+Some OpenShift services such as OpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
 This will be apparent if you see errors relating to glibc in the composer.log in the install folder of the agent. [See Troubleshooting below](#troubleshooting)
 ```
 --set daemonset.vendor=rhel7
@@ -38,21 +46,11 @@ This will be apparent if you see errors relating to glibc in the composer.log in
 
 ### Verifying the Chart Installation
 
-1. Create a container 
-```
-$ kubectl run -i -t busybox --image=busybox --restart=Never
-```
-2. Login to the container
-```
-$ kubectl exec -it busybox -- /bin/sh
-```
-3. Generate a core dump by sending SIGSEGV to the terminal process.
-```
-# kill -11 $$
-```
-4. View the core dump tar file in the configured Cloud Object Store service instance.
+Run a crashing container - this container writes a value to a null pointer
 
-5. Troubleshoot by looking at the core-dump-composer logs in the observe namespace
+1. kubectl run -i -t segfaulter --image=quay.io/icdh/segfaulter --restart=Never
+
+2. Validate the core dump has been uploaded to your object store instance.
 
 ## Validated Kubernetes Services
 
@@ -184,8 +182,6 @@ helm delete coredump-handler -n observe
 ```
 
 ## Build and Deploy a Custom Version
-
-[![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 
 The services are written in Rust using [rustup](https://rustup.rs/).
 
