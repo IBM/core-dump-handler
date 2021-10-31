@@ -1,0 +1,228 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/CoreDumpValues",
+    "definitions": {
+        "CoreDumpValues": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "replicaCount": {
+                    "type": "integer"
+                },
+                "image": {
+                    "$ref": "#/definitions/Image"
+                },
+                "imagePullSecrets": {
+                    "type": "array",
+                    "items": {}
+                },
+                "nameOverride": {
+                    "type": "string"
+                },
+                "fullnameOverride": {
+                    "type": "string"
+                },
+                "storage": {
+                    "type": "string"
+                },
+                "storageClass": {
+                    "type": "string"
+                },
+                "daemonset": {
+                    "$ref": "#/definitions/Daemonset"
+                },
+                "serviceAccount": {
+                    "$ref": "#/definitions/ServiceAccount"
+                },
+                "clusterRole": {
+                    "$ref": "#/definitions/ClusterRole"
+                },
+                "clusterRoleBinding": {
+                    "$ref": "#/definitions/ClusterRole"
+                },
+                "nodeSelector": {
+                    "$ref": "#/definitions/Affinity"
+                },
+                "affinity": {
+                    "$ref": "#/definitions/Affinity"
+                },
+                "tolerations": {
+                    "$ref": "#/definitions/Affinity"
+                }
+            },
+            "required": [
+                "affinity",
+                "clusterRole",
+                "clusterRoleBinding",
+                "daemonset",
+                "fullnameOverride",
+                "image",
+                "imagePullSecrets",
+                "nameOverride",
+                "nodeSelector",
+                "replicaCount",
+                "serviceAccount",
+                "storage",
+                "storageClass",
+                "tolerations"
+            ],
+            "title": "CoreDumpValues"
+        },
+        "Affinity": {
+            "type": "object",
+            "additionalProperties": true,
+            "title": "Affinity"
+        },
+        "ClusterRole": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "ClusterRole"
+        },
+        "Daemonset": {
+            "type": "object",
+            "additionalProperties": true,
+            "allOf": [
+                {
+                "if": {
+                    "properties": { "manageStoreSecret": { "const": true }},
+                    "required": ["manageStoreSecret"]
+                    },
+                "then" : {
+                    "required": ["s3AccessKey",
+                        "s3BucketName",
+                        "s3Region",
+                        "s3Secret"]
+                }
+             }
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "hostDirectory": {
+                    "type": "string"
+                },
+                "composerLogLevel": {
+                    "type": "string"
+                },
+                "suidDumpable": {
+                    "type": "integer"
+                },
+                "vendor": {
+                    "type": "string"
+                },
+                "interval": {
+                    "type": "integer",
+                    "minimum": 1000
+                },
+                "composerIgnoreCrio": {
+                    "type": "boolean"
+                },
+                "composerCrioImageCmd": {
+                    "type": "string"
+                },
+                "DeployCrioConfig": {
+                    "type": "boolean"
+                },
+                "includeCrioExe": {
+                    "type": "boolean"
+                },
+                "manageStoreSecret": {
+                    "type": "boolean"
+                },
+                "s3AccessKey": {
+                    "type": "string"
+                },
+                "s3Secret": {
+                    "type": "string"
+                },
+                "s3BucketName": {
+                    "type": "string"
+                },
+                "s3Region": {
+                    "type": "string"
+                },
+                "extraEnvVars": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "DeployCrioConfig",
+                "composerCrioImageCmd",
+                "composerIgnoreCrio",
+                "composerLogLevel",
+                "extraEnvVars",
+                "hostDirectory",
+                "includeCrioExe",
+                "interval",
+                "label",
+                "manageStoreSecret",
+                "name",
+                "suidDumpable",
+                "vendor"
+            ],
+            "title": "Daemonset"
+        },
+        "Image": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "repository": {
+                    "type": "string"
+                },
+                "pullPolicy": {
+                    "type": "string"
+                },
+                "request_mem": {
+                    "type": "string"
+                },
+                "request_cpu": {
+                    "type": "string"
+                },
+                "limit_mem": {
+                    "type": "string"
+                },
+                "limit_cpu": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "limit_cpu",
+                "limit_mem",
+                "pullPolicy",
+                "repository",
+                "request_cpu",
+                "request_mem"
+            ],
+            "title": "Image"
+        },
+        "ServiceAccount": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "create": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "create",
+                "name"
+            ],
+            "title": "ServiceAccount"
+        }
+    }
+}
