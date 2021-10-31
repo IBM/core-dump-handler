@@ -1,11 +1,30 @@
 apiVersion: v2
-name: ibm-core-dump-handler
-description: A Helm chart for deploying a core dump handler to Kubernetes
+name: core-dump-handler
+description: A Helm chart for deploying a core dump management system to Kubernetes
+keywords:
+  - coredump
+    post-mortem
+sources:
+  - https://github.com/ibm/core-dump-handler
 
 type: application
 
-version: v5.0.0
+version: v5.0.1
 
-appVersion: "v5.0.0"
+appVersion: "v5.0.1"
 
 icon: https://raw.githubusercontent.com/No9/ibm-core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+
+maintainers: 
+  - name: Anton Whalley
+    email: anton@venshare.com
+    url: https://github.com/No9/
+  - name: Tim Buchwaldt
+    email: tim@buchwaldt.ws
+    url: https://github.com/timbuchwaldt/
+
+annotations:
+  artifacthub.io/changes: |
+    - Updated documentation for chart
+  artifacthub.io/license: MIT
+      
