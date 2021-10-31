@@ -2,8 +2,6 @@
 
 This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kubernetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
 
-## Status 
-
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler) 
 [![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 
