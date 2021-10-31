@@ -3,7 +3,8 @@ name: core-dump-handler
 description: A Helm chart for deploying a core dump management system to Kubernetes
 keywords:
   - coredump
-    post-mortem
+  - post-mortem
+  - observability
 sources:
   - https://github.com/ibm/core-dump-handler
 

@@ -2,8 +2,7 @@
 
 members = [
 "core-dump-composer",
-"core-dump-agent",
-"core-dump-client"
+"core-dump-agent"
 ]
 
 [profile.release]
