@@ -1,0 +1,4 @@
+daemonset.s3AccessKey : XXX
+daemonset.s3BucketName : XXX
+daemonset.s3Region: XXX
+daemonset.s3Secret: XXX
