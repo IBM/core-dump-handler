@@ -2,8 +2,9 @@ extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
+use anyhow::Result;
 use env_logger::Env;
-use log::{error, info};
+use log::{error, info, warn};
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
 use s3::region::Region;
@@ -15,7 +16,8 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process;
 use std::process::Command;
-use std::{thread, time};
+// use std::{thread, time};
+use tokio_cron_scheduler::{Job, JobScheduler};
 
 #[allow(dead_code)]
 struct Storage {
@@ -30,8 +32,10 @@ const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
 static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
 static DEFAULT_SUID_DUMPABLE: &str = "2";
-
-fn main() -> Result<(), std::io::Error> {
+// Keep it single threaded so resource requirements from both a network
+// and computation perspective are kept to a minimum.
+#[tokio::main(flavor = "current_thread")]
+async fn main() -> Result<()> {
     let mut env_path = env::current_exe()?;
     env_path.pop();
     env_path.push(".env");
@@ -114,23 +118,70 @@ fn main() -> Result<(), std::io::Error> {
     fs::create_dir_all(&core_location)?;
 
     create_env_file(host_location)?;
+    // Run polling agent on startup to clean up files.
+    run_polling_agent(core_location.as_str());
 
-    loop {
-        let interval = match env::var("INTERVAL")
-            .unwrap_or_else(|_| String::from("60000"))
-            .parse::<u64>()
-        {
+    let interval = env::var("INTERVAL").unwrap_or_else(|_| String::from(""));
+    let mut schedule = env::var("SCHEDULE").unwrap_or_else(|_| String::from(""));
+
+    let _use_inotify = match env::var("USE_INOTIFY")
+        .unwrap_or_else(|_| String::from("false"))
+        .parse::<u64>()
+    {
+        Ok(v) => v,
+        Err(e) => {
+            panic!("Error parsing interval {}", e);
+        }
+    };
+
+    if !interval.is_empty() && !schedule.is_empty() {
+        warn!(
+            "Interval set to: {}, Schedule set to:{}\n Using interval:{}",
+            interval, schedule, interval
+        );
+    }
+    // Overwriting the schedule string if interval present
+    if !interval.is_empty() {
+        let mut i_interval = match interval.parse::<u64>() {
             Ok(v) => v,
             Err(e) => {
                 panic!("Error parsing interval {}", e);
             }
         };
-
-        run_polling_agent(core_location.as_str());
-
-        let millis = time::Duration::from_millis(interval);
-        thread::sleep(millis);
+        i_interval = i_interval / 1000;
+        schedule = format!("1/{} * * * * *", i_interval);
     }
+    let mut sched = JobScheduler::new();
+    let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
+        run_polling_agent(core_location.as_str());
+    }) {
+        Ok(v) => v,
+        Err(e) => panic!("Job Creation failed, {}", e),
+    };
+    match sched.add(s_job) {
+        Ok(v) => v,
+        Err(e) => panic!("Job Scheduing failed, {}", e),
+    }
+
+    tokio::spawn(sched.start());
+
+    // sched.add(Job::new(schedule.parse().unwrap(), || {
+    //         //run_polling_agent(core_location.as_str());
+    //         println!("I get executed every 10 seconds!");
+    //     }));
+    Ok(())
+    // let mut sched = JobScheduler::new();
+    // sched.add(Job::new("1/10 * * * * *".parse().unwrap(), || {
+    //     run_polling_agent(core_location.as_str());
+    //     println!("I get executed every 10 seconds!");
+    // }));
+
+    // loop {
+    //     run_polling_agent(core_location.as_str());
+
+    //     let millis = time::Duration::from_millis(interval);
+    //     thread::sleep(millis);
+    // }
 }
 
 fn process_file(zip_path: &Path, bucket: &Bucket) {

@@ -12,3 +12,6 @@ env_logger = "0.8.3"
 log = "0.4.14"
 rust-s3 = "0.26.0"
 advisory-lock = "0.3.0"
+tokio-cron-scheduler = "0.2.3"
+tokio = { version = "1", features = ["macros", "time", "rt"] }
+anyhow = "1.0.44"
