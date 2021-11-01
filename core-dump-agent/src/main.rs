@@ -150,6 +150,7 @@ async fn main() -> Result<(), std::io::Error> {
     }
 
     if !schedule.is_empty() {
+        info!("Starting Schedule with: {}", schedule);
         let mut sched = JobScheduler::new();
         let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
             run_polling_agent(core_location.as_str());
@@ -173,20 +174,22 @@ async fn main() -> Result<(), std::io::Error> {
 
     let notify_location = core_location.clone();
     if use_inotify == "true" {
+        info!("INotify Starting...");
+
         tokio::spawn(async move {
-            // Process each socket concurrently.
-            let mut inotify;
-            inotify = match Inotify::init() {
+            let mut inotify = match Inotify::init() {
                 Ok(v) => v,
                 Err(e) => {
                     panic!("Inotify init failed: {}", e)
                 }
             };
+            info!("INotify Initialised...");
             match inotify.add_watch(&notify_location, WatchMask::CLOSE) {
                 Ok(_) => {}
                 Err(e) => panic!("Add watch failed: {}", e),
             };
-            let mut buffer = [0; 1024];
+            info!("INotify watching : {}", notify_location);
+            let mut buffer = [0; 4096];
             loop {
                 let events = match inotify.read_events_blocking(&mut buffer) {
                     Ok(v) => v,

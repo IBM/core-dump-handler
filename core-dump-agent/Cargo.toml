@@ -14,5 +14,4 @@ rust-s3 = "0.26.0"
 advisory-lock = "0.3.0"
 tokio-cron-scheduler = "0.2.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-# anyhow = "1.0.44"
 inotify = "0.9"
