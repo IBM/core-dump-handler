@@ -18,13 +18,13 @@ icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/hand
 
 maintainers:
   - name: Anton Whalley
-  email: anton@venshare.com
-  url: https://github.com/No9/
+    email: anton@venshare.com
+    url: https://github.com/No9/
   - name: Tim Buchwaldt
-  email: tim@buchwaldt.ws
-  url: https://github.com/timbuchwaldt/
+    email: tim@buchwaldt.ws
+    url: https://github.com/timbuchwaldt/
 
 annotations:
-  artifacthub.io/changes: |
-    - Updated documentation for chart
+  # artifacthub.io/changes: |
+  #   - Updated documentation for chart
   artifacthub.io/license: MIT
