@@ -4,10 +4,9 @@ metadata:
   name: {{ .Values.clusterRoleBinding.name }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "ibm-core-dump-handler.serviceAccountName" . }}
+  name: {{ include "core-dump-handler.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ .Values.clusterRole.name }}
-  

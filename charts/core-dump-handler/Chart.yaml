@@ -14,7 +14,7 @@ version: v5.0.3
 
 appVersion: "v5.0.2"
 
-icon: https://raw.githubusercontent.com/No9/ibm-core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
 maintainers: 
   - name: Anton Whalley
@@ -28,4 +28,3 @@ annotations:
   artifacthub.io/changes: |
     - Updated documentation for chart
   artifacthub.io/license: MIT
-      
