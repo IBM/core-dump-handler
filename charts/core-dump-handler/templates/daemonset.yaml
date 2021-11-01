@@ -70,6 +70,8 @@ spec:
             value: {{ .Values.daemonset.interval | quote }}
           - name: SCHEDULE
             value: {{ .Values.daemonset.schedule }}
+          - name: USE_INOTIFY
+            value: {{ .Values.daemonset.useINotify | quote }}
           {{- if .Values.daemonset.extraEnvVars }}
           {{ include "core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
           {{- end }}

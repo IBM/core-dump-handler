@@ -7,7 +7,7 @@ cd ./charts/core-dump-handler
 
 helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3BucketName=${S3_BUCKET_NAME} --set daemonset.s3Region=${S3_REGION} \
---set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET} --set daemonset.interval=5000
+--set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET} --set daemonset.schedule="1/5 * * * * *" # --set daemonset.interval=5000
 
 ## Poll until pod is up
 while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 

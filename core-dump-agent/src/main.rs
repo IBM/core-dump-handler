@@ -2,7 +2,6 @@ extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
-use anyhow::Result;
 use env_logger::Env;
 use log::{error, info, warn};
 use s3::bucket::Bucket;
@@ -16,6 +15,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process;
 use std::process::Command;
+use std::time::Duration;
 // use std::{thread, time};
 use tokio_cron_scheduler::{Job, JobScheduler};
 
@@ -32,10 +32,9 @@ const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
 static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
 static DEFAULT_SUID_DUMPABLE: &str = "2";
-// Keep it single threaded so resource requirements from both a network
-// and computation perspective are kept to a minimum.
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<()> {
+
+#[tokio::main]
+async fn main() -> Result<(), std::io::Error> {
     let mut env_path = env::current_exe()?;
     env_path.pop();
     env_path.push(".env");
@@ -124,15 +123,7 @@ async fn main() -> Result<()> {
     let interval = env::var("INTERVAL").unwrap_or_else(|_| String::from(""));
     let mut schedule = env::var("SCHEDULE").unwrap_or_else(|_| String::from(""));
 
-    let _use_inotify = match env::var("USE_INOTIFY")
-        .unwrap_or_else(|_| String::from("false"))
-        .parse::<u64>()
-    {
-        Ok(v) => v,
-        Err(e) => {
-            panic!("Error parsing interval {}", e);
-        }
-    };
+    let use_inotify = env::var("USE_INOTIFY").unwrap_or_else(|_| String::from("false"));
 
     if !interval.is_empty() && !schedule.is_empty() {
         warn!(
@@ -148,9 +139,15 @@ async fn main() -> Result<()> {
                 panic!("Error parsing interval {}", e);
             }
         };
-        i_interval = i_interval / 1000;
-        schedule = format!("1/{} * * * * *", i_interval);
+        i_interval /= 1000;
+        schedule = format!("1/{} * * * * *", i_interval.to_string());
+        if use_inotify == "true" {
+            warn!("Both interval and INotify set")
+        }
     }
+
+    if use_inotify == "true" {}
+
     let mut sched = JobScheduler::new();
     let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
         run_polling_agent(core_location.as_str());
@@ -163,13 +160,14 @@ async fn main() -> Result<()> {
         Err(e) => panic!("Job Scheduing failed, {}", e),
     }
 
-    tokio::spawn(sched.start());
+    loop {
+        match sched.tick() {
+            Ok(v) => v,
+            Err(e) => panic!("Job tick failed, {}", e),
+        }
+        std::thread::sleep(Duration::from_millis(500));
+    }
 
-    // sched.add(Job::new(schedule.parse().unwrap(), || {
-    //         //run_polling_agent(core_location.as_str());
-    //         println!("I get executed every 10 seconds!");
-    //     }));
-    Ok(())
     // let mut sched = JobScheduler::new();
     // sched.add(Job::new("1/10 * * * * *".parse().unwrap(), || {
     //     run_polling_agent(core_location.as_str());

@@ -66,7 +66,7 @@ The agent pod has the following environment variables:
 * COMP_IGNORE_CRIO - Defines if the composer should get additional container JSON from crictl
 
     false (Default): The composer will generate the additional JSON files.
-    
+
     true: The composer will only collect the core dump and save the core parameters as an additional JSON
 * COMP_CRIO_IMAGE_CMD - The command to use to get image information for the core dump.
 
@@ -100,6 +100,7 @@ The agent pod has the following environment variables:
     rhel7 - A RHEL7 Build
 * INTERVAL - The amount of time in milliseconds between each check of the core dump folder for files to upload.
 * SCHEDULE - A CRON formatted string [See cron library](https://github.com/mvniekerk/tokio-cron-scheduler#usage).
+* USE_INOTIFY - Set a listener for the coredump folder can be used in conjunction with SCHEDULE
 
 ### Secrets
 
@@ -133,7 +134,8 @@ Daemonset
 * suidDumpable: Maps to the SUID_DUMPABLE environment variable (Default 2)
 * vendor: Maps to the VENDOR enviroment variable (Default default) 
 * interval: Maps to the INTERVAL enviroment variable (Default 60000)
-* schedule: Maps to the INTERVAL enviroment variable (Default "")
+* schedule: Maps to the SCHEDULE enviroment variable (Default "")
+* useINotify: Maps to the USE_INOTIFY environment variable (Default false)
 * composerIgnoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * composerCrioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
 * DeployCrioConfig:  Maps to the DEPLOY_CRIO_CONFIG enviroment variable (Default false)

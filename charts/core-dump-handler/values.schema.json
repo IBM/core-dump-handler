@@ -129,6 +129,9 @@
                 "schedule": {
                     "type": "string"
                 },
+                "useINotify": {
+                    "type": "boolean"
+                },
                 "composerIgnoreCrio": {
                     "type": "boolean"
                 },
@@ -168,7 +171,6 @@
                 "extraEnvVars",
                 "hostDirectory",
                 "includeCrioExe",
-                "interval",
                 "label",
                 "manageStoreSecret",
                 "name",
