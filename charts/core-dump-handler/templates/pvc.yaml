@@ -9,4 +9,3 @@ spec:
     requests:
       storage: {{ .Values.storage }}
   storageClassName: {{ .Values.storageClass }}
-

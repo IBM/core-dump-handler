@@ -13,4 +13,3 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: {{ .Values.daemonset.hostDirectory }}
-    

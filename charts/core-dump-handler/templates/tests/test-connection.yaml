@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "ibm-core-dump-handler.fullname" . }}-test-connection"
+  name: "{{ include "core-dump-handler.fullname" . }}-test-connection"
   labels:
-{{ include "ibm-core-dump-handler.labels" . | nindent 4 }}
+{{ include "core-dump-handler.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test-success
 spec:
   containers:
-    - name: deadshell
+    - name: wget
       image: busybox
-      command: ['kill']
-      args:  ['-11', '$$']
+      command: ['wget']
+      args:  ['https://google.com']
   restartPolicy: Never
