@@ -1,4 +1,64 @@
-daemonset.s3AccessKey: XXX
-daemonset.s3BucketName: XXX
-daemonset.s3Region: XXX
-daemonset.s3Secret: XXX
+replicaCount: 1
+
+image:
+  repository: quay.io/icdh/core-dump-handler
+  pullPolicy: Always
+  request_mem: "64Mi"
+  request_cpu: "250m"
+  limit_mem: "128Mi"
+  limit_cpu: "500m"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Size of the Persistent volume to create
+storage: 1Gi
+storageClass: hostclass
+
+
+daemonset:
+  name: "core-dump-handler"
+  label: "core-dump-ds"
+  hostDirectory: "/var/mnt/core-dump-handler"
+  composerLogLevel: "Warn"
+  suidDumpable: 2
+  vendor: default
+  interval: 60000
+  composerIgnoreCrio: false
+  composerCrioImageCmd: "img"
+  DeployCrioConfig: false
+  includeCrioExe: false
+  # S3 access
+  manageStoreSecret: true
+  s3AccessKey : XXX
+  s3Secret : XXX
+  s3BucketName : XXX
+  s3Region : XXX
+  extraEnvVars: ""
+
+serviceAccount:
+  create: true
+  name: "core-dump-admin"
+
+clusterRole:
+  name: "core-dump-event-reporter"
+
+clusterRoleBinding:
+  name: "core-dump-event-report"
+
+# nodeSelector & affinity for the daemonset's pod assignment
+# https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/#running-pods-on-select-nodes
+nodeSelector: {}
+# eg
+# gpu-enabled: true
+affinity: {}
+
+# Tolerations for the daemonset's pod assignment
+# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: {}
+# eg
+# - key: "key"
+#   operator: "Equal"
+#   value: "value"
+#   effect: "NoSchedule"
