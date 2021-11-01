@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:schedule-watch@sha256:2c35d3704ec5e214b1e13caa96e247e00a521ceb586bc3770935c2f24142cd5c
+  repository: quay.io/icdh/core-dump-handler:schedule-watch@sha256:89c5455e6dbe5ea34e9c8b9d5249d8b469965a79b4fda69549551d3b7d5f6f79
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"
@@ -25,7 +25,7 @@ daemonset:
   suidDumpable: 2
   vendor: default
   # interval: 60000
-  schedule: "1/60 * * * * *"
+  # schedule: "1/60 * * * * *"
   useINotify: true
   composerIgnoreCrio: false
   composerCrioImageCmd: "img"
