@@ -3,6 +3,7 @@ extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
+use inotify::{EventMask, Inotify, WatchMask};
 use log::{error, info, warn};
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
@@ -123,7 +124,9 @@ async fn main() -> Result<(), std::io::Error> {
     let interval = env::var("INTERVAL").unwrap_or_else(|_| String::from(""));
     let mut schedule = env::var("SCHEDULE").unwrap_or_else(|_| String::from(""));
 
-    let use_inotify = env::var("USE_INOTIFY").unwrap_or_else(|_| String::from("false"));
+    let use_inotify = env::var("USE_INOTIFY")
+        .unwrap_or_else(|_| String::from("false"))
+        .to_lowercase();
 
     if !interval.is_empty() && !schedule.is_empty() {
         warn!(
@@ -146,40 +149,81 @@ async fn main() -> Result<(), std::io::Error> {
         }
     }
 
-    if use_inotify == "true" {}
-
-    let mut sched = JobScheduler::new();
-    let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
-        run_polling_agent(core_location.as_str());
-    }) {
-        Ok(v) => v,
-        Err(e) => panic!("Job Creation failed, {}", e),
-    };
-    match sched.add(s_job) {
-        Ok(v) => v,
-        Err(e) => panic!("Job Scheduing failed, {}", e),
-    }
-
-    loop {
-        match sched.tick() {
+    if !schedule.is_empty() {
+        let mut sched = JobScheduler::new();
+        let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
+            run_polling_agent(core_location.as_str());
+        }) {
             Ok(v) => v,
-            Err(e) => panic!("Job tick failed, {}", e),
+            Err(e) => panic!("Job Creation failed, {}", e),
+        };
+        match sched.add(s_job) {
+            Ok(v) => v,
+            Err(e) => panic!("Job Scheduing failed, {}", e),
         }
-        std::thread::sleep(Duration::from_millis(500));
+
+        loop {
+            match sched.tick() {
+                Ok(v) => v,
+                Err(e) => panic!("Job tick failed, {}", e),
+            }
+            std::thread::sleep(Duration::from_millis(500));
+        }
     }
 
-    // let mut sched = JobScheduler::new();
-    // sched.add(Job::new("1/10 * * * * *".parse().unwrap(), || {
-    //     run_polling_agent(core_location.as_str());
-    //     println!("I get executed every 10 seconds!");
-    // }));
+    let notify_location = core_location.clone();
+    if use_inotify == "true" {
+        tokio::spawn(async move {
+            // Process each socket concurrently.
+            let mut inotify;
+            inotify = match Inotify::init() {
+                Ok(v) => v,
+                Err(e) => {
+                    panic!("Inotify init failed: {}", e)
+                }
+            };
+            match inotify.add_watch(&notify_location, WatchMask::CLOSE) {
+                Ok(_) => {}
+                Err(e) => panic!("Add watch failed: {}", e),
+            };
+            let mut buffer = [0; 1024];
+            loop {
+                let events = match inotify.read_events_blocking(&mut buffer) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        error!("read events failed: {}", e);
+                        continue;
+                    }
+                };
+                for event in events {
+                    if event.mask.contains(EventMask::CLOSE_WRITE) {
+                        if event.mask.contains(EventMask::ISDIR) {
+                            warn!("Unknown Directory created: {:?}", event.name);
+                        } else {
+                            let bucket = match get_bucket() {
+                                Ok(v) => v,
+                                Err(e) => {
+                                    error!("Bucket creation failed in event: {}", e);
+                                    continue;
+                                }
+                            };
+                            match event.name {
+                                Some(s) => {
+                                    let p = Path::new(s);
+                                    process_file(p, &bucket)
+                                }
+                                None => {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 
-    // loop {
-    //     run_polling_agent(core_location.as_str());
-
-    //     let millis = time::Duration::from_millis(interval);
-    //     thread::sleep(millis);
-    // }
+    Ok(())
 }
 
 fn process_file(zip_path: &Path, bucket: &Bucket) {
