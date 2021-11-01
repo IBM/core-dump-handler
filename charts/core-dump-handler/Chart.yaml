@@ -17,10 +17,10 @@ appVersion: "v5.0.2"
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
 maintainers:
-  - name: Anton Whalley
+  - name: No9
     email: anton@venshare.com
     url: https://github.com/No9/
-  - name: Tim Buchwaldt
+  - name: timbuchwaldt
     email: tim@buchwaldt.ws
     url: https://github.com/timbuchwaldt/
 
