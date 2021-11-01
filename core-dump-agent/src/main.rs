@@ -126,15 +126,64 @@ fn main() -> Result<(), std::io::Error> {
             }
         };
 
-        run_agent(core_location.as_str());
+        run_polling_agent(core_location.as_str());
 
         let millis = time::Duration::from_millis(interval);
         thread::sleep(millis);
     }
 }
 
-fn run_agent(core_location: &str) {
-    info!("Executing Agent with location : {}", core_location);
+fn process_file(zip_path: &Path, bucket: &Bucket) {
+    info!("Uploading: {}", zip_path.display());
+
+    let mut f = File::open(&zip_path).expect("no file found");
+
+    match f.try_lock(FileLockMode::Shared) {
+        Ok(_) => { /* If we can lock then we are ok */ }
+        Err(e) => {
+            info!("file locked so we are ignoring it for this iteration {}", e);
+            return;
+        }
+    }
+
+    let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
+    let mut buffer = vec![0; metadata.len() as usize];
+    f.read_exact(&mut buffer)
+        .expect("Failed to read_exact for file");
+    info!("zip size is {}", metadata.len());
+    let path_str = match zip_path.to_str() {
+        Some(v) => v,
+        None => {
+            error!("Failed to extract path");
+            return;
+        }
+    };
+    let upload_file_name: &str = match zip_path.file_name().unwrap().to_str() {
+        Some(v) => v,
+        None => {
+            error!("Failed to get file name for upload");
+            return;
+        }
+    };
+
+    let (_, code) = match bucket.put_object_blocking(upload_file_name, buffer.as_slice()) {
+        Ok(v) => v,
+        Err(e) => {
+            error!("Upload Failed {}", e);
+            return;
+        }
+    };
+    match fs::remove_file(path_str) {
+        Ok(v) => v,
+        Err(e) => {
+            error!("File delete failed: {}", e);
+            return;
+        }
+    };
+    info!("S3 Returned: {}", code);
+}
+
+fn get_bucket() -> Result<s3::Bucket, s3::S3Error> {
     let s3_access_key = env::var("S3_ACCESS_KEY").unwrap_or_default();
     let s3_secret = env::var("S3_SECRET").unwrap_or_default();
     let s3_bucket_name = env::var("S3_BUCKET_NAME").unwrap_or_default();
@@ -167,8 +216,13 @@ fn run_agent(core_location: &str) {
         bucket: s3_bucket_name,
         location_supported: false,
     };
+    Bucket::new_with_path_style(&s3.bucket, s3.region, s3.credentials)
+}
 
-    let bucket = match Bucket::new_with_path_style(&s3.bucket, s3.region, s3.credentials) {
+fn run_polling_agent(core_location: &str) {
+    info!("Executing Agent with location : {}", core_location);
+
+    let bucket = match get_bucket() {
         Ok(v) => v,
         Err(e) => {
             error!("Bucket Creation Failed: {}", e);
@@ -187,52 +241,7 @@ fn run_agent(core_location: &str) {
 
     info!("Dir Content {:?}", paths);
     for zip_path in paths {
-        info!("Uploading: {}", zip_path.display());
-        let mut f = File::open(&zip_path).expect("no file found");
-
-        match f.try_lock(FileLockMode::Shared) {
-            Ok(_) => { /* If we can lock then we are ok */ }
-            Err(e) => {
-                info!("file locked so we are ignoring it for this iteration {}", e);
-                continue;
-            }
-        }
-
-        let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
-        let mut buffer = vec![0; metadata.len() as usize];
-        f.read_exact(&mut buffer)
-            .expect("Failed to read_exact for file");
-        info!("zip size is {}", metadata.len());
-        let path_str = match zip_path.to_str() {
-            Some(v) => v,
-            None => {
-                error!("Failed to extract path");
-                continue;
-            }
-        };
-        let upload_file_name: &str = match zip_path.file_name().unwrap().to_str() {
-            Some(v) => v,
-            None => {
-                error!("Failed to get file name for upload");
-                continue;
-            }
-        };
-
-        let (_, code) = match bucket.put_object_blocking(upload_file_name, buffer.as_slice()) {
-            Ok(v) => v,
-            Err(e) => {
-                error!("Upload Failed {}", e);
-                continue;
-            }
-        };
-        match fs::remove_file(path_str) {
-            Ok(v) => v,
-            Err(e) => {
-                error!("File delete failed: {}", e);
-                continue;
-            }
-        };
-        info!("S3 Returned: {}", code);
+        process_file(&zip_path, &bucket);
     }
 }
 
