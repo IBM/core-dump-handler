@@ -69,7 +69,7 @@ spec:
           - name: INTERVAL
             value: {{ .Values.daemonset.interval | quote }}
           {{- if .Values.daemonset.extraEnvVars }}
-          {{ include "ibm-core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
+          {{ include "core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
           {{- end }}
         command: ["/app/core-dump-agent"]
         lifecycle:
@@ -88,7 +88,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ibm-core-dump-handler.serviceAccountName" . }}
+      serviceAccountName: {{ include "core-dump-handler.serviceAccountName" . }}
       volumes:
       - name: host-volume
         persistentVolumeClaim:
