@@ -82,23 +82,24 @@ The agent pod has the following environment variables:
 
     Defaults to /var/mnt/core-dump-handler as that is the only writable location on some providers.
 * SUID_DUMPABLE - Sets the fs.suid_dumpable kernel tunable on the host. 
-    
+
     Defaults to 2.
 * DEPLOY_CRIO_EXE - Defines whether the agent should deploy a crictl client to the host
-    
+
     false (Default): Most hosts will already have crictl installed on the node.
-    
+
     true : will deploy v1.22 version of crictl
 * S3_ACCESS_KEY - The S3 access key for the bucket that will be uploaded to
 * S3_SECRET - The secret that is used along with the access key
 * S3_BUCKET_NAME - The name of the bucket to upload files too
 * S3_REGION - The region configuration for the bucket
 * VENDOR - Some older hosts may require targeted builds for the composer.
-    
+
     default(Default) - A RHEL8 build
-    
+
     rhel7 - A RHEL7 Build
 * INTERVAL - The amount of time in milliseconds between each check of the core dump folder for files to upload.
+* SCHEDULE - A CRON formatted string [See cron library](https://github.com/mvniekerk/tokio-cron-scheduler#usage).
 
 ### Secrets
 
@@ -116,7 +117,7 @@ The following secrets are configurable and map to the corresponding environment 
 
 ### Values
 
-General 
+General
 * storage: The size of the storage for the cores (Default 1Gi)
 * storageClass: The storage class for volume (Default hostclass)
 
@@ -132,11 +133,12 @@ Daemonset
 * suidDumpable: Maps to the SUID_DUMPABLE environment variable (Default 2)
 * vendor: Maps to the VENDOR enviroment variable (Default default) 
 * interval: Maps to the INTERVAL enviroment variable (Default 60000)
+* schedule: Maps to the INTERVAL enviroment variable (Default "")
 * composerIgnoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * composerCrioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
 * DeployCrioConfig:  Maps to the DEPLOY_CRIO_CONFIG enviroment variable (Default false)
 * includeCrioExe: Maps to the DEPLOY_CRIO_EXE enviroment variable (Default false)
-* manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables. 
+* manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables.
 
 Set to false if you are using an external secrets managment system (Default true)
 * s3AccessKey : Maps to the S3_ACCESS_KEY enviroment variable

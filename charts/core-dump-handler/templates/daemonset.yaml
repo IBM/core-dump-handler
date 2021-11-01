@@ -68,6 +68,8 @@ spec:
             value: {{ .Values.daemonset.vendor }}
           - name: INTERVAL
             value: {{ .Values.daemonset.interval | quote }}
+          - name: SCHEDULE
+            value: {{ .Values.daemonset.schedule }}
           {{- if .Values.daemonset.extraEnvVars }}
           {{ include "core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
           {{- end }}

@@ -25,6 +25,7 @@ daemonset:
   suidDumpable: 2
   vendor: default
   interval: 60000
+  schedule: ""
   composerIgnoreCrio: false
   composerCrioImageCmd: "img"
   DeployCrioConfig: false

@@ -126,6 +126,9 @@
                     "type": "integer",
                     "minimum": 1000
                 },
+                "schedule": {
+                    "type": "string"
+                },
                 "composerIgnoreCrio": {
                     "type": "boolean"
                 },
