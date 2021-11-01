@@ -14,17 +14,17 @@ version: v5.0.3
 
 appVersion: "v5.0.2"
 
-icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+# icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
-maintainers:
-  - name: Anton Whalley
-    email: anton@venshare.com
-    url: https://github.com/No9/
-  - name: Tim Buchwaldt
-    email: tim@buchwaldt.ws
-    url: https://github.com/timbuchwaldt/
+# maintainers:
+#   - name: Anton Whalley
+#     email: anton@venshare.com
+#     url: https://github.com/No9/
+#   - name: Tim Buchwaldt
+#     email: tim@buchwaldt.ws
+#     url: https://github.com/timbuchwaldt/
 
-annotations:
-  # artifacthub.io/changes: |
-  #   - Updated documentation for chart
-  artifacthub.io/license: MIT
+# annotations:
+#   # artifacthub.io/changes: |
+#   #   - Updated documentation for chart
+#   artifacthub.io/license: MIT
