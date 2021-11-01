@@ -12,7 +12,7 @@ type: application
 
 version: v5.0.3
 
-appVersion: "v5.0.2"
+appVersion: "v5.0.3"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -26,5 +26,5 @@ maintainers:
 
 annotations:
   artifacthub.io/changes: |
-    - Updated documentation for chart
+    - Added linting for build process
   artifacthub.io/license: MIT
