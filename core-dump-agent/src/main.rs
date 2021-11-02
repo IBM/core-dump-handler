@@ -176,7 +176,7 @@ async fn main() -> Result<(), std::io::Error> {
     if use_inotify == "true" {
         info!("INotify Starting...");
 
-        tokio::spawn(async move {
+        let task = tokio::spawn(async move {
             let mut inotify = match Inotify::init() {
                 Ok(v) => v,
                 Err(e) => {
@@ -224,6 +224,7 @@ async fn main() -> Result<(), std::io::Error> {
                 }
             }
         });
+        task.await?
     }
 
     Ok(())
