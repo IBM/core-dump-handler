@@ -89,6 +89,13 @@
         "Daemonset": {
             "type": "object",
             "additionalProperties": true,
+            "not": {
+                "anyOf": [
+                    {"required": ["interval", "schedule"]},
+                    {"required": ["schedule", "useINotify"]},
+                    {"required": ["useINotify", "interval"]}
+                ]
+            },
             "allOf": [
                 {
                 "if": {

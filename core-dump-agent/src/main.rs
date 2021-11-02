@@ -149,43 +149,48 @@ async fn main() -> Result<(), std::io::Error> {
         }
     }
 
-    // Needs to go into a task
+    let notify_location = core_location.clone();
+    let schedule_task;
     if !schedule.is_empty() {
-        info!("Starting Schedule with: {}", schedule);
-        let mut sched = JobScheduler::new();
-        let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
-            run_polling_agent(core_location.as_str());
-        }) {
-            Ok(v) => v,
-            Err(e) => {
-                error!("Job Creation with {} failed, {}", schedule, e);
-                panic!("Job Creation with {} failed, {}", schedule, e)
-            }
-        };
-        match sched.add(s_job) {
-            Ok(v) => v,
-            Err(e) => {
-                error!("Job Add failed {}", e);
-                panic!("Job Scheduing failed, {}", e)
-            }
-        }
+        info!("Schedule is Starting...");
 
-        loop {
-            match sched.tick() {
+        schedule_task = tokio::spawn(async move {
+            info!("Schedule Initialising with: {}", schedule);
+            let mut sched = JobScheduler::new();
+            let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
+                run_polling_agent(core_location.as_str());
+            }) {
                 Ok(v) => v,
                 Err(e) => {
-                    error!("Job Tick failed {}", e);
+                    error!("Schedule Job Creation with {} failed, {}", schedule, e);
+                    panic!("Schedule Job Creation with {} failed, {}", schedule, e)
                 }
             };
-            std::thread::sleep(Duration::from_millis(500));
-        }
+            info!("Created Schedule job: {:?}", s_job.guid());
+            match sched.add(s_job) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("Job Add failed {}", e);
+                    panic!("Job Scheduing failed, {}", e)
+                }
+            }
+            info!("Added Job to Schedule");
+            loop {
+                match sched.tick() {
+                    Ok(v) => v,
+                    Err(e) => {
+                        error!("Job Tick failed {}", e);
+                    }
+                };
+                std::thread::sleep(Duration::from_millis(500));
+            }
+        });
+        schedule_task.await?;
     }
 
-    let notify_location = core_location.clone();
     if use_inotify == "true" {
         info!("INotify Starting...");
-
-        let task = tokio::spawn(async move {
+        let inotify_task = tokio::spawn(async move {
             let mut inotify = match Inotify::init() {
                 Ok(v) => v,
                 Err(e) => {
@@ -242,7 +247,7 @@ async fn main() -> Result<(), std::io::Error> {
                 }
             }
         });
-        task.await?
+        inotify_task.await?;
     }
 
     Ok(())
