@@ -139,6 +139,7 @@ async fn main() -> Result<(), std::io::Error> {
         let mut i_interval = match interval.parse::<u64>() {
             Ok(v) => v,
             Err(e) => {
+                error!("Error parsing interval : {} Error: {}", interval, e);
                 panic!("Error parsing interval {}", e);
             }
         };
@@ -157,18 +158,26 @@ async fn main() -> Result<(), std::io::Error> {
             run_polling_agent(core_location.as_str());
         }) {
             Ok(v) => v,
-            Err(e) => panic!("Job Creation failed, {}", e),
+            Err(e) => {
+                error!("Job Creation with {} failed, {}", schedule, e);
+                panic!("Job Creation with {} failed, {}", schedule, e)
+            }
         };
         match sched.add(s_job) {
             Ok(v) => v,
-            Err(e) => panic!("Job Scheduing failed, {}", e),
+            Err(e) => {
+                error!("Job Add failed {}", e);
+                panic!("Job Scheduing failed, {}", e)
+            }
         }
 
         loop {
             match sched.tick() {
                 Ok(v) => v,
-                Err(e) => panic!("Job tick failed, {}", e),
-            }
+                Err(e) => {
+                    error!("Job Tick failed {}", e);
+                }
+            };
             std::thread::sleep(Duration::from_millis(500));
         }
     }
@@ -181,13 +190,17 @@ async fn main() -> Result<(), std::io::Error> {
             let mut inotify = match Inotify::init() {
                 Ok(v) => v,
                 Err(e) => {
+                    error!("Inotify init failed: {}", e);
                     panic!("Inotify init failed: {}", e)
                 }
             };
             info!("INotify Initialised...");
             match inotify.add_watch(&notify_location, WatchMask::CLOSE) {
                 Ok(_) => {}
-                Err(e) => panic!("Add watch failed: {}", e),
+                Err(e) => {
+                    error!("Add watch failed: {}", e);
+                    panic!("Add watch failed: {}", e)
+                }
             };
             info!("INotify watching : {}", notify_location);
             let mut buffer = [0; 4096];
@@ -416,14 +429,17 @@ fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error>
     {
         Ok(v) => v,
         Err(e) => {
-            error!("Failed to run command {}", e);
+            error!("Failed to run sysctl -n {} - Error {}", name, e);
             panic!("Exiting copy sysctl")
         }
     };
 
     let line = match String::from_utf8(output.stdout) {
         Ok(v) => v,
-        Err(e) => panic!("failed to copy {} {}", location, e),
+        Err(e) => {
+            error!("failed to copy {} {}", location, e);
+            panic!("failed to copy {} {}", location, e)
+        }
     };
 
     let mut file = File::create(location)?;
@@ -446,6 +462,7 @@ fn overwrite_sysctl(name: &str, value: &str) -> Result<(), std::io::Error> {
         .args(&["-w", s.as_str()])
         .status()?;
     if !output.success() {
+        error!("Failed to set {} to {}", name, value);
         panic!("Failed to set {} to {}", name, value);
     }
     info!("Created sysctl of {}", s);
@@ -485,7 +502,13 @@ fn restore_sysctl(prefix: &str, name: &str) -> Result<(), std::io::Error> {
     let sysctl_name = format!("{}.{}", prefix, name);
     let line = match fs::read_to_string(&file_name) {
         Ok(l) => l,
-        Err(e) => panic!("{} does not contain a line\n {}", name, e),
+        Err(e) => {
+            error!(
+                "Failed to restore {} as {} does not contain a line\n {}",
+                name, file_name, e
+            );
+            return Err(e);
+        }
     };
     overwrite_sysctl(sysctl_name.as_str(), line.as_str())?;
     fs::remove_file(file_name)?;
