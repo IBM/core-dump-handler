@@ -149,6 +149,7 @@ async fn main() -> Result<(), std::io::Error> {
         }
     }
 
+    // Needs to go into a task
     if !schedule.is_empty() {
         info!("Starting Schedule with: {}", schedule);
         let mut sched = JobScheduler::new();
