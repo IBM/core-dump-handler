@@ -17,7 +17,6 @@ use std::path::PathBuf;
 use std::process;
 use std::process::Command;
 use std::time::Duration;
-// use std::{thread, time};
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 #[allow(dead_code)]
@@ -226,7 +225,12 @@ async fn main() -> Result<(), std::io::Error> {
                             };
                             match event.name {
                                 Some(s) => {
-                                    let p = Path::new(s);
+                                    let file = format!(
+                                        "{}/{}",
+                                        notify_location,
+                                        s.to_str().unwrap_or_default()
+                                    );
+                                    let p = Path::new(&file);
                                     process_file(p, &bucket)
                                 }
                                 None => {

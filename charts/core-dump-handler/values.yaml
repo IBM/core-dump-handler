@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:schedule-watch@sha256:80e18a4e09e9dde70f2dfec5ee11aedee9182222b0b2f7f5625b12f913a6f149
+  repository: quay.io/icdh/core-dump-handler:schedule-watch@sha256:d4594b1c8902878074d6bdb37aff59c024fe3cfd7167f9198a5751a26de82da8
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"
