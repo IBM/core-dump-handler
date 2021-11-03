@@ -303,7 +303,7 @@ fn process_file(zip_path: &Path, bucket: &Bucket) {
     info!("S3 Returned: {}", code);
 }
 
-fn get_bucket() -> Result<s3::Bucket, s3::S3Error> {
+fn get_bucket() -> Result<Bucket, anyhow::Error> {
     let s3_access_key = env::var("S3_ACCESS_KEY").unwrap_or_default();
     let s3_secret = env::var("S3_SECRET").unwrap_or_default();
     let s3_bucket_name = env::var("S3_BUCKET_NAME").unwrap_or_default();
