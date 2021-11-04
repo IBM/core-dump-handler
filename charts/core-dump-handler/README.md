@@ -51,7 +51,7 @@ Run a crashing container - this container writes a value to a null pointer
 |---|---|---|---|
 |AWS|EKS|1.21|--set daemonset.includeCrioExe=true|
 |Digital Ocean|K8S|1.21.5-do.0|--set daemonset.DeployCrioConfig=true --set daemonset.composerCrioImageCmd="images"|
-|Google|GKE|1.20.9-gke.1001|[Ubuntu containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants) **must** be used for the worker nodes. No additional params required.|
+|Google|GKE|1.20.9-gke.1001|[cos_containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#cos-variants): --set daemonset.hostDirectory=/home/kubernetes/bin [Ubuntu containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants): No additional params required.|
 |IBM|IKS|1.19,1.20|  |
 |IBM|ROKS|4.6|Must enable privileged policy [See OpenShift Section]("#openshift)|
 |Microsoft|AKS|1.19|  |

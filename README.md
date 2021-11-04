@@ -77,8 +77,8 @@ This is a matrix of confirmed test targets. Please PR environments that are also
     <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioConfig=true and --set daemonset.composerCrioImageCmd="images"</td>
 </tr>
 <tr>
-    <td>Google</td><td>GKE</td><td>	1.20.9-gke.1001</td><td>Yes</td><td>Yes</td><td><a href="https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants">Ubuntu containerd image</a> <b>must</b> be used for the worker nodes.
-    Please <a href="https://github.com/IBM/core-dump-handler/issues/5">see issue 5</a> for updates on cos_containerd image support.
+    <td>Google</td><td>GKE</td><td>	1.20.9-gke.1001</td><td>Yes</td><td>Yes</td><td><a href="https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants">Ubuntu containerd image</a> work without additional config.
+    cos_containerd image support requires --set daemonset.hostDirectory=/home/kubernetes/bin.
     </td>
 </tr>
 </table>
