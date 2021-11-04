@@ -118,11 +118,8 @@ async fn main() -> Result<(), std::io::Error> {
 
     let core_location = core_dir.clone();
 
-    // fs::create_dir_all(&core_dir)?;
-
     create_env_file(host_location)?;
     // Run polling agent on startup to clean up files.
-    run_polling_agent(core_location.as_str()).await;
 
     let interval = env::var("INTERVAL").unwrap_or_else(|_| String::from(""));
     let mut schedule = env::var("SCHEDULE").unwrap_or_else(|_| String::from(""));
@@ -130,6 +127,17 @@ async fn main() -> Result<(), std::io::Error> {
     let use_inotify = env::var("USE_INOTIFY")
         .unwrap_or_else(|_| String::from("false"))
         .to_lowercase();
+
+    // Allow no uploads when none of the upload configs have been supplied
+    // then we are leaving the cores on the box
+    if interval.is_empty() && schedule.is_empty() && use_inotify == "false" {
+        // let it spin
+        loop {
+            std::thread::sleep(Duration::from_millis(1000));
+        }
+    } else {
+        run_polling_agent(core_location.as_str()).await;
+    }
 
     if !interval.is_empty() && !schedule.is_empty() {
         warn!(
@@ -152,7 +160,7 @@ async fn main() -> Result<(), std::io::Error> {
             warn!("Both interval and INotify set")
         }
     }
-
+    //Need to clone here before it gets borrowed
     let notify_location = core_location.clone();
     let schedule_task;
     if !schedule.is_empty() {
@@ -268,7 +276,14 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
     match f.try_lock(FileLockMode::Shared) {
         Ok(_) => { /* If we can lock then we are ok */ }
         Err(e) => {
-            info!("file locked so we are ignoring it for this iteration {}", e);
+            let l_inotify = env::var("USE_INOTIFY")
+                .unwrap_or_else(|_| String::from("false"))
+                .to_lowercase();
+            if l_inotify == "false" {
+                info!("File locked so we are ignoring it for this iteration {}", e);
+            } else {
+                error!("File locked on INotify shouldn't happen as we are waiting for file close events.\nPlease recycling pod to perform sweep\n{}", e);
+            }
             return;
         }
     }
