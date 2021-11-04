@@ -7,5 +7,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.storage }}
+      storage: {{ .Values.hostStorage }}
   storageClassName: {{ .Values.storageClass }}

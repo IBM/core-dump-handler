@@ -38,6 +38,8 @@ spec:
             value:  {{ .Values.daemonset.DeployCrioConfig | quote }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
+          - name: CORE_DIR
+            value: {{ .Values.daemonset.coreDirectory }}
           - name: SUID_DUMPABLE
             value: {{ .Values.daemonset.suidDumpable | quote }}
           - name: DEPLOY_CRIO_EXE

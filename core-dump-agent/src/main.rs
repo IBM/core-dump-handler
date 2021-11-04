@@ -17,6 +17,7 @@ use std::path::PathBuf;
 use std::process;
 use std::process::Command;
 use std::time::Duration;
+use tokio::runtime::Handle;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 #[allow(dead_code)]
@@ -31,6 +32,8 @@ struct Storage {
 const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
 static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
+static DEFAULT_CORE_DIR: &str = "/var/mnt/core-dump-handler/cores";
+
 static DEFAULT_SUID_DUMPABLE: &str = "2";
 
 #[tokio::main]
@@ -52,6 +55,7 @@ async fn main() -> Result<(), std::io::Error> {
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
+    let core_dir = env::var("CORE_DIR").unwrap_or_else(|_| DEFAULT_CORE_DIR.to_string());
     let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
     let deploy_crio_config = env::var("DEPLOY_CRIO_CONFIG")
         .unwrap_or_else(|_| "false".to_string())
@@ -103,8 +107,8 @@ async fn main() -> Result<(), std::io::Error> {
     overwrite_sysctl(
         "kernel.core_pattern",
         format!(
-            "|{}/{} -c=%c -e=%e -p=%p -s=%s -t=%t -d={}/core -h=%h -E=%E",
-            host_location, CDC_NAME, host_dir
+            "|{}/{} -c=%c -e=%e -p=%p -s=%s -t=%t -d={} -h=%h -E=%E",
+            host_location, CDC_NAME, core_dir
         )
         .as_str(),
     )?;
@@ -112,13 +116,13 @@ async fn main() -> Result<(), std::io::Error> {
 
     overwrite_sysctl("fs.suid_dumpable", &suid)?;
 
-    let core_location = format!("{}/core", host_location);
+    let core_location = core_dir.clone();
 
-    fs::create_dir_all(&core_location)?;
+    // fs::create_dir_all(&core_dir)?;
 
     create_env_file(host_location)?;
     // Run polling agent on startup to clean up files.
-    run_polling_agent(core_location.as_str());
+    run_polling_agent(core_location.as_str()).await;
 
     let interval = env::var("INTERVAL").unwrap_or_else(|_| String::from(""));
     let mut schedule = env::var("SCHEDULE").unwrap_or_else(|_| String::from(""));
@@ -153,12 +157,15 @@ async fn main() -> Result<(), std::io::Error> {
     let schedule_task;
     if !schedule.is_empty() {
         info!("Schedule is Starting...");
-
         schedule_task = tokio::spawn(async move {
             info!("Schedule Initialising with: {}", schedule);
             let mut sched = JobScheduler::new();
             let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
-                run_polling_agent(core_location.as_str());
+                let handle = Handle::current();
+                let core_str = core_location.clone();
+                handle.spawn(async move {
+                    run_polling_agent(&core_str).await;
+                });
             }) {
                 Ok(v) => v,
                 Err(e) => {
@@ -236,7 +243,7 @@ async fn main() -> Result<(), std::io::Error> {
                                         s.to_str().unwrap_or_default()
                                     );
                                     let p = Path::new(&file);
-                                    process_file(p, &bucket)
+                                    process_file(p, &bucket).await
                                 }
                                 None => {
                                     continue;
@@ -253,7 +260,7 @@ async fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn process_file(zip_path: &Path, bucket: &Bucket) {
+async fn process_file(zip_path: &Path, bucket: &Bucket) {
     info!("Uploading: {}", zip_path.display());
 
     let mut f = File::open(&zip_path).expect("no file found");
@@ -286,7 +293,7 @@ fn process_file(zip_path: &Path, bucket: &Bucket) {
         }
     };
 
-    let (_, code) = match bucket.put_object_blocking(upload_file_name, buffer.as_slice()) {
+    let (_, code) = match bucket.put_object(upload_file_name, buffer.as_slice()).await {
         Ok(v) => v,
         Err(e) => {
             error!("Upload Failed {}", e);
@@ -339,7 +346,7 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
     Bucket::new_with_path_style(&s3.bucket, s3.region, s3.credentials)
 }
 
-fn run_polling_agent(core_location: &str) {
+async fn run_polling_agent(core_location: &str) {
     info!("Executing Agent with location : {}", core_location);
 
     let bucket = match get_bucket() {
@@ -361,7 +368,7 @@ fn run_polling_agent(core_location: &str) {
 
     info!("Dir Content {:?}", paths);
     for zip_path in paths {
-        process_file(&zip_path, &bucket);
+        process_file(&zip_path, &bucket).await;
     }
 }
 

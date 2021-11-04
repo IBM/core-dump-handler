@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:schedule-watch@sha256:f0628951a97b6d7a2654553ff930e5609a34e55de4d3cf78fbd015ce9fb69a27
+  repository: quay.io/icdh/core-dump-handler:schedule-watch
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"
@@ -13,7 +13,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 # Size of the Persistent volume to create
-storage: 1Gi
+hostStorage: 1Gi
+coreStorage: 10Gi
 storageClass: hostclass
 
 
@@ -21,6 +22,7 @@ daemonset:
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
+  coreDirectory: "/var/mnt/core-dump-handler/cores"
   composerLogLevel: "Warn"
   suidDumpable: 2
   vendor: default

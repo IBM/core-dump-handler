@@ -136,16 +136,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "block_on_proc"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b872f3528eeeb4370ee73b51194dc1cd93680c2d0eb6c7a223889038d2c1a167"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -242,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "core-dump-agent"
-version = "0.1.0"
+version = "6.0.0"
 dependencies = [
  "advisory-lock",
  "anyhow",
@@ -257,7 +247,7 @@ dependencies = [
 
 [[package]]
 name = "core-dump-composer"
-version = "0.1.0"
+version = "6.0.0"
 dependencies = [
  "advisory-lock",
  "anyhow",
@@ -1405,7 +1395,6 @@ dependencies = [
  "aws-creds",
  "aws-region",
  "base64",
- "block_on_proc",
  "cfg-if",
  "chrono",
  "futures",

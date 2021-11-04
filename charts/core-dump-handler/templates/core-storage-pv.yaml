@@ -7,9 +7,9 @@ metadata:
 spec:
   storageClassName: {{ .Values.storageClass }} 
   capacity:
-    storage: {{ .Values.storage }}
+    storage: {{ .Values.coreStorage }}
   accessModes:
   - ReadWriteOnce 
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: {{ .Values.daemonset.hostDirectory }}
+    path: {{ .Values.daemonset.coreDirectory }}

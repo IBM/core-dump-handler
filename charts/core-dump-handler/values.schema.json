@@ -22,7 +22,10 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
-                "storage": {
+                "hostStorage": {
+                    "type": "string"
+                },
+                "coreStorage": {
                     "type": "string"
                 },
                 "storageClass": {
@@ -62,7 +65,8 @@
                 "nodeSelector",
                 "replicaCount",
                 "serviceAccount",
-                "storage",
+                "hostStorage",
+                "coreStorage",
                 "storageClass",
                 "tolerations"
             ],
@@ -177,6 +181,7 @@
                 "composerLogLevel",
                 "extraEnvVars",
                 "hostDirectory",
+                "coreDirectory",
                 "includeCrioExe",
                 "label",
                 "manageStoreSecret",
