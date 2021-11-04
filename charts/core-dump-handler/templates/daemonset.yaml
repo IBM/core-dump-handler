@@ -27,6 +27,9 @@ spec:
         - name: host-volume
           mountPath:  {{ .Values.daemonset.hostDirectory }}
           mountPropagation: Bidirectional
+        - name: core-volume
+          mountPath:  {{ .Values.daemonset.coreDirectory }}
+          mountPropagation: Bidirectional
         env:
           - name: COMP_LOG_LEVEL
             value: {{ .Values.daemonset.composerLogLevel }}
@@ -98,4 +101,7 @@ spec:
       volumes:
       - name: host-volume
         persistentVolumeClaim:
-          claimName:  host-path-pvc
+          claimName:  host-storage-pvc
+      - name: core-volume
+        persistentVolumeClaim:
+          claimName:  core-storage-pvc
