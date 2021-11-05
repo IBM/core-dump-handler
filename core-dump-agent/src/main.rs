@@ -2,6 +2,7 @@ extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
+//use anyhow
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
 use log::{error, info, warn};
@@ -17,6 +18,7 @@ use std::path::PathBuf;
 use std::process;
 use std::process::Command;
 use std::time::Duration;
+use thiserror::Error;
 use tokio::runtime::Handle;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
@@ -29,6 +31,15 @@ struct Storage {
     location_supported: bool,
 }
 
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Failed to set (name {name:?}, value {value:?})")]
+    InvalidOverWrite {
+        name: String,
+        value: String,
+    }
+}
+
 const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
 static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
@@ -37,7 +48,7 @@ static DEFAULT_CORE_DIR: &str = "/var/mnt/core-dump-handler/cores";
 static DEFAULT_SUID_DUMPABLE: &str = "2";
 
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error> {
+async fn main() -> Result<(), anyhow::Error> {
     let mut env_path = env::current_exe()?;
     env_path.pop();
     env_path.push(".env");
@@ -45,12 +56,7 @@ async fn main() -> Result<(), std::io::Error> {
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
-        Err(e) => {
-            envloadmsg = format!(
-                "no .env file found \n That's ok if running in kubernetes\n{}",
-                e
-            )
-        }
+        Err(_) => envloadmsg = format!("no .env file found \n That's ok if running in kubernetes"),
     }
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -69,7 +75,7 @@ async fn main() -> Result<(), std::io::Error> {
     let pattern: String = std::env::args().nth(1).unwrap_or_default();
 
     info!("{}", envloadmsg);
-
+    // Catch remove command for uninstall options
     if pattern == "remove" {
         info!("Removing {}", host_location);
         remove()?;
@@ -90,31 +96,26 @@ async fn main() -> Result<(), std::io::Error> {
         copy_crictl_to_hostdir(host_location)?;
     }
     copy_core_dump_composer_to_hostdir(host_location)?;
-    copy_sysctl_to_file(
+    apply_sysctl(
         "kernel.core_pattern",
         format!("{}/core_pattern.bak", host_location).as_str(),
-    )?;
-    copy_sysctl_to_file(
-        "kernel.core_pipe_limit",
-        format!("{}/core_pipe_limit.bak", host_location).as_str(),
-    )?;
-
-    copy_sysctl_to_file(
-        "fs.suid_dumpable",
-        format!("{}/suid_dumpable.bak", host_location).as_str(),
-    )?;
-
-    overwrite_sysctl(
-        "kernel.core_pattern",
         format!(
             "|{}/{} -c=%c -e=%e -p=%p -s=%s -t=%t -d={} -h=%h -E=%E",
             host_location, CDC_NAME, core_dir
         )
         .as_str(),
     )?;
-    overwrite_sysctl("kernel.core_pipe_limit", "128")?;
+    apply_sysctl(
+        "kernel.core_pipe_limit",
+        format!("{}/core_pipe_limit.bak", host_location).as_str(),
+        "128",
+    )?;
 
-    overwrite_sysctl("fs.suid_dumpable", &suid)?;
+    apply_sysctl(
+        "fs.suid_dumpable",
+        format!("{}/suid_dumpable.bak", host_location).as_str(),
+        &suid,
+    )?;
 
     let core_location = core_dir.clone();
 
@@ -157,7 +158,7 @@ async fn main() -> Result<(), std::io::Error> {
         i_interval /= 1000;
         schedule = format!("1/{} * * * * *", i_interval.to_string());
         if use_inotify == "true" {
-            warn!("Both interval and INotify set")
+            warn!("Both schedule and INotify set. Running schedule")
         }
     }
     //Need to clone here before it gets borrowed
@@ -451,56 +452,49 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn copy_sysctl_to_file(name: &str, location: &str) -> Result<(), std::io::Error> {
-    info!("Starting sysctl for {} {}", name, location);
-    let output = match Command::new("sysctl")
+fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
+    info!("Getting sysctl for {}", name);
+    let output = Command::new("sysctl")
         .env("PATH", BIN_PATH)
         .args(&["-n", name])
-        .output()
-    {
-        Ok(v) => v,
-        Err(e) => {
-            error!("Failed to run sysctl -n {} - Error {}", name, e);
-            panic!("Exiting copy sysctl")
-        }
+        .output()?;
+    let lines = String::from_utf8(output.stdout)?;
+    let line = match lines.lines().take(1).next() {
+        Some(s) => s.clone(),
+        None => "",
     };
-
-    let line = match String::from_utf8(output.stdout) {
-        Ok(v) => v,
-        Err(e) => {
-            error!("failed to copy {} {}", location, e);
-            panic!("failed to copy {} {}", location, e)
-        }
-    };
-
-    let mut file = File::create(location)?;
-    file.write_all(
-        line.lines()
-            .take(1)
-            .next()
-            .expect("Failed to get line for sysctl file")
-            .as_bytes(),
-    )?;
-    file.flush()?;
-    info!("Created Backup of {}", location);
+    Ok(line.to_string())
+}
+fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::Error> {
+    info!("Starting sysctl for {} {}", name, location);
+    let ctl = get_sysctl(name)?;
+    // The values are different so let's back up and apply
+    if ctl.as_str() != value {
+        let mut file = File::create(location)?;
+        file.write_all(ctl.as_bytes())?;
+        file.flush()?;
+        info!("Created Backup of {}", location);
+        overwrite_sysctl(name, value)?
+    } else {
+        info!("{} with value {} is already applied", name, ctl);
+    }
     Ok(())
 }
 
-fn overwrite_sysctl(name: &str, value: &str) -> Result<(), std::io::Error> {
+fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
     let s = format!("{}={}", name, value);
     let output = Command::new("sysctl")
         .env("PATH", BIN_PATH)
         .args(&["-w", s.as_str()])
         .status()?;
     if !output.success() {
-        error!("Failed to set {} to {}", name, value);
-        panic!("Failed to set {} to {}", name, value);
+        let e = Error::InvalidOverWrite { name : name.to_string(), value: value.to_string() };
+        return Err(anyhow::Error::new(e));
     }
-    info!("Created sysctl of {}", s);
     Ok(())
 }
 
-fn remove() -> Result<(), std::io::Error> {
+fn remove() -> Result<(), anyhow::Error> {
     restore_sysctl("kernel", "core_pattern")?;
     restore_sysctl("kernel", "core_pipe_limit")?;
     restore_sysctl("fs", "suid_dumpable")?;
@@ -526,21 +520,12 @@ fn remove() -> Result<(), std::io::Error> {
 
     Ok(())
 }
-fn restore_sysctl(prefix: &str, name: &str) -> Result<(), std::io::Error> {
+fn restore_sysctl(prefix: &str, name: &str) -> Result<(), anyhow::Error> {
     info!("Restoring Backup of {}", name);
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
     let file_name = format!("{}/{}.bak", host_dir, name);
     let sysctl_name = format!("{}.{}", prefix, name);
-    let line = match fs::read_to_string(&file_name) {
-        Ok(l) => l,
-        Err(e) => {
-            error!(
-                "Failed to restore {} as {} does not contain a line\n {}",
-                name, file_name, e
-            );
-            return Err(e);
-        }
-    };
+    let line = fs::read_to_string(&file_name)?;
     overwrite_sysctl(sysctl_name.as_str(), line.as_str())?;
     fs::remove_file(file_name)?;
 

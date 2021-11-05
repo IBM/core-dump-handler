@@ -16,3 +16,4 @@ advisory-lock = "0.3.0"
 tokio-cron-scheduler = "0.2.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 inotify = "0.9"
+thiserror = "1.0.30"

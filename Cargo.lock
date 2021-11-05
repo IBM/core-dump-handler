@@ -241,6 +241,7 @@ dependencies = [
  "inotify",
  "log",
  "rust-s3",
+ "thiserror",
  "tokio",
  "tokio-cron-scheduler",
 ]
