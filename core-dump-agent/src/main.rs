@@ -56,7 +56,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
-        Err(_) => envloadmsg = format!("no .env file found \n That's ok if running in kubernetes"),
+        Err(_) => envloadmsg = "no .env file found \n That's ok if running in kubernetes".to_string(),
     }
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -459,10 +459,7 @@ fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
         .args(&["-n", name])
         .output()?;
     let lines = String::from_utf8(output.stdout)?;
-    let line = match lines.lines().take(1).next() {
-        Some(s) => s.clone(),
-        None => "",
-    };
+    let line = lines.lines().take(1).next().unwrap_or("");
     Ok(line.to_string())
 }
 fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::Error> {
