@@ -5,8 +5,19 @@ This helm chart is designed to deploy functionality that automatically saves cor
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler) 
 [![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 
-## Code Of Conduct 
-https://github.com/cncf/foundation/blob/master/code-of-conduct.md 
+## Code Of Conduct
+
+We as members, contributors, and leaders pledge to make participation in our
+community a harassment-free experience for everyone, regardless of age, body
+size, visible or invisible disability, ethnicity, sex characteristics, gender
+identity and expression, level of experience, education, socio-economic status,
+nationality, personal appearance, race, religion, or sexual identity
+and orientation.
+
+We pledge to act and interact in ways that contribute to an open, welcoming,
+diverse, inclusive, and healthy community.
+
+[The full code of conduct is available here](./code-of-conduct.md)
 
 ## Prerequisites
 

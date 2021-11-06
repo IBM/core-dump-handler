@@ -21,6 +21,7 @@ daemonset:
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
+  coreDirectory: "/var/mnt/core-dump-handler/cores"
   composerLogLevel: "Warn"
   suidDumpable: 2
   vendor: default
