@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler
+  repository: quay.io/icdh/core-dump-handler:schedule-watch
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"
@@ -13,7 +13,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 # Size of the Persistent volume to create
-storage: 1Gi
+hostStorage: 1Gi
+coreStorage: 10Gi
 storageClass: hostclass
 
 
@@ -25,19 +26,16 @@ daemonset:
   composerLogLevel: "Warn"
   suidDumpable: 2
   vendor: default
-  interval: 60000
+  schedule: "1/60 * * * * *"
+  # useINotify: true
+  # interval: 1230
   composerIgnoreCrio: false
   composerCrioImageCmd: "img"
   DeployCrioConfig: false
   includeCrioExe: false
   # S3 access
-  manageStoreSecret: true
-  s3AccessKey: XXX
-  s3Secret: XXX
-  s3BucketName: XXX
-  s3Region: XXX
+  manageStoreSecret: false
   extraEnvVars: ""
-
 serviceAccount:
   create: true
   name: "core-dump-admin"

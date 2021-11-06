@@ -92,7 +92,7 @@
         },
         "Daemonset": {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
             "not": {
                 "anyOf": [
                     {"required": ["interval", "schedule"]},
@@ -122,6 +122,9 @@
                     "type": "string"
                 },
                 "hostDirectory": {
+                    "type": "string"
+                },
+                "coreDirectory": {
                     "type": "string"
                 },
                 "composerLogLevel": {
