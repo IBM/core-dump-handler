@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v5.0.3
+version: v6.0.0
 
-appVersion: "v5.0.3"
+appVersion: "v6.0.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -26,5 +26,26 @@ maintainers:
 
 annotations:
   artifacthub.io/changes: |
-    - Added linting for build process
+    - kind: added
+      description: Support for INotify events
+      links:
+        - name: Github Issue
+          url: https://github.com/IBM/core-dump-handler/issues/29
+    - kind: added
+      description: Support for CRON scheduling
+      links:
+        - name: Github Issue
+          url: https://github.com/IBM/core-dump-handler/issues/29
+    - kind: added
+      description: Support on-demand uploads with sweep command
+    - kind: added
+      description: Dedicated core storage PV and PVC
+    - kind: added
+      description: JSON Schema constraints for S3 and Upload configuration
+  artifacthub.io/images: |
+    - name: core-dump-handler
+      image: quay.io/repository/icdh/core-dump-handler:v6.0.0
   artifacthub.io/license: MIT
+  artifacthub.io/signKey: |
+    fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+    url: https://keybase.io/antonwhalley/pgp_keys.asc
