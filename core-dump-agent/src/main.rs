@@ -94,10 +94,12 @@ async fn main() -> Result<(), anyhow::Error> {
             let p = Path::new(&file);
             info!("Uploading {}", file);
             process_file(p, &bucket).await;
+            process::exit(0);
         } else {
             let core_store = core_dir.clone();
             info!("Uploading all content in {}", core_store);
             run_polling_agent(core_store.as_str()).await;
+            process::exit(0);
         }
     }
     info!("Setting host location to: {}", host_location);
