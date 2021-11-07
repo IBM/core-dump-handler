@@ -42,6 +42,8 @@ annotations:
       description: Dedicated core storage PV and PVC
     - kind: added
       description: JSON Schema constraints for S3 and Upload configuration
+    - kind: added
+      description: Added debug symbols and set panic to abort
   artifacthub.io/images: |
     - name: core-dump-handler
       image: quay.io/repository/icdh/core-dump-handler:v6.0.0
