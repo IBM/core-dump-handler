@@ -34,10 +34,7 @@ struct Storage {
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Failed to set (name {name:?}, value {value:?})")]
-    InvalidOverWrite {
-        name: String,
-        value: String,
-    }
+    InvalidOverWrite { name: String, value: String },
 }
 
 const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
@@ -56,7 +53,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let mut envloadmsg = String::from("Loading .env");
     match dotenv::from_path(env_path) {
         Ok(v) => v,
-        Err(_) => envloadmsg = "no .env file found \n That's ok if running in kubernetes".to_string(),
+        Err(_) => {
+            envloadmsg = "no .env file found \n That's ok if running in kubernetes".to_string()
+        }
     }
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -82,6 +81,25 @@ async fn main() -> Result<(), anyhow::Error> {
         process::exit(0);
     }
 
+    if pattern == "sweep" {
+        let file = std::env::args().nth(2).unwrap_or_default();
+        if !file.is_empty() {
+            let bucket = match get_bucket() {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("Bucket creation failed in sweep: {}", e);
+                    process::exit(1);
+                }
+            };
+            let p = Path::new(&file);
+            info!("Uploading {}", file);
+            process_file(p, &bucket).await;
+        } else {
+            let core_store = core_dir.clone();
+            info!("Uploading all content in {}", core_store);
+            run_polling_agent(core_store.as_str()).await;
+        }
+    }
     info!("Setting host location to: {}", host_location);
     info!(
         "Current Directory for setup is {}",
@@ -485,7 +503,10 @@ fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
         .args(&["-w", s.as_str()])
         .status()?;
     if !output.success() {
-        let e = Error::InvalidOverWrite { name : name.to_string(), value: value.to_string() };
+        let e = Error::InvalidOverWrite {
+            name: name.to_string(),
+            value: value.to_string(),
+        };
         return Err(anyhow::Error::new(e));
     }
     Ok(())
