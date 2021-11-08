@@ -1,7 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
-<h1>Core Dump Handler</h1>
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>Core Dump Handler</title>
+  <meta name="description" content="Cover Page for core-dump-handler helm chart">
+  <meta name="author" content="Anton Whalley">
 
-<h2>Helm Releases</h2>
-<a href="https://ibm.github.io/core-dump-handler/index.yaml">https://ibm.github.io/core-dump-handler/index.yaml</a>
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+
+  <!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="../../dist/images/favicon.png">
+
+</head>
+<body>
+<div class="container">
+    <section class="header">
+      <h2 class="title">Core Dump Handler</h2>
+        <div class="artifacthub-widget" 
+            data-url="https://artifacthub.io/packages/helm/core-dump-handler/core-dump-handler" 
+            data-theme="light" 
+            data-header="true" 
+            data-stars="true" 
+            data-responsive="false">
+            <blockquote>
+                <p lang="en" dir="ltr"><b>core-dump-handler</b>: A Helm chart for deploying a core dump management system to Kubernetes</p>
+                &mdash; Open in <a href="https://artifacthub.io/packages/helm/core-dump-handler/core-dump-handler">Artifact Hub</a>
+            </blockquote>
+        </div>
+    </section>
+    <section>
+        <h3>Install the Repo</h3>
+        <pre><code>helm repo add core-dump-handler https://ibm.github.io/core-dump-handler/</code></pre>
+        <h3>Install the Chart</h3>
+        <pre><code>helm install core-dump-handler core-dump-handler/core-dump-handler --create-namespace --namespace observe \
+            --set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
+            --set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX</code></pre>
+        <h3>Repo Yaml Definition</h3>
+        <h5><a href="https://ibm.github.io/core-dump-handler/index.yaml">https://ibm.github.io/core-dump-handler/index.yaml</a></h5>
+        <h3>Download Release</h3>
+        <h5><a href="https://github.com/IBM/core-dump-handler/releases">https://github.com/IBM/core-dump-handler/releases</a></h5>
+    </section>
+</div>
+<script async src="https://artifacthub.io/artifacthub-widget.js"></script>
+</body>
+</html>
 
