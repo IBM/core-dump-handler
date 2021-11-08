@@ -7,13 +7,14 @@ cd ./charts/core-dump-handler
 
 helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3BucketName=${S3_BUCKET_NAME} --set daemonset.s3Region=${S3_REGION} \
---set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET} --set daemonset.interval=5000
-
+--set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET}
 ## Poll until pod is up
 while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
 do 
-    echo "waiting for core dump pod to setup pod" && sleep 1; 
+    echo "waiting for core dump pod to be setup" && sleep 1; 
 done
+
+echo "Core dump pod is ready - starting crash test"
 
 kubectl run -it segfaulter --image=quay.io/icdh/segfaulter --restart=Never
 
@@ -43,9 +44,22 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
+node_hostname=$(jq -r '.node_hostname' *-dump-info.json)
+
+if [[ $node_hostname ]];
+then
+    echo -e "${GREEN}Success: Node Name Exists${NC}"
+    cd ..
+    rm -fr output
+else
+    echo -e "${RED}Failed${NC}"
+    echo "Node Does NOT Name Exists ${node_hostname}"
+    echo "Examine the output folder"
+fi
+
 if [ $file_count == "7" ]
-then 
-    echo -e "${GREEN}Success${NC}"
+then
+    echo -e "${GREEN}Sucess: Correct File Count${NC}"
     cd ..
     rm -fr output
 else
@@ -54,4 +68,5 @@ else
     echo "Examine the output folder"
 fi
 
+mc rm $file_name
 helm delete -n observe core-dump-handler

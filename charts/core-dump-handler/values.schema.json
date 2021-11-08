@@ -22,7 +22,10 @@
                 "fullnameOverride": {
                     "type": "string"
                 },
-                "storage": {
+                "hostStorage": {
+                    "type": "string"
+                },
+                "coreStorage": {
                     "type": "string"
                 },
                 "storageClass": {
@@ -62,7 +65,8 @@
                 "nodeSelector",
                 "replicaCount",
                 "serviceAccount",
-                "storage",
+                "hostStorage",
+                "coreStorage",
                 "storageClass",
                 "tolerations"
             ],
@@ -88,7 +92,14 @@
         },
         "Daemonset": {
             "type": "object",
-            "additionalProperties": true,
+            "additionalProperties": false,
+            "not": {
+                "anyOf": [
+                    {"required": ["interval", "schedule"]},
+                    {"required": ["schedule", "useINotify"]},
+                    {"required": ["useINotify", "interval"]}
+                ]
+            },
             "allOf": [
                 {
                 "if": {
@@ -113,6 +124,9 @@
                 "hostDirectory": {
                     "type": "string"
                 },
+                "coreDirectory": {
+                    "type": "string"
+                },
                 "composerLogLevel": {
                     "type": "string"
                 },
@@ -125,6 +139,12 @@
                 "interval": {
                     "type": "integer",
                     "minimum": 1000
+                },
+                "schedule": {
+                    "type": "string"
+                },
+                "useINotify": {
+                    "type": "boolean"
                 },
                 "composerIgnoreCrio": {
                     "type": "boolean"
@@ -164,8 +184,8 @@
                 "composerLogLevel",
                 "extraEnvVars",
                 "hostDirectory",
+                "coreDirectory",
                 "includeCrioExe",
-                "interval",
                 "label",
                 "manageStoreSecret",
                 "name",

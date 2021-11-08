@@ -51,7 +51,7 @@ Run a crashing container - this container writes a value to a null pointer
 |---|---|---|---|
 |AWS|EKS|1.21|--set daemonset.includeCrioExe=true|
 |Digital Ocean|K8S|1.21.5-do.0|--set daemonset.DeployCrioConfig=true --set daemonset.composerCrioImageCmd="images"|
-|Google|GKE|1.20.9-gke.1001|[Ubuntu containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants) **must** be used for the worker nodes. No additional params required.|
+|Google|GKE|1.20.10-gke.1600|[cos_containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#cos-variants): --set daemonset.hostDirectory=/home/kubernetes/bin --set daemonset.coreDirectory=/home/kubernetes/cores [Ubuntu containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants): No additional params required.|
 |IBM|IKS|1.19,1.20|  |
 |IBM|ROKS|4.6|Must enable privileged policy [See OpenShift Section]("#openshift)|
 |Microsoft|AKS|1.19|  |
@@ -66,7 +66,7 @@ The agent pod has the following environment variables:
 * COMP_IGNORE_CRIO - Defines if the composer should get additional container JSON from crictl
 
     false (Default): The composer will generate the additional JSON files.
-    
+
     true: The composer will only collect the core dump and save the core parameters as an additional JSON
 * COMP_CRIO_IMAGE_CMD - The command to use to get image information for the core dump.
 
@@ -82,23 +82,25 @@ The agent pod has the following environment variables:
 
     Defaults to /var/mnt/core-dump-handler as that is the only writable location on some providers.
 * SUID_DUMPABLE - Sets the fs.suid_dumpable kernel tunable on the host. 
-    
+
     Defaults to 2.
 * DEPLOY_CRIO_EXE - Defines whether the agent should deploy a crictl client to the host
-    
+
     false (Default): Most hosts will already have crictl installed on the node.
-    
+
     true : will deploy v1.22 version of crictl
 * S3_ACCESS_KEY - The S3 access key for the bucket that will be uploaded to
 * S3_SECRET - The secret that is used along with the access key
 * S3_BUCKET_NAME - The name of the bucket to upload files too
 * S3_REGION - The region configuration for the bucket
 * VENDOR - Some older hosts may require targeted builds for the composer.
-    
+
     default(Default) - A RHEL8 build
-    
+
     rhel7 - A RHEL7 Build
 * INTERVAL - The amount of time in milliseconds between each check of the core dump folder for files to upload.
+* SCHEDULE - A CRON formatted string [See cron library](https://github.com/mvniekerk/tokio-cron-scheduler#usage).
+* USE_INOTIFY - Set a listener for the coredump folder can be used in conjunction with SCHEDULE
 
 ### Secrets
 
@@ -116,7 +118,7 @@ The following secrets are configurable and map to the corresponding environment 
 
 ### Values
 
-General 
+General
 * storage: The size of the storage for the cores (Default 1Gi)
 * storageClass: The storage class for volume (Default hostclass)
 
@@ -132,11 +134,13 @@ Daemonset
 * suidDumpable: Maps to the SUID_DUMPABLE environment variable (Default 2)
 * vendor: Maps to the VENDOR enviroment variable (Default default) 
 * interval: Maps to the INTERVAL enviroment variable (Default 60000)
+* schedule: Maps to the SCHEDULE enviroment variable (Default "")
+* useINotify: Maps to the USE_INOTIFY environment variable (Default false)
 * composerIgnoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * composerCrioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
 * DeployCrioConfig:  Maps to the DEPLOY_CRIO_CONFIG enviroment variable (Default false)
 * includeCrioExe: Maps to the DEPLOY_CRIO_EXE enviroment variable (Default false)
-* manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables. 
+* manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables.
 
 Set to false if you are using an external secrets managment system (Default true)
 * s3AccessKey : Maps to the S3_ACCESS_KEY enviroment variable

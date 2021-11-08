@@ -26,19 +26,19 @@ daemonset:
   composerLogLevel: "Warn"
   suidDumpable: 2
   vendor: default
-  # interval: 60000
+  interval: 60000
   # schedule: "1/60 * * * * *"
-  useINotify: true
+  # useINotify: false
   composerIgnoreCrio: false
   composerCrioImageCmd: "img"
   DeployCrioConfig: false
   includeCrioExe: false
   # S3 access
   manageStoreSecret: true
-  s3AccessKey: XXX
-  s3Secret: XXX
-  s3BucketName: XXX
-  s3Region: XXX
+  s3AccessKey : XXX
+  s3Secret : XXX
+  s3BucketName : XXX
+  s3Region : XXX
   extraEnvVars: ""
 
 serviceAccount:

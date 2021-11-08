@@ -27,6 +27,9 @@ spec:
         - name: host-volume
           mountPath:  {{ .Values.daemonset.hostDirectory }}
           mountPropagation: Bidirectional
+        - name: core-volume
+          mountPath:  {{ .Values.daemonset.coreDirectory }}
+          mountPropagation: Bidirectional
         env:
           - name: COMP_LOG_LEVEL
             value: {{ .Values.daemonset.composerLogLevel }}
@@ -38,6 +41,8 @@ spec:
             value:  {{ .Values.daemonset.DeployCrioConfig | quote }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
+          - name: CORE_DIR
+            value: {{ .Values.daemonset.coreDirectory }}
           - name: SUID_DUMPABLE
             value: {{ .Values.daemonset.suidDumpable | quote }}
           - name: DEPLOY_CRIO_EXE
@@ -68,6 +73,10 @@ spec:
             value: {{ .Values.daemonset.vendor }}
           - name: INTERVAL
             value: {{ .Values.daemonset.interval | quote }}
+          - name: SCHEDULE
+            value: {{ .Values.daemonset.schedule }}
+          - name: USE_INOTIFY
+            value: {{ .Values.daemonset.useINotify | quote }}
           {{- if .Values.daemonset.extraEnvVars }}
           {{ include "core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
           {{- end }}
@@ -92,4 +101,7 @@ spec:
       volumes:
       - name: host-volume
         persistentVolumeClaim:
-          claimName:  host-path-pvc
+          claimName:  host-storage-pvc
+      - name: core-volume
+        persistentVolumeClaim:
+          claimName:  core-storage-pvc
