@@ -35,10 +35,10 @@ daemonset:
   includeCrioExe: false
   # S3 access
   manageStoreSecret: true
-  s3AccessKey : XXX
-  s3Secret : XXX
-  s3BucketName : XXX
-  s3Region : XXX
+  s3AccessKey: XXX
+  s3Secret: XXX
+  s3BucketName: XXX
+  s3Region: XXX
   extraEnvVars: ""
 
 serviceAccount:
