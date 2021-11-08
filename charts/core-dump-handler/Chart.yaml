@@ -31,19 +31,35 @@ annotations:
       links:
         - name: Github Issue
           url: https://github.com/IBM/core-dump-handler/issues/29
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/43
     - kind: added
       description: Support for CRON scheduling
       links:
         - name: Github Issue
           url: https://github.com/IBM/core-dump-handler/issues/29
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/43
     - kind: added
       description: Support on-demand uploads with sweep command
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/43
     - kind: added
       description: Dedicated core storage PV and PVC
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/43
     - kind: added
       description: JSON Schema constraints for S3 and Upload configuration
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/43
     - kind: added
       description: Added debug symbols and set panic to abort
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/43
   artifacthub.io/images: |
     - name: core-dump-handler
       image: quay.io/repository/icdh/core-dump-handler:v6.0.0
