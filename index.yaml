@@ -3,6 +3,73 @@ entries:
   core-dump-handler:
   - annotations:
       artifacthub.io/changes: |
+        - kind: added
+          description: Support for INotify events
+          links:
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/29
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/43
+        - kind: added
+          description: Support for CRON scheduling
+          links:
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/29
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/43
+        - kind: added
+          description: Support on-demand uploads with sweep command
+          links:
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/43
+        - kind: added
+          description: Dedicated core storage PV and PVC
+          links:
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/43
+        - kind: added
+          description: JSON Schema constraints for S3 and Upload configuration
+          links:
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/43
+        - kind: added
+          description: Added debug symbols and set panic to abort
+          links:
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/43
+      artifacthub.io/images: |
+        - name: core-dump-handler
+          image: quay.io/repository/icdh/core-dump-handler:v6.0.0
+      artifacthub.io/license: MIT
+      artifacthub.io/signKey: |
+        fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+        url: https://keybase.io/antonwhalley/pgp_keys.asc
+    apiVersion: v2
+    appVersion: v6.0.0
+    created: "2021-11-08T21:27:32.979584393Z"
+    description: A Helm chart for deploying a core dump management system to Kubernetes
+    digest: 7b52de3aac0729be29166e78e4b23e7b0093eb2fa06594fdda340aca588fd261
+    icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+    keywords:
+    - coredump
+    - post-mortem
+    - observability
+    maintainers:
+    - email: anton@venshare.com
+      name: No9
+      url: https://github.com/No9/
+    - email: tim@buchwaldt.ws
+      name: timbuchwaldt
+      url: https://github.com/timbuchwaldt/
+    name: core-dump-handler
+    sources:
+    - https://github.com/ibm/core-dump-handler
+    type: application
+    urls:
+    - https://github.com/IBM/core-dump-handler/releases/download/v6.0.0/core-dump-handler-v6.0.0.tgz
+    version: v6.0.0
+  - annotations:
+      artifacthub.io/changes: |
         - Added linting for build process
       artifacthub.io/license: MIT
     apiVersion: v2
@@ -81,4 +148,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-generated: "2021-11-01T03:09:33.596259798Z"
+generated: "2021-11-08T21:27:32.979621092Z"
