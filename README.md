@@ -40,6 +40,41 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 Where the `--set` options are configuration for your S3 compatible provider
 Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
 
+Details on all the available options are available on the [artifact hub](https://artifacthub.io/packages/helm/core-dump-handler/core-dump-handler) or in the [chart README](https://github.com/IBM/core-dump-handler/blob/main/charts/core-dump-handler/README.md).
+
+## Public Cloud Kubernetes Service Compatibility
+
+This is a matrix of confirmed test targets. Please PR environments that are also known to work
+
+<table><thead><td>Provider</td><td>Product</td><td>Version</td><td>Validated?</td><td>Working?</td><td>Notes</td></thead>
+<tr>
+    <td>IBM</td><td>IKS</td><td>1.19-1.21</td><td>Yes</td><td>Yes</td><td></td>
+</tr>
+<tr>
+    <td>IBM</td><td>ROKS</td><td>4.6</td><td>Yes</td><td>Yes</td><td>Must enable privileged policy <a href="#openshift">See OpenShift Section</a></td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>ARO uses CoreOS and building compatable binaries seems to be the next step</td>
+</tr>
+<tr>
+    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.includeCrioExe=true</td>
+</tr>
+<tr>
+    <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>ROSA uses CoreOS and building compatable binaries seems to be the next step</td>
+</tr>
+<tr>
+    <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioConfig=true and --set daemonset.composerCrioImageCmd="images"</td>
+</tr>
+<tr>
+    <td>Google</td><td>GKE</td><td>1.20.10-gke.1600</td><td>Yes</td><td>Yes</td><td><a href="https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants">Ubuntu containerd image</a> work without additional config.
+    cos_containerd image support requires --set daemonset.hostDirectory=/home/kubernetes/bin --set daemonset.coreDirectory=/home/kubernetes/cores.
+    </td>
+</tr>
+</table>
+
 ### OpenShift
 
 As the agent runs in privileged mode the following command is needed on OpenShift.
@@ -60,39 +95,6 @@ Run a crashing container - this container writes a value to a null pointer
 1. kubectl run -i -t segfaulter --image=quay.io/icdh/segfaulter --restart=Never
 
 2. Validate the core dump has been uploaded to your object store instance.
-
-## Validated Kubernetes Services
-
-This is a matrix of confirmed test targets. Please PR environments that are also known to work
-
-<table><thead><td>Provider</td><td>Product</td><td>Version</td><td>Validated?</td><td>Working?</td><td>Notes</td></thead>
-<tr>
-    <td>IBM</td><td>IKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
-</tr>
-<tr>
-    <td>IBM</td><td>ROKS</td><td>4.6</td><td>Yes</td><td>Yes</td><td>Must enable privileged policy <a href="#openshift">See OpenShift Section</a></td>
-</tr>
-<tr>
-    <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
-</tr>
-<tr>
-    <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
-</tr>
-<tr>
-    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.includeCrioExe=true</td>
-</tr>
-<tr>
-    <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>Runs on CoreOS and building compatable binaries seems to be the next step</td>
-</tr>
-<tr>
-    <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioConfig=true and --set daemonset.composerCrioImageCmd="images"</td>
-</tr>
-<tr>
-    <td>Google</td><td>GKE</td><td>1.20.10-gke.1600</td><td>Yes</td><td>Yes</td><td><a href="https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants">Ubuntu containerd image</a> work without additional config.
-    cos_containerd image support requires --set daemonset.hostDirectory=/home/kubernetes/bin --set daemonset.coreDirectory=/home/kubernetes/cores.
-    </td>
-</tr>
-</table>
 
 ## Background
 
