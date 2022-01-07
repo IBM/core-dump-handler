@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:schedule-watch
+  repository: quay.io/icdh/core-dump-handler
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"
