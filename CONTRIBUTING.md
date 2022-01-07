@@ -67,9 +67,7 @@ The quickest way to get setup is to use a [free cluster](https://cloud.ibm.com/d
 Instructions on how to install are available in the main [README.md](https://github.com/IBM/core-dump-handler#installing-the-chart)
 
 ## Testing
-Currently there are unit tests for the agent and composer projects.
-The tests need to be ran as `root` on a Linux machine and will modify system settings.
-PR's that modify the codebase will be expected to run against a cluster before being accepted.
+PR's that modify the codebase will be expected to run against a cluster using the `integration/run.sh` before being accepted.
 
 ## Coding style guidelines
 Code contributions should be PR'd with `cargo fmt` ran 

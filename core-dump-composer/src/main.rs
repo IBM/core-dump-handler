@@ -452,15 +452,26 @@ fn main() -> Result<(), anyhow::Error> {
         }
         Err(e) => error!("Failed to run crictl img info {}", e),
     }
+    debug!("Found image list:\n {}", image_list);
+    let img_id_iter = img_id.split("@sha256:").collect::<Vec<&str>>();
+    let clean_image_id;
+    if img_id_iter.len() == 2 {
+        clean_image_id = String::from(img_id_iter[1]);
+    } else {
+        clean_image_id = img_id;
+    }
 
     match image_list["images"].as_array() {
         Some(img_lines) => {
             debug!("Found {} images", img_lines.len());
             for line in img_lines {
                 let line_obj: Value = serde_json::to_value(line).unwrap();
-                if serde_json::to_string(&line_obj["id"]).unwrap_or_default() == img_id {
+
+                debug!("Matching {} to {}", &line_obj["id"], clean_image_id);
+
+                if serde_json::to_string(&line_obj["id"]).unwrap_or_default() == clean_image_id {
                     let img_info_name = format!("{}-image-info.json", dump_name);
-                    debug!("found image {} starting to zip {}", img_id, img_info_name);
+                    debug!("found image {} starting to zip {}", clean_image_id, img_info_name);
                     match zip.start_file(img_info_name, options) {
                         Ok(v) => v,
                         Err(e) => error!("Errer starting zip file{}", e),
