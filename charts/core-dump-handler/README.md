@@ -25,15 +25,34 @@ Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-st
 
 ### OpenShift
 
-As the agent runs in privileged mode the following command is needed on OpenShift.
-`-z` is the service account name and `-n` is the namespace.
+As the agent runs in privileged mode you can enable to create a custom SCC along its service account during installation:
+```
+helm install core-dump-handler . --create-namespace --namespace observe \
+--set serviceAccount.create=true \
+--set serviceAccount.createScc=true
+```
+
+Manually, you can run this using `oc adm policy` where `-z` is the service account name and `-n` is the namespace.
 ```
 oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
 ```
+
+When running OpenShift on RHCOS (Red Hat CoreOS), you need to set different mount paths. A common writable path would be `/mnt/`, which you can control by setting:
+```
+helm install core-dump-handler . --create-namespace --namespace observe \
+--set daemonset.hostDirectory=/mnt/core-dump-handler \
+--set daemonset.coreDirectory=/mnt/core-dump-handler/cores
+```
+
 Some OpenShift services such as OpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
 This will be apparent if you see errors relating to glibc in the composer.log in the install folder of the agent. [See Troubleshooting below](#troubleshooting)
 ```
 --set daemonset.vendor=rhel7
+```
+
+You can make use of a more compact values.yaml during installation to override for the respective openshift values:
+```
+helm install core-dump-handler . --create-namespace --namespace observe --values values.openshift.yaml
 ```
 
 ### Verifying the Chart Installation

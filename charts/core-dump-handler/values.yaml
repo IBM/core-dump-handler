@@ -44,6 +44,9 @@ daemonset:
 serviceAccount:
   create: true
   name: "core-dump-admin"
+  # when running on Openshift, this creates a new SCC and attaches it to the service account
+  createScc: false
+  sccName: "core-dump-admin-privileged"
 
 clusterRole:
   name: "core-dump-event-reporter"
