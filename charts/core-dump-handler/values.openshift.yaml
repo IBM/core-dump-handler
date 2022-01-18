@@ -1,0 +1,15 @@
+# RHCOS requires a different host path, /mnt is writable
+daemonset:
+  hostDirectory: "/mnt/core-dump-handler"
+  coreDirectory: "/mnt/core-dump-handler/cores"  
+  vendor: default # default is a rhel8 build, alternatively set rhel7
+  composerCrioImageCmd: images # required for RHCOS, "img" otherwise
+
+serviceAccount:
+  create: true
+  name: "core-dump-admin"
+  
+# when running on Openshift, this creates a new SCC and attaches it to the above service account
+scc:
+  create: true
+  name: "core-dump-admin-privileged"

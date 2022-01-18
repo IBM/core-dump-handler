@@ -45,6 +45,11 @@ serviceAccount:
   create: true
   name: "core-dump-admin"
 
+# OpenShift specific for SecurityContextConstraints
+scc:
+  create: false
+  name: "core-dump-admin-privileged"
+
 clusterRole:
   name: "core-dump-event-reporter"
 
