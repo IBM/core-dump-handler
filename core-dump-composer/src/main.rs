@@ -452,14 +452,17 @@ fn main() -> Result<(), anyhow::Error> {
         }
         Err(e) => error!("Failed to run crictl img info {}", e),
     }
+    debug!("Found image list:\n {}", image_list);
 
     match image_list["images"].as_array() {
         Some(img_lines) => {
             debug!("Found {} images", img_lines.len());
             for line in img_lines {
                 let line_obj: Value = serde_json::to_value(line).unwrap();
+
+                debug!("Matching {} to {}", &line_obj["id"], img_id);
+                let img_info_name = format!("{}-image-info.json", dump_name);
                 if serde_json::to_string(&line_obj["id"]).unwrap_or_default() == img_id {
-                    let img_info_name = format!("{}-image-info.json", dump_name);
                     debug!("found image {} starting to zip {}", img_id, img_info_name);
                     match zip.start_file(img_info_name, options) {
                         Ok(v) => v,
@@ -471,6 +474,24 @@ fn main() -> Result<(), anyhow::Error> {
                         Err(e) => error!("Errer writing zip file{}", e),
                     };
                     break;
+                } else if let Some(arr) = line_obj["repoDigests"].as_array() {
+                    debug!("Matching inspecting repoDigests \n{:?}", arr);
+                    for digest in arr {
+                        debug!("Matching repoDigests {} to {}", serde_json::to_string(&digest).unwrap_or_default(), img_id);
+                        if serde_json::to_string(&digest).unwrap_or_default() == img_id {
+                            match zip.start_file(img_info_name, options) {
+                                Ok(v) => v,
+                                Err(e) => error!("Errer starting zip file{}", e),
+                            };
+                            let img_info_content =
+                                serde_json::to_string(&line_obj).unwrap_or_default();
+                            match zip.write_all(img_info_content.as_bytes()) {
+                                Ok(v) => v,
+                                Err(e) => error!("Errer writing zip file{}", e),
+                            };
+                            break;
+                        }
+                    }
                 }
             }
         }
