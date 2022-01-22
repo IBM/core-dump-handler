@@ -3,3 +3,4 @@
 coreos.Dockerfile
 *.vscode*
 .env
+**/run-ibm-openshift.sh

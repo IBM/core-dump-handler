@@ -1,6 +1,6 @@
 [package]
 name = "core-dump-composer"
-version = "6.0.0"
+version = "7.0.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2018"
 
@@ -18,6 +18,7 @@ anyhow = "1.0.40"
 serde_json = "1.0.64"
 serde_derive = "1.0.125"
 hostname = "0.3.1"
+libcrio = { path = "../../libcrio"}
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

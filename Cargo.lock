@@ -248,13 +248,14 @@ dependencies = [
 
 [[package]]
 name = "core-dump-composer"
-version = "6.0.0"
+version = "7.0.0"
 dependencies = [
  "advisory-lock",
  "anyhow",
  "clap",
  "dotenv",
  "hostname",
+ "libcrio",
  "log",
  "log4rs",
  "rand 0.7.3",
@@ -811,6 +812,14 @@ name = "libc"
 version = "0.2.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a60553f9a9e039a333b4e9b20573b9e9b9c0bb3a11e201ccc48ef4283456d673"
+
+[[package]]
+name = "libcrio"
+version = "0.1.5"
+dependencies = [
+ "log",
+ "serde_json",
+]
 
 [[package]]
 name = "linked-hash-map"

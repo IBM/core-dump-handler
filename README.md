@@ -4,6 +4,8 @@ This helm chart is designed to deploy functionality that automatically saves cor
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler) 
 [![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
+[![build status](https://github.com/ibm/core-dump-handler/workflows/CI/badge.svg)](https://github.com/ibm/core-dump-handler/actions)
+
 
 ## Code Of Conduct
 

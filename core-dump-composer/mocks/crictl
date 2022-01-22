@@ -812,3 +812,8 @@ then
   ]
 }'
 fi
+
+if [ "$cmd" = "logs" ]
+then
+echo 'A LOG'
+fi
