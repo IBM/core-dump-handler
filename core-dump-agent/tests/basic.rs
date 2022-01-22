@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 #[test]
+#[ignore]
 fn basic() -> Result<(), std::io::Error> {
     let output_folder = format!("{}/{}", ".", "output");
     match Command::new("mkdir").arg("-p").arg(&output_folder).spawn() {
