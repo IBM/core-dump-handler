@@ -175,7 +175,7 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         };
         i_interval /= 1000;
-        schedule = format!("1/{} * * * * *", i_interval.to_string());
+        schedule = format!("1/{} * * * * *", i_interval);
         if use_inotify == "true" {
             warn!("Both schedule and INotify set. Running schedule")
         }
