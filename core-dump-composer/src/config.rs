@@ -165,7 +165,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("limit-size")
                 .required(true)
                 .takes_value(true)
-                .about("Core file size soft resource limit of crashing process"),
+                .help("Core file size soft resource limit of crashing process"),
         )
         .arg(
             Arg::new("exe-name")
@@ -173,7 +173,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("exe-name")
                 .required(true)
                 .takes_value(true)
-                .about(
+                .help(
                     "The process or thread's comm value, which typically is the
             same as the executable filename (without path prefix, and
             truncated to a maximum of 15 characters)",
@@ -185,7 +185,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("pid")
                 .required(true)
                 .takes_value(true)
-                .about(
+                .help(
                     "PID of dumped process, as seen in the PID namespace in which
             the process resides.",
                 ),
@@ -196,7 +196,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("signal")
                 .required(true)
                 .takes_value(true)
-                .about("Number of signal causing dump."),
+                .help("Number of signal causing dump."),
         )
         .arg(
             Arg::new("timestamp")
@@ -204,7 +204,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("timestamp")
                 .required(true)
                 .takes_value(true)
-                .about("Time of dump, expressed as seconds since the Epoch."),
+                .help("Time of dump, expressed as seconds since the Epoch."),
         )
         .arg(
             Arg::new("directory")
@@ -212,7 +212,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("dir")
                 .required(true)
                 .takes_value(true)
-                .about("Directory to save the core dump to."),
+                .help("Directory to save the core dump to."),
         )
         .arg(
             Arg::new("hostname")
@@ -220,7 +220,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("hostname")
                 .required(true)
                 .takes_value(true)
-                .about("Hostname (same as nodename returned by uname(2))"),
+                .help("Hostname (same as nodename returned by uname(2))"),
         )
         .arg(
             Arg::new("pathname")
@@ -228,7 +228,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .long("pathname")
                 .required(true)
                 .takes_value(true)
-                .about("Hostname (same as nodename returned by uname(2))"),
+                .help("Hostname (same as nodename returned by uname(2))"),
         )
         .try_get_matches()
 }
