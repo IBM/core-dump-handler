@@ -14,6 +14,7 @@ pub struct CoreConfig {
     pub base_path: PathBuf,
     pub crictl_config_path: PathBuf,
     pub log_level: String,
+    pub log_length: u32,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
     pub image_command: String,
@@ -85,6 +86,10 @@ impl CoreConfig {
             .to_lowercase()
             .parse::<bool>()
             .unwrap();
+        let log_length = env::var("LOG_LENGTH")
+            .unwrap_or_else(|_| "500".to_string())
+            .parse::<u32>()
+            .unwrap();
         let image_command = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
         let use_crio_config = env::var("USE_CRIO_CONF")
             .unwrap_or_else(|_| "false".to_string().to_lowercase())
@@ -120,6 +125,7 @@ impl CoreConfig {
             bin_path,
             os_hostname,
             filename_template,
+            log_length,
             params,
         })
     }

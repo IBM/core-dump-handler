@@ -313,13 +313,14 @@ fn main() -> Result<(), anyhow::Error> {
                 container["id"].as_str().unwrap_or_default()
             );
 
-            let log = match cli.logs(container["id"].as_str().unwrap_or_default()) {
-                Ok(v) => v,
-                Err(e) => {
-                    error!("Error finding logs:\n{}", e);
-                    "".to_string()
-                }
-            };
+            let log =
+                match cli.tail_logs(container["id"].as_str().unwrap_or_default(), cc.log_length) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        error!("Error finding logs:\n{}", e);
+                        "".to_string()
+                    }
+                };
             debug!("Starting log file \n{}", cc.get_log_filename(counter));
             match zip.start_file(cc.get_log_filename(counter), options) {
                 Ok(v) => v,
