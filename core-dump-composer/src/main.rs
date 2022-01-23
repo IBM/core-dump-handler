@@ -24,16 +24,14 @@ fn main() -> Result<(), anyhow::Error> {
         Ok(v) => v,
         Err(e) => envloadmsg = format!("no .env file found so using Debug level logging {}", e),
     }
-
+    let l_log_level = cc.log_level.clone();
+    let log_path = logging::init_logger(l_log_level)?;
     debug!("Arguments: {:?}", env::args());
 
     info!(
         "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
         cc.ignore_crio, cc.image_command, cc.use_crio_config
     );
-    let l_log_level = cc.log_level.clone();
-    let log_path = logging::init_logger(l_log_level)?;
-
     info!("{}", envloadmsg);
     info!("Set logfile to: {:?}", &log_path);
     debug!("Creating dump for {}", cc.get_templated_name());
@@ -51,15 +49,11 @@ fn main() -> Result<(), anyhow::Error> {
         None
     };
     let l_bin_path = cc.bin_path.clone();
-    let image_command = if cc.image_command == *"image" {
-        libcrio::ImageCommand::Image
-    } else {
-        libcrio::ImageCommand::Img
-    };
+    let l_image_command = cc.image_command.clone();
     let cli = Cli {
         bin_path: l_bin_path,
         config_path,
-        image_command,
+        image_command: l_image_command,
     };
     let pod_object = match cli.pod(&cc.params.hostname) {
         Ok(v) => v,
@@ -145,29 +139,29 @@ fn main() -> Result<(), anyhow::Error> {
         process::exit(0);
     }
 
-    let l_crictl_config_path = cc.crictl_config_path.clone();
+    // let l_crictl_config_path = cc.crictl_config_path.clone();
 
-    let config_path = if cc.use_crio_config {
-        Some(
-            l_crictl_config_path
-                .into_os_string()
-                .to_string_lossy()
-                .to_string(),
-        )
-    } else {
-        None
-    };
-    let l_bin_path = cc.bin_path.clone();
-    let image_command = if cc.image_command == *"image" {
-        libcrio::ImageCommand::Image
-    } else {
-        libcrio::ImageCommand::Img
-    };
-    let cli = Cli {
-        bin_path: l_bin_path,
-        config_path,
-        image_command,
-    };
+    // let config_path = if cc.use_crio_config {
+    //     Some(
+    //         l_crictl_config_path
+    //             .into_os_string()
+    //             .to_string_lossy()
+    //             .to_string(),
+    //     )
+    // } else {
+    //     None
+    // };
+    // let l_bin_path = cc.bin_path.clone();
+    // // let image_command = if cc.image_command == *"image" {
+    // //     libcrio::ImageCommand::Images
+    // // } else {
+    // //     libcrio::ImageCommand::Img
+    // // };
+    // let cli = Cli {
+    //     bin_path: l_bin_path,
+    //     config_path,
+    //     image_command
+    // };
 
     // let l_pod_filename = cc.get_pod_filename().clone();
     debug!("Using runtime_file_name:{}", cc.get_pod_filename());

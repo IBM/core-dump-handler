@@ -37,7 +37,7 @@ fn image_command_scenario() -> Result<(), std::io::Error> {
         .unwrap();
 
     let cdc = Command::new("../target/debug/core-dump-composer")
-        .env("CRIO_IMAGE_CMD", "image")
+        .env("CRIO_IMAGE_CMD", "images")
         .arg("-c")
         .arg("1000000000")
         .arg("-e")

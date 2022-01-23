@@ -863,8 +863,12 @@ then
 }'
 fi
 
+if [ "$cmd" = "img" ]
+then
+  echo $@
+fi
 
-if [ "$cmd" = "image" ]
+if [ "$cmd" = "images" ]
 then
     echo '{
   "images": [

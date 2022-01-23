@@ -1,4 +1,5 @@
 use clap::{App, Arg, ArgMatches};
+use libcrio::ImageCommand;
 use log::error;
 use serde::Serialize;
 use std::env;
@@ -17,7 +18,7 @@ pub struct CoreConfig {
     pub log_length: u32,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
-    pub image_command: String,
+    pub image_command: ImageCommand,
     pub bin_path: String,
     pub os_hostname: String,
     pub filename_template: String,
@@ -90,7 +91,7 @@ impl CoreConfig {
             .unwrap_or_else(|_| "500".to_string())
             .parse::<u32>()
             .unwrap();
-        let image_command = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
+        let image_command_string = env::var("CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
         let use_crio_config = env::var("USE_CRIO_CONF")
             .unwrap_or_else(|_| "false".to_string().to_lowercase())
             .parse::<bool>()
@@ -110,7 +111,8 @@ impl CoreConfig {
             "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{}",
             base_path_str
         );
-
+        let image_command =
+            ImageCommand::from_str(&image_command_string).unwrap_or(ImageCommand::Img);
         let filename_template =
             env::var("FILENAME_TEMPLATE").unwrap_or_else(|_| String::from(DEFAULT_TEMPLATE));
 
