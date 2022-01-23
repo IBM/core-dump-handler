@@ -1,0 +1,17 @@
+# ROKS requires a different host path, /mnt is writable
+daemonset:
+  hostDirectory: "/mnt/core-dump-handler"
+  coreDirectory: "/mnt/core-dump-handler/cores"
+  vendor: rhel7 # ROKS runs on RHEL7 so a specific build is required.
+
+composer:
+  crioImageCmd: img
+
+serviceAccount:
+  create: true
+  name: "core-dump-admin"
+
+# when running on Openshift, this creates a new SCC and attaches it to the above service account
+scc:
+  create: true
+  name: "core-dump-admin-privileged"

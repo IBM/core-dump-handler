@@ -1,0 +1,3 @@
+# AWS requires a crio client to be copied to the server
+daemonset:
+  includeCrioExe: true
