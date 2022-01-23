@@ -70,10 +70,9 @@ fn main() -> Result<(), anyhow::Error> {
         }
     };
 
-    let namespace = match pod_object["metadata"]["namespace"].as_str() {
-        Some(s) => s,
-        None => "unknown",
-    };
+    let namespace = pod_object["metadata"]["namespace"]
+        .as_str()
+        .unwrap_or("unknown");
 
     cc.set_namespace(namespace.to_string());
     // Create the base zip file that we are going to put everything into
