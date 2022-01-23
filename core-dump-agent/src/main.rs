@@ -460,11 +460,12 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let filename_template = env::var("COMP_FILENAME_TEMPLATE").unwrap_or_else(|_| {
         "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}".to_string()
     });
+    let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}",
-        loglevel, ignore_crio, crio_image, use_crio_config, filename_template
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\n",
+        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length
     );
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;

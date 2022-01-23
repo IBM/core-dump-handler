@@ -32,13 +32,15 @@ spec:
           mountPropagation: Bidirectional
         env:
           - name: COMP_FILE_TEMPLATE
-            value: {{ .Values.daemonset.filenameTemplate }}
+            value: {{ .Values.composer.filenameTemplate }}
+          - name: COMP_LOG_LENGTH
+            value: {{ .Values.composer.logLength | quote }}
           - name: COMP_LOG_LEVEL
-            value: {{ .Values.daemonset.composerLogLevel }}
+            value: {{ .Values.composer.logLevel }}
           - name: COMP_IGNORE_CRIO
-            value: {{ .Values.daemonset.composerIgnoreCrio | quote }}
+            value: {{ .Values.composer.ignoreCrio | quote }}
           - name: COMP_CRIO_IMAGE_CMD
-            value:  {{ .Values.daemonset.composerCrioImageCmd }}
+            value:  {{ .Values.composer.crioImageCmd }}
           - name: DEPLOY_CRIO_CONFIG
             value:  {{ .Values.daemonset.DeployCrioConfig | quote }}
           - name: HOST_DIR
