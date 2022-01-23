@@ -4,24 +4,16 @@ use std::fs::File;
 use std::process::{Command, Stdio};
 
 #[test]
-fn run_with_mocks() -> Result<(), std::io::Error> {
+fn image_command_scenario() -> Result<(), std::io::Error> {
     let current_dir = env::current_dir()?;
 
-    println!("The current directory is {}", current_dir.display());
-    // Need to append to path
     let key = "PATH";
     let mut current_path = String::new();
     match env::var(key) {
         Ok(val) => current_path = val,
         Err(e) => println!("couldn't interpret {}: {}", key, e),
     }
-    let new_path = format!(
-        "{}/mocks:{}/target/debug:{}",
-        current_dir.display(),
-        current_dir.display(),
-        current_path
-    );
-    println!("Running tests using this PATH: {}", new_path);
+    println!("The current directory is {}", current_dir.display());
     let output_folder = format!("{}/{}", ".", "output");
     // Make a directory to store the generated zip file
     let _mkdir = match Command::new("mkdir").arg("-p").arg(&output_folder).spawn() {
@@ -31,14 +23,13 @@ fn run_with_mocks() -> Result<(), std::io::Error> {
     // copy crictl to base_folder
     Command::new("cp")
         .arg("-f")
-        .arg("./mocks/crictl")
+        .arg("./mocks/crictl-imagecommand.sh")
         .arg("../target/debug/crictl")
         .output()
         .expect("cp failed");
 
     // cat the test core file to process.
     let cat = Command::new("cat")
-        .env("PATH", &new_path)
         .arg("./mocks/test.core")
         .stdout(Stdio::piped())
         .spawn()?
@@ -46,7 +37,7 @@ fn run_with_mocks() -> Result<(), std::io::Error> {
         .unwrap();
 
     let cdc = Command::new("../target/debug/core-dump-composer")
-        .env("PATH", &new_path)
+        .env("CRIO_IMAGE_CMD", "image")
         .arg("-c")
         .arg("1000000000")
         .arg("-e")
@@ -117,16 +108,19 @@ fn run_with_mocks() -> Result<(), std::io::Error> {
                 .unwrap()
                 .as_array()
                 .expect("image-info should have a repoDigests");
-            assert_eq!("docker.io/number9/example-crashing-nodejs-app@sha256:b8fea40ed9da77307702608d1602a812c5983e0ec0b788fc6298985a40be3800", repo_digest[0].as_str().unwrap());
+            assert_eq!(
+                "quay.io/icdh/segfaulter@sha256:0630afbcfebb45059794b9a9f160f57f50062d28351c49bb568a3f7e206855bd",
+                repo_digest[0].as_str().unwrap()
+            );
             let size = json.get("size").expect("image-info should have a size");
-            assert_eq!("338054458", size);
+            assert_eq!("10229047", size);
             let repo_tags = json
                 .get("repoTags")
                 .unwrap()
                 .as_array()
                 .expect("image-info should have repoTags");
             assert_eq!(
-                "docker.io/number9/example-crashing-nodejs-app:latest",
+                "quay.io/icdh/segfaulter:latest",
                 repo_tags[0].as_str().unwrap()
             );
         }

@@ -16,8 +16,8 @@ mod config;
 mod logging;
 
 fn main() -> Result<(), anyhow::Error> {
-    let cc = config::CoreConfig::new()?;
-
+    let mut cc = config::CoreConfig::new()?;
+    cc.set_namespace("default".to_string());
     let mut envloadmsg = String::from("Loading .env");
     let l_dot_env_path = cc.dot_env_path.clone();
     match dotenv::from_path(l_dot_env_path) {
@@ -104,6 +104,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     if cc.ignore_crio {
         zip.finish()?;
+        process::exit(0);
     }
 
     let l_crictl_config_path = cc.crictl_config_path.clone();
@@ -119,10 +120,15 @@ fn main() -> Result<(), anyhow::Error> {
         None
     };
     let l_bin_path = cc.bin_path.clone();
+    let image_command = if cc.image_command == *"image" {
+        libcrio::ImageCommand::Image
+    } else {
+        libcrio::ImageCommand::Img
+    };
     let cli = Cli {
         bin_path: l_bin_path,
         config_path,
-        ..Default::default()
+        image_command,
     };
 
     let pod_object = match cli.pod(&cc.params.hostname) {

@@ -2,7 +2,6 @@ extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
-//use anyhow
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
 use log::{error, info, warn};

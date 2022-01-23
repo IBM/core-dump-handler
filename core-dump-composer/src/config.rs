@@ -1,10 +1,14 @@
 use clap::{App, Arg, ArgMatches};
+use log::error;
+use serde::Serialize;
 use std::env;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::str::FromStr;
+use tinytemplate::TinyTemplate;
 use uuid::Uuid;
 
+#[derive(Serialize)]
 pub struct CoreConfig {
     pub dot_env_path: PathBuf,
     pub zip_path: PathBuf,
@@ -17,9 +21,11 @@ pub struct CoreConfig {
     pub dump_name: String,
     pub bin_path: String,
     pub os_hostname: String,
+    pub filename_template: String,
     pub params: CoreParams,
 }
 
+#[derive(Serialize)]
 pub struct CoreParams {
     pub limit_size: String,
     pub exe_name: String,
@@ -29,8 +35,11 @@ pub struct CoreParams {
     pub directory: String,
     pub hostname: String,
     pub pathname: String,
+    pub namespace: Option<String>,
     pub uuid: Uuid,
 }
+
+static DEFAULT_TEMPLATE: &str = "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}";
 
 impl CoreConfig {
     pub fn new() -> Result<CoreConfig, anyhow::Error> {
@@ -54,6 +63,7 @@ impl CoreConfig {
             directory,
             hostname,
             pathname,
+            namespace: None,
             uuid,
         };
 
@@ -101,6 +111,9 @@ impl CoreConfig {
             base_path_str
         );
 
+        let filename_template =
+            env::var("FILENAME_TEMPLATE").unwrap_or_else(|_| String::from(DEFAULT_TEMPLATE));
+
         Ok(CoreConfig {
             log_level,
             ignore_crio,
@@ -113,6 +126,7 @@ impl CoreConfig {
             bin_path,
             dump_name,
             os_hostname,
+            filename_template,
             params,
         })
     }
@@ -125,32 +139,61 @@ impl CoreConfig {
         )
     }
 
+    pub fn get_templated_name(&self) -> String {
+        let mut tt = TinyTemplate::new();
+        match tt.add_template("name", &self.filename_template) {
+            Ok(v) => v,
+            Err(e) => {
+                error!(
+                    "Adding template failed. Using uuid {} {}",
+                    self.params.uuid.to_string(),
+                    e
+                );
+                return self.params.uuid.to_string();
+            }
+        }
+        match tt.render("name", &self.params) {
+            Ok(v) => v,
+            Err(e) => {
+                error!(
+                    "Templating name failed. Using uuid {} {}",
+                    self.params.uuid.to_string(),
+                    e
+                );
+                self.params.uuid.to_string()
+            }
+        }
+    }
+    pub fn set_namespace(&mut self, namespace: String) {
+        self.params.namespace = Some(namespace)
+    }
+
     pub fn get_dump_info_filename(&self) -> String {
-        format!("{}-dump-info.json", self.dump_name)
+        format!("{}-dump-info.json", self.get_templated_name())
     }
 
     pub fn get_core_filename(&self) -> String {
-        format!("{}.core", self.dump_name)
+        format!("{}.core", self.get_templated_name())
     }
 
     pub fn get_pod_filename(&self) -> String {
-        format!("{}-pod-info.json", self.dump_name)
+        format!("{}-pod-info.json", self.get_templated_name())
     }
 
     pub fn get_inspect_pod_filename(&self) -> String {
-        format!("{}-runtime-info.json", self.dump_name)
+        format!("{}-runtime-info.json", self.get_templated_name())
     }
 
     pub fn get_ps_filename(&self) -> String {
-        format!("{}-ps-info.json", self.dump_name)
+        format!("{}-ps-info.json", self.get_templated_name())
     }
 
     pub fn get_image_filename(&self, counter: u32) -> String {
-        format!("{}-{}-image-info.json", self.dump_name, counter)
+        format!("{}-{}-image-info.json", self.get_templated_name(), counter)
     }
 
     pub fn get_log_filename(&self, counter: u32) -> String {
-        format!("{}-{}.log", self.dump_name, counter)
+        format!("{}-{}.log", self.get_templated_name(), counter)
     }
 }
 
@@ -163,7 +206,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("limit-size")
                 .short('c')
                 .long("limit-size")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help("Core file size soft resource limit of crashing process"),
         )
@@ -171,7 +214,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("exe-name")
                 .short('e')
                 .long("exe-name")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help(
                     "The process or thread's comm value, which typically is the
@@ -183,7 +226,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("pid")
                 .short('p')
                 .long("pid")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help(
                     "PID of dumped process, as seen in the PID namespace in which
@@ -194,7 +237,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("signal")
                 .short('s')
                 .long("signal")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help("Number of signal causing dump."),
         )
@@ -202,7 +245,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("timestamp")
                 .short('t')
                 .long("timestamp")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help("Time of dump, expressed as seconds since the Epoch."),
         )
@@ -210,7 +253,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("directory")
                 .short('d')
                 .long("dir")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help("Directory to save the core dump to."),
         )
@@ -218,7 +261,7 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("hostname")
                 .short('h')
                 .long("hostname")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help("Hostname (same as nodename returned by uname(2))"),
         )
@@ -226,9 +269,85 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
             Arg::new("pathname")
                 .short('E')
                 .long("pathname")
-                .required(true)
+                .required(false)
                 .takes_value(true)
                 .help("Hostname (same as nodename returned by uname(2))"),
         )
+        .arg(
+            Arg::new("test-threads")
+                .long("test-threads")
+                .required(false)
+                .takes_value(true)
+                .help("test-threads mapped to support the test scenarios"),
+        )
         .try_get_matches()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::config::CoreConfig;
+    #[test]
+    fn namespace_is_rendered() {
+        let mut config = match CoreConfig::new() {
+            Ok(v) => v,
+            Err(e) => panic!("Generation of CoreConfig failed. {}", e),
+        };
+        config.set_namespace("anamespace".to_string());
+        let templated_name = config.get_templated_name();
+        assert!(templated_name.contains("-dump-----"));
+        config.filename_template = "{namespace}".to_string();
+        let just_namespace = config.get_templated_name();
+        assert_eq!(just_namespace, "anamespace".to_string());
+    }
+    #[test]
+    fn default_template_test() {
+        // "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}";
+        let mut config = match CoreConfig::new() {
+            Ok(v) => v,
+            Err(e) => panic!("Generation of CoreConfig failed. {}", e),
+        };
+        config.params.timestamp = "123123123".to_string();
+        config.params.hostname = "ahostname".to_string();
+        config.params.exe_name = "anexe".to_string();
+        config.params.pid = "2".to_string();
+        config.params.signal = "9".to_string();
+
+        let templated_name = config.get_templated_name();
+        assert!(templated_name.contains("-dump-123123123-ahostname-anexe-2-9"));
+    }
+    #[test]
+    fn get_files_test() {
+        let mut config = match CoreConfig::new() {
+            Ok(v) => v,
+            Err(e) => panic!("Generation of CoreConfig failed. {}", e),
+        };
+        config.params.timestamp = "123123123".to_string();
+        config.params.hostname = "ahostname".to_string();
+        config.params.exe_name = "anexe".to_string();
+        config.params.pid = "2".to_string();
+        config.params.signal = "9".to_string();
+        let dump_info_name = config.get_dump_info_filename();
+        assert!(dump_info_name.contains("-dump-123123123-ahostname-anexe-2-9-dump-info.json"));
+
+        let core_file_name = config.get_core_filename();
+        assert!(core_file_name.contains("-dump-123123123-ahostname-anexe-2-9.core"));
+
+        let pod_file_name = config.get_pod_filename();
+        assert!(pod_file_name.contains("-dump-123123123-ahostname-anexe-2-9-pod-info.json"));
+
+        let inspect_file_name = config.get_inspect_pod_filename();
+        assert!(inspect_file_name.contains("-dump-123123123-ahostname-anexe-2-9-runtime-info.json"));
+
+        let inspect_file_name = config.get_inspect_pod_filename();
+        assert!(inspect_file_name.contains("-dump-123123123-ahostname-anexe-2-9-runtime-info.json"));
+
+        let ps_file_name = config.get_ps_filename();
+        assert!(ps_file_name.contains("-dump-123123123-ahostname-anexe-2-9-ps-info.json"));
+
+        let img_file_name = config.get_image_filename(0);
+        assert!(img_file_name.contains("-dump-123123123-ahostname-anexe-2-9-0-image-info.json"));
+
+        let log_file_name = config.get_log_filename(0);
+        assert!(log_file_name.contains("-dump-123123123-ahostname-anexe-2-9-0.log"));
+    }
 }
