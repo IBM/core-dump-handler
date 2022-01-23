@@ -42,7 +42,7 @@ spec:
           - name: COMP_CRIO_IMAGE_CMD
             value:  {{ .Values.composer.crioImageCmd }}
           - name: DEPLOY_CRIO_CONFIG
-            value:  {{ .Values.daemonset.DeployCrioConfig | quote }}
+            value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: CORE_DIR

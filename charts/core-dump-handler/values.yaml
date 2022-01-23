@@ -33,7 +33,7 @@ daemonset:
   # interval: 60000
   # schedule: "1/60 * * * * *"
   useINotify: true
-  DeployCrioConfig: false
+  deployCrioConfig: false
   includeCrioExe: false
   # S3 access
   manageStoreSecret: true
