@@ -1,6 +1,6 @@
 # Core Dump Handler
 
-This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kubernetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
+This helm chart is designed to deploy functionality that automatically saves core dumps from most public cloud kubernetes service providers and private kubernetes instances to an S3 compatible storage service.
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler) 
 [![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
@@ -21,88 +21,56 @@ diverse, inclusive, and healthy community.
 
 [The full code of conduct is available here](./code-of-conduct.md)
 
-## Prerequisites
+## Install
 
-The [Helm](https://helm.sh/) cli to run the chart
+[Please refer to the chart README.md for full details](https://github.com/IBM/core-dump-handler/blob/main/charts/core-dump-handler/README.md).
 
-An [S3](https://en.wikipedia.org/wiki/Amazon_S3) compatible object storage solution such as [IBM Cloud Object Storage](https://cloud.ibm.com/objectstorage/create)
 
-A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
-
-## Installing the Chart
-
-```
-git clone https://github.com/IBM/core-dump-handler
-cd core-dump-handler/charts/core-dump-handler
-helm install core-dump-handler . --create-namespace --namespace observe \
---set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
---set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
-```
-
-Where the `--set` options are configuration for your S3 compatible provider
-Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
-
-Details on all the available options are available on the [artifact hub](https://artifacthub.io/packages/helm/core-dump-handler/core-dump-handler) or in the [chart README](https://github.com/IBM/core-dump-handler/blob/main/charts/core-dump-handler/README.md).
-
-## Public Cloud Kubernetes Service Compatibility
+## Kubernetes Service Compatibility
 
 This is a matrix of confirmed test targets. Please PR environments that are also known to work
 
-<table><thead><td>Provider</td><td>Product</td><td>Version</td><td>Validated?</td><td>Working?</td><td>Notes</td></thead>
+<table><thead><td>Provider</td><td>Product</td><td>Version</td><td>Validated?</td><td>Working?</td></thead>
 <tr>
-    <td>IBM</td><td>IKS</td><td>1.19-1.21</td><td>Yes</td><td>Yes</td><td></td>
+    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>IBM</td><td>ROKS</td><td>4.6</td><td>Yes</td><td>Yes</td><td>Must enable privileged policy <a href="#openshift">See OpenShift Section</a></td>
+    <td>AWS</td><td>ROSA</td><td>4.8</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td><td></td>
+    <td>Custom Build</td><td>K8S</td><td>N/A</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>Microsoft</td><td>ARO</td><td>4.6</td><td>Yes</td><td>No</td><td>ARO uses CoreOS and building compatable binaries seems to be the next step</td>
+    <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>AWS</td><td>EKS</td><td>1.21</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.includeCrioExe=true</td>
+    <td>Google</td><td>GKE-cos_containerd</td><td>1.20.10-gke.1600</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>AWS</td><td>ROSA</td><td>4.6</td><td>Yes</td><td>No</td><td>ROSA uses CoreOS and building compatable binaries seems to be the next step</td>
+    <td>Google</td><td>GKE-Ubuntu</td><td>1.20.10-gke.1600</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>Digital Ocean</td><td>K8S</td><td>1.21.5-do.0</td><td>Yes</td><td>Yes*</td><td>Use --set daemonset.DeployCrioConfig=true and --set daemonset.composerCrioImageCmd="images"</td>
+    <td>IBM</td><td>IKS</td><td>1.19-1.21</td><td>Yes</td><td>Yes</td>
 </tr>
 <tr>
-    <td>Google</td><td>GKE</td><td>1.20.10-gke.1600</td><td>Yes</td><td>Yes</td><td><a href="https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants">Ubuntu containerd image</a> work without additional config.
-    cos_containerd image support requires --set daemonset.hostDirectory=/home/kubernetes/bin --set daemonset.coreDirectory=/home/kubernetes/cores.
-    </td>
+    <td>IBM</td><td>ROKS</td><td>4.6-4.8</td><td>Yes</td><td>Yes</td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>AKS</td><td>1.19</td><td>Yes</td><td>Yes</td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>ARO</td><td>4.8</td><td>Yes</td><td>Yes</td>
+</tr>
+<tr>
+    <td>RedHat</td><td>On-Premises</td><td>4.8</td><td>Yes</td><td>Yes</td>
 </tr>
 </table>
-
-### OpenShift
-
-As the agent runs in privileged mode the following command is needed on OpenShift.
-`-z` is the service account name and `-n` is the namespace.
-```
-oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
-```
-Some OpenShift services such as OpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
-This will be apparent if you see errors relating to glibc in the composer.log in the install folder of the agent. [See Troubleshooting below](#troubleshooting)
-```
---set daemonset.vendor=rhel7
-```
-
-### Verifying the Chart Installation
-
-Run a crashing container - this container writes a value to a null pointer
-
-1. kubectl run -i -t segfaulter --image=quay.io/icdh/segfaulter --restart=Never
-
-2. Validate the core dump has been uploaded to your object store instance.
 
 ## Background
 
 [Core Dumps](https://en.wikipedia.org/wiki/Core_dump) are a critical part of observability.
 
-As systems become more distributed core dumps offer teams a non-invasive approach to understanding why programs are malfunctioning in any environment they are deployed to. 
+As systems become more distributed core dumps offer teams a non-invasive approach to understanding why programs are malfunctioning in any environment they are deployed to.
 
 Core Dumps are useful in a wide number of scenarios but they are very relevant in the following cases:
 
@@ -124,10 +92,10 @@ This chart aims to tackle the problems surrounding core dumps by leveraging comm
 
 ## Chart Details
 
-The chart deploys two processes: 
+The chart deploys two processes:
 
-1. The **agent** manages the updating of `/proc/sys/kernel/*` configuration, deploys the composer service and uploads the core dumps zipfile created by the composer to an object storage instance. 
-    
+1. The **agent** manages the updating of `/proc/sys/kernel/*` configuration, deploys the composer service and uploads the core dumps zipfile created by the composer to an object storage instance.
+
 2. The **composer** handles the processing of a core dump and creating runtime, container coredump and image JSON documents from CRICTL and inserting them into a single zip file. The zip file is stored on the local file system of the node for the agent to upload.
 
 
@@ -212,7 +180,7 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
 1. Login to your kubernetes cluster so that `kubectl` can be ran from the script.
 
 1. Ensure you have an minio client in your PATH on your machine.
-    
+
     ```
     which mc
     /usr/local/bin
@@ -225,19 +193,19 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
     sudo cp mc /usr/local/bin/mc
     ```
     Other OSes are detailed here https://docs.min.io/docs/minio-client-quickstart-guide.html
-    
-1. Publish the container definition for this project to a registry 
-   
+
+1. Publish the container definition for this project to a registry
+
    ```
    docker build -t REPOSITORYNAME:YOUR_TAG .
    docker push REPOSITORYNAME:YOUR_TAG
    ```
-   
+
 1. Modify the image definition in the yaml
 
     ```yaml
     image:
-    repository: REPOSITORYNAME:YOUR_TAG 
+    repository: REPOSITORYNAME:YOUR_TAG
     ```
 1. In the root of the project folder create a file called `.env` with the following configuration
 
@@ -256,7 +224,7 @@ or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
     ```
 
 
-## Troubleshooting 
+## Troubleshooting
 
 The first place to look for issues is in the agent console.
 A successful install should look like this
