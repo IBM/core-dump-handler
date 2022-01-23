@@ -31,6 +31,8 @@ spec:
           mountPath:  {{ .Values.daemonset.coreDirectory }}
           mountPropagation: Bidirectional
         env:
+          - name: COMP_FILE_TEMPLATE
+            value: {{ .Values.daemonset.filenameTemplate }}
           - name: COMP_LOG_LEVEL
             value: {{ .Values.daemonset.composerLogLevel }}
           - name: COMP_IGNORE_CRIO

@@ -91,6 +91,8 @@ The agent pod has the following environment variables:
 
     "img" (Default): This is the value most crictls expect.
 
+* COMP_FILENAME_TEMPLATE - Defines the template that generates the filename using [tinytemplate](https://crates.io/crates/tinytemplate#quickstart) and the [params object](https://github.com/IBM/core-dump-handler/blob/main/core-dump-composer/src/config.rs#L29)
+
     "images": Digital Ocean Required this value
 * DEPLOY_CRIO_CONFIG - Defines whether the agent should deploy a crictl config to the host
 
@@ -160,6 +162,7 @@ Daemonset
 * DeployCrioConfig:  Maps to the DEPLOY_CRIO_CONFIG enviroment variable (Default false)
 * includeCrioExe: Maps to the DEPLOY_CRIO_EXE enviroment variable (Default false)
 * manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables.
+* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable (Default {uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal})
 
 Set to false if you are using an external secrets managment system (Default true)
 * s3AccessKey : Maps to the S3_ACCESS_KEY enviroment variable

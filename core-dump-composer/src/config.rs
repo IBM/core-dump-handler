@@ -11,14 +11,12 @@ use uuid::Uuid;
 #[derive(Serialize)]
 pub struct CoreConfig {
     pub dot_env_path: PathBuf,
-    pub zip_path: PathBuf,
     pub base_path: PathBuf,
     pub crictl_config_path: PathBuf,
     pub log_level: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
     pub image_command: String,
-    pub dump_name: String,
     pub bin_path: String,
     pub os_hostname: String,
     pub filename_template: String,
@@ -67,10 +65,10 @@ impl CoreConfig {
             uuid,
         };
 
-        let dump_name = format!(
-            "{}-dump-{}-{}-{}-{}-{}",
-            uuid, params.timestamp, params.hostname, params.exe_name, params.pid, params.signal
-        );
+        // let dump_name = format!(
+        //     "{}-dump-{}-{}-{}-{}-{}",
+        //     uuid, params.timestamp, params.hostname, params.exe_name, params.pid, params.signal
+        // );
         let mut dot_env_path = env::current_exe()?;
         dot_env_path.pop();
         dot_env_path.push(".env");
@@ -80,9 +78,6 @@ impl CoreConfig {
         crictl_config_path.push("crictl.yaml");
         let mut base_path = env::current_exe()?;
         base_path.pop();
-
-        let zip_path = format!("{}/{}.zip", params.directory, dump_name);
-        let zip_path = std::path::PathBuf::from(&zip_path);
 
         let log_level = env::var("LOG_LEVEL").unwrap_or_default();
         let ignore_crio = env::var("IGNORE_CRIO")
@@ -120,11 +115,9 @@ impl CoreConfig {
             dot_env_path,
             image_command,
             use_crio_config,
-            zip_path,
             crictl_config_path,
             base_path,
             bin_path,
-            dump_name,
             os_hostname,
             filename_template,
             params,
@@ -133,9 +126,9 @@ impl CoreConfig {
 
     pub fn get_dump_info(&self) -> String {
         format!(
-            "{{\"uuid\":\"{}\", \"dump_file\":\"{}.core\", \"timestamp\": \"{}\",
+            "{{\"uuid\":\"{}\", \"dump_file\":\"{}\", \"timestamp\": \"{}\",
         \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\", \"node_hostname\": \"{}\" }}",
-            self.params.uuid, self.dump_name, self.params.timestamp, self.params.hostname, self.params.exe_name, self.params.pid, self.params.signal, self.os_hostname
+            self.params.uuid, self.get_core_filename(), self.params.timestamp, self.params.hostname, self.params.exe_name, self.params.pid, self.params.signal, self.os_hostname
         )
     }
 
@@ -194,6 +187,13 @@ impl CoreConfig {
 
     pub fn get_log_filename(&self, counter: u32) -> String {
         format!("{}-{}.log", self.get_templated_name(), counter)
+    }
+    pub fn get_zip_full_path(&self) -> String {
+        format!(
+            "{}/{}.zip",
+            self.params.directory,
+            self.get_templated_name()
+        )
     }
 }
 
@@ -349,5 +349,8 @@ mod tests {
 
         let log_file_name = config.get_log_filename(0);
         assert!(log_file_name.contains("-dump-123123123-ahostname-anexe-2-9-0.log"));
+
+        let zip_file_name = config.get_zip_full_path();
+        assert!(zip_file_name.contains("-dump-123123123-ahostname-anexe-2-9.zip"));
     }
 }

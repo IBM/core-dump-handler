@@ -102,6 +102,10 @@ fn default_scenario() -> Result<(), std::io::Error> {
             let signal = json
                 .get("signal")
                 .expect("dump-info.json should have signal key");
+            let dump_name = json
+                .get("dump_file")
+                .expect("dump-info.json should have dump_name key");
+            assert!(dump_name.to_string().contains("4-10.core"));
             assert_eq!("10", signal);
         }
         if current_path.contains("image-info.json") {

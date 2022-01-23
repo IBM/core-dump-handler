@@ -448,21 +448,23 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
 }
 
 fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
-    let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "error".to_string());
+    let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
     let ignore_crio = env::var("COMP_IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-    let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "error".to_string());
+    let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
     let destination = format!("{}/{}", host_location, ".env");
     let use_crio_config = env::var("DEPLOY_CRIO_CONFIG")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-
+    let filename_template = env::var("COMP_FILENAME_TEMPLATE").unwrap_or_else(|_| {
+        "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}".to_string()
+    });
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\n",
-        loglevel, ignore_crio, crio_image, use_crio_config
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}",
+        loglevel, ignore_crio, crio_image, use_crio_config, filename_template
     );
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;

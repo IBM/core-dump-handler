@@ -36,14 +36,52 @@ fn main() -> Result<(), anyhow::Error> {
 
     info!("{}", envloadmsg);
     info!("Set logfile to: {:?}", &log_path);
-    debug!("Creating dump for {}", cc.dump_name);
+    debug!("Creating dump for {}", cc.get_templated_name());
 
+    let l_crictl_config_path = cc.crictl_config_path.clone();
+
+    let config_path = if cc.use_crio_config {
+        Some(
+            l_crictl_config_path
+                .into_os_string()
+                .to_string_lossy()
+                .to_string(),
+        )
+    } else {
+        None
+    };
+    let l_bin_path = cc.bin_path.clone();
+    let image_command = if cc.image_command == *"image" {
+        libcrio::ImageCommand::Image
+    } else {
+        libcrio::ImageCommand::Img
+    };
+    let cli = Cli {
+        bin_path: l_bin_path,
+        config_path,
+        image_command,
+    };
+    let pod_object = match cli.pod(&cc.params.hostname) {
+        Ok(v) => v,
+        Err(e) => {
+            error!("{}", e);
+            // We fall through here as the coredump and info can still be captured.
+            json!({})
+        }
+    };
+
+    let namespace = match pod_object["metadata"]["namespace"].as_str() {
+        Some(s) => s,
+        None => "unknown",
+    };
+
+    cc.set_namespace(namespace.to_string());
     // Create the base zip file that we are going to put everything into
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o444);
 
-    let file = match File::create(&cc.zip_path.as_path()) {
+    let file = match File::create(cc.get_zip_full_path()) {
         Ok(v) => v,
         Err(e) => {
             error!("Failed to create file: {}", e);
@@ -104,6 +142,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     if cc.ignore_crio {
         zip.finish()?;
+        file.unlock()?;
         process::exit(0);
     }
 
@@ -129,14 +168,6 @@ fn main() -> Result<(), anyhow::Error> {
         bin_path: l_bin_path,
         config_path,
         image_command,
-    };
-
-    let pod_object = match cli.pod(&cc.params.hostname) {
-        Ok(v) => v,
-        Err(e) => {
-            error!("{}", e);
-            json!({})
-        }
     };
 
     // let l_pod_filename = cc.get_pod_filename().clone();

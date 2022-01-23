@@ -40,6 +40,7 @@ daemonset:
   s3BucketName: XXX
   s3Region: XXX
   extraEnvVars: ""
+  filenameTemplate: "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"
 
 serviceAccount:
   create: true
