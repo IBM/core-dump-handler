@@ -23,15 +23,15 @@ It's strongly recommened that you maintain the upload pattern of moving the core
 
 This scenario is possible but the following aspects need consideration:
 
-1. The upload functionality needs to be disabled by commenting out the `useINotify` and `interval` properties and setting the `schedule` to be `* * * * * *`.
+1. The upload functionality needs to be disabled by commenting out the `schedule` and `interval` properties and setting the `useINotify` to be `false`. See [main.rs](https://github.com/IBM/core-dump-handler/blob/main/core-dump-agent/src/main.rs#L153) for the details.
 
     e.g. [values.yaml](https://github.com/IBM/core-dump-handler/blob/main/charts/core-dump-handler/values.yaml#L30)
     ```yaml
     # interval: 60000
-    schedule: "* * * * * *"
-    # useINotify: false
+    # schedule: "* * * * * *"
+    useINotify: false
     ```
-    N.B. The interval and useINotify **MUST** be removed as the JSON schema validation makes them mutually exclusive.
+    N.B. The interval and schedule **MUST** be removed as the JSON schema validation makes them mutually exclusive.
 
 2. File Locks need to be honoured.
 
