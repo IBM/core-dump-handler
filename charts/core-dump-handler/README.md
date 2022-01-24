@@ -181,7 +181,7 @@ Composer
 * logLevel: The log level for the composer (Default "Warn")
 * ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
-* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable (Default {uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal})
+* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
 * logLength: The amount of lines to take from the crashing pod. (Default 500)
 
 Daemonset

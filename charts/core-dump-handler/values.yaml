@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler
+  repository: quay.io/icdh/core-dump-handler:pod-logs
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"
@@ -21,8 +21,10 @@ composer:
   ignoreCrio: false
   crioImageCmd: "img"
   logLevel: "Warn"
-  filenameTemplate: "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"
+  # Double curlies are required otherwise helm trys to parse the string
+  filenameTemplate: "{{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}}"
   logLength: 500
+
 daemonset:
   name: "core-dump-handler"
   label: "core-dump-ds"
