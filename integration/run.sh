@@ -9,9 +9,11 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3BucketName=${S3_BUCKET_NAME} --set daemonset.s3Region=${S3_REGION} \
 --set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET}
 ## Poll until pod is up
-while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
+# while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
+while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o json | jq -r '.items[].status.conditions[].status | select(.=="False")') == *"False"* ]];
 do
-    echo "waiting for core dump pod to be setup" && sleep 1;
+    kubectl get pods -n observe -l name=core-dump-ds -o json | jq -r '.items[].status.conditions[]'
+    echo "When all items status are 'True' the core pods are set up" && sleep 1;
 done
 
 echo "Core dump pod is ready - starting crash test"
@@ -49,8 +51,27 @@ node_hostname=$(jq -r '.node_hostname' *-dump-info.json)
 if [[ $node_hostname ]];
 then
     echo -e "${GREEN}Success: Node Name Exists${NC}"
-    cd ..
-    rm -fr output
+else
+    echo -e "${RED}Failed${NC}"
+    echo "Node Does NOT Name Exists ${node_hostname}"
+    echo "Examine the output folder"
+fi
+
+log_file_count=$(wc -l < *.log)
+
+if [[ "$log_file_count" == "500" ]];
+then
+    echo -e "${GREEN}Success: logfile contains 500 lines${NC}"
+else
+    echo -e "${RED}Failed${NC}"
+    echo "Node Does NOT Name Exists ${node_hostname}"
+    echo "Examine the output folder"
+fi
+
+repoTags0=$(jq -r '.repoTags[0]' *0-image-info.json)
+if [[ "$repoTags0" == "quay.io/icdh/segfaulter:latest" ]];
+then
+    echo -e "${GREEN}Success: Image successfully captured${NC}"
 else
     echo -e "${RED}Failed${NC}"
     echo "Node Does NOT Name Exists ${node_hostname}"
