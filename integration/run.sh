@@ -80,7 +80,7 @@ fi
 
 if [ $file_count == "8" ]
 then
-    echo -e "${GREEN}Sucess: Correct File Count${NC}"
+    echo -e "${GREEN}Success: Correct File Count${NC}"
     cd ..
     rm -fr output
 else
