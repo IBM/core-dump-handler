@@ -7,11 +7,13 @@ cd ./charts/core-dump-handler
 
 helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3BucketName=${S3_BUCKET_NAME} --set daemonset.s3Region=${S3_REGION} \
---set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET}
+--set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET} \
+--values values.roks.yaml
 ## Poll until pod is up
-while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
+# while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
+while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={.items[*].status.conditions[*].status}' | awk '{ $retval="True";for(i=1; i<=NF; i++) { if($i=="False") $retval="False" } print $retval }') != "True" ]];
 do
-    echo "waiting for core dump pod to be setup" && sleep 1;
+    echo "waiting for core dump pod to be setup" && sleep 1; 
 done
 
 echo "Core dump pod is ready - starting crash test"
@@ -23,20 +25,20 @@ kubectl delete pod segfaulter
 mc alias set storage https://$S3_REGION $S3_ACCESS_KEY $S3_SECRET
 
 while [[ $(mc find storage/${S3_BUCKET_NAME} --newer-than 1m) == "" ]]; 
-do
+do 
     echo "waiting for upload to complete" && sleep 1;
 done
 
 file_name=$(mc find storage/${S3_BUCKET_NAME} --newer-than 1m)
 base_name=$(basename ${file_name})
 rm -fr ./output
-mkdir ./output
+mkdir ./output 
 cd ./output
 
 echo "Copying $base_name"
 mc cp $file_name .
 
-unzip $base_name
+unzip $base_name 
 
 file_count=$(ls | wc -l)
 
