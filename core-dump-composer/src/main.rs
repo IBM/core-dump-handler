@@ -273,6 +273,35 @@ fn main() -> Result<(), anyhow::Error> {
                     break;
                 }
             };
+            let log =
+                match cli.tail_logs(container["id"].as_str().unwrap_or_default(), cc.log_length) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        error!("Error finding logs:\n{}", e);
+                        "".to_string()
+                    }
+                };
+            debug!("Starting log file \n{}", cc.get_log_filename(counter));
+            match zip.start_file(cc.get_log_filename(counter), options) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("Error starting log file in zip \n{}", e);
+                    zip.finish()?;
+                    file.unlock()?;
+                    process::exit(1);
+                }
+            };
+            debug!("Writing file output \n{}", log);
+            // TODO: Should this be streamed?
+            match zip.write_all(log.to_string().as_bytes()) {
+                Ok(v) => v,
+                Err(e) => {
+                    error!("Error writing log file in zip \n{}", e);
+                    zip.finish()?;
+                    file.unlock()?;
+                    process::exit(1);
+                }
+            };
             debug!("found img_id {}", img_ref);
             let image = match cli.image(img_ref) {
                 Ok(v) => v,
@@ -306,36 +335,6 @@ fn main() -> Result<(), anyhow::Error> {
                 "Getting logs for container id {}",
                 container["id"].as_str().unwrap_or_default()
             );
-
-            let log =
-                match cli.tail_logs(container["id"].as_str().unwrap_or_default(), cc.log_length) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        error!("Error finding logs:\n{}", e);
-                        "".to_string()
-                    }
-                };
-            debug!("Starting log file \n{}", cc.get_log_filename(counter));
-            match zip.start_file(cc.get_log_filename(counter), options) {
-                Ok(v) => v,
-                Err(e) => {
-                    error!("Error starting log file in zip \n{}", e);
-                    zip.finish()?;
-                    file.unlock()?;
-                    process::exit(1);
-                }
-            };
-            debug!("Writing file output \n{}", log);
-            // TODO: Should this be streamed?
-            match zip.write_all(log.to_string().as_bytes()) {
-                Ok(v) => v,
-                Err(e) => {
-                    error!("Error writing log file in zip \n{}", e);
-                    zip.finish()?;
-                    file.unlock()?;
-                    process::exit(1);
-                }
-            };
         }
     };
 

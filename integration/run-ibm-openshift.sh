@@ -45,7 +45,7 @@ unzip $base_name
 
 cleanup() {
     mc rm $file_name
-    # helm delete -n observe core-dump-handler
+    helm delete -n observe core-dump-handler
     exit 1
 }
 
