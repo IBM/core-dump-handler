@@ -3,3 +3,4 @@
 coreos.Dockerfile
 *.vscode*
 .env
+core-dump-agent/vendor/**

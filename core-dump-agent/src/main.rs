@@ -473,10 +473,17 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+fn get_path() -> String {
+    let mut local_bin = env::var("LOCAL_BIN").unwrap_or_else(|_| "".to_string());
+    local_bin.push(':');
+    local_bin.push_str(BIN_PATH);
+    local_bin
+}
+
 fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
     info!("Getting sysctl for {}", name);
     let output = Command::new("sysctl")
-        .env("PATH", BIN_PATH)
+        .env("PATH", get_path())
         .args(&["-n", name])
         .output()?;
     let lines = String::from_utf8(output.stdout)?;
@@ -502,7 +509,7 @@ fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::E
 fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
     let s = format!("{}={}", name, value);
     let output = Command::new("sysctl")
-        .env("PATH", BIN_PATH)
+        .env("PATH", get_path())
         .args(&["-w", s.as_str()])
         .status()?;
     if !output.success() {

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ $2 == "kernel.core_pattern" ]]
+then
+    echo "|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h %e"
+fi
+
+if [[ $2 == "kernel.core_pipe_limit" ]]
+then
+    echo "16"
+fi
+
+if [[ $2 == "fs.suid_dumpable" ]]
+then
+    echo "0"
+fi
