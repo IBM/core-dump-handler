@@ -10,7 +10,7 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3AccessKey=${S3_ACCESS_KEY} --set daemonset.s3Secret=${S3_SECRET} \
 --values values.roks.yaml
 ## Poll until pod is up
-
+sleep 1
 # while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; 
 while [[ $(kubectl get pods -n observe -l name=core-dump-ds -o json | jq -r '.items[].status.conditions[].status | select(.=="False")') == *"False"* ]];
 do
