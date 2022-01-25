@@ -40,7 +40,11 @@ mc cp $file_name .
 
 unzip $base_name
 
-file_count=$(ls | wc -l)
+cleanup() {
+    mc rm $file_name
+    helm delete -n observe core-dump-handler
+    exit 1
+}
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -48,13 +52,14 @@ NC='\033[0m' # No Color
 
 node_hostname=$(jq -r '.node_hostname' *-dump-info.json)
 
-if [[ $node_hostname ]];
+if [[ "$node_hostname" ]];
 then
     echo -e "${GREEN}Success: Node Name Exists${NC}"
 else
     echo -e "${RED}Failed${NC}"
     echo "Node Does NOT Name Exists ${node_hostname}"
     echo "Examine the output folder"
+    cleanup
 fi
 
 log_file_count=$(wc -l < *.log)
@@ -64,8 +69,9 @@ then
     echo -e "${GREEN}Success: logfile contains 500 lines${NC}"
 else
     echo -e "${RED}Failed${NC}"
-    echo "Node Does NOT Name Exists ${node_hostname}"
+    echo "Log file Does NOT contain 500 lines: Actual Count ${log_file_count}"
     echo "Examine the output folder"
+    cleanup
 fi
 
 repoTags0=$(jq -r '.repoTags[0]' *0-image-info.json)
@@ -74,9 +80,12 @@ then
     echo -e "${GREEN}Success: Image successfully captured${NC}"
 else
     echo -e "${RED}Failed${NC}"
-    echo "Node Does NOT Name Exists ${node_hostname}"
+    echo "Image NOT available ${repoTags0}"
     echo "Examine the output folder"
+    cleanup
 fi
+
+file_count=$(ls | wc -l)
 
 if [ $file_count == "8" ]
 then
@@ -87,7 +96,5 @@ else
     echo -e "${RED}Failed${NC}"
     echo "expected 8 files including the zip but found ${file_count}"
     echo "Examine the output folder"
+    cleanup
 fi
-
-mc rm $file_name
-helm delete -n observe core-dump-handler
