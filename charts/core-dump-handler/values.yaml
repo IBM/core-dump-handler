@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler:pod-logs
+  repository: quay.io/icdh/core-dump-handler@sha256:1fd4ced7464716d800ad9df8c214daaaef085775551bdced8f5c0b3499f7219f
   pullPolicy: Always
   request_mem: "64Mi"
   request_cpu: "250m"

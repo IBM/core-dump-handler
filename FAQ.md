@@ -4,6 +4,8 @@
 
 - [Why is my core dump truncated?](#why-is-my-core-dump-truncated)
 
+- [Why is my log file exactly half of my configured line count?](why-is-my-log-file-exactly-half-of-my-configured-line count)
+
 - [Can I force an upload?](#can-i-force-an-upload)
 
 - [What are the storage configuration options?](#what-are-the-storage-configuration-options)
@@ -68,6 +70,13 @@ spec:
 terminationGracePeriodSeconds: 120
 ```
 Also see [Kubernetes best practices: terminating with grace](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace)
+
+## Why is my log file exactly half of my configured line count?
+
+This appears to be a bug in some kubernetes services.
+You should also notice that the command `kubectl logs --tail=500 YOUR_POD_ID` exhibits the same behaviour.
+Current workaround is to double the line count on the configuration.
+
 
 ## Can I force an upload?
 

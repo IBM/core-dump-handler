@@ -67,14 +67,21 @@ fi
 
 log_file_count=$(wc -l < *.log)
 
+# There seems to be a bug in ROKS 4.8 where this command only returns exactly half of the tail.
+# This also seems to be the same when using the kubectl client.
 if [[ "$log_file_count" == "500" ]];
 then
     echo -e "${GREEN}Success: logfile contains 500 lines${NC}"
-else
-    echo -e "${RED}Failed${NC}"
-    echo "Log file Does NOT contain 500 lines: Actual Count ${log_file_count}"
-    echo "Examine the output folder"
-    cleanup
+    if [[ "$log_file_count" == "250" ]];
+    then
+        echo -e "${GREEN}Success: logfile contains 250 lines${NC}"
+
+    else
+        echo -e "${RED}Failed${NC}"
+        echo "Log file Does NOT contain 500 lines: Actual Count ${log_file_count}"
+        echo "Examine the output folder"
+        cleanup
+    fi
 fi
 
 repoTags0=$(jq -r '.repoTags[0]' *0-image-info.json)

@@ -803,9 +803,9 @@ checksum = "a60553f9a9e039a333b4e9b20573b9e9b9c0bb3a11e201ccc48ef4283456d673"
 
 [[package]]
 name = "libcrio"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e06e1969f995a806156c1058bb647bed27570ceefbc992f1e19f017843b9987"
+checksum = "0d66eba1f3b1844578e2ef4ffdb4fcc4c78312d20cceec1e7c1fa7605b15faa6"
 dependencies = [
  "log",
  "serde",
