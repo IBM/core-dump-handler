@@ -5,11 +5,11 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: {{ .Values.storageClass }} 
+  storageClassName: {{ .Values.storageClass }}
   capacity:
     storage: {{ .Values.coreStorage }}
   accessModes:
-  - ReadWriteOnce 
+  - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: {{ .Values.daemonset.coreDirectory }}

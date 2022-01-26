@@ -44,7 +44,6 @@ daemonset:
   s3BucketName: XXX
   s3Region: XXX
   extraEnvVars: ""
-  
 
 serviceAccount:
   create: true
