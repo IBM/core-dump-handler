@@ -4,7 +4,7 @@
 
 - [Why is my core dump truncated?](#why-is-my-core-dump-truncated)
 
-- [Why is my log file exactly half of my configured line count?](why-is-my-log-file-exactly-half-of-my-configured-line count)
+- [Why is my log file exactly half of my configured line count?](why-is-my-log-file-exactly-half-of-my-configured-line-count)
 
 - [Can I force an upload?](#can-i-force-an-upload)
 
