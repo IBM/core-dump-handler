@@ -49,6 +49,12 @@ cleanup() {
     exit 1
 }
 
+cleanupclean() {
+    mc rm $file_name
+    helm delete -n observe core-dump-handler
+    exit 0
+}
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
@@ -102,6 +108,7 @@ then
     echo -e "${GREEN}Success: Correct File Count${NC}"
     cd ..
     rm -fr output
+    cleanupclean
 else
     echo -e "${RED}Failed${NC}"
     echo "expected 8 files including the zip but found ${file_count}"
