@@ -6,7 +6,7 @@ This helm chart is designed to deploy functionality that automatically saves cor
 
 The [Helm](https://helm.sh/) cli to run the chart
 
-An [S3](https://en.wikipedia.org/wiki/Amazon_S3) compatible object storage solution.
+An [S3 Protocol Compatible](https://en.wikipedia.org/wiki/Amazon_S3) object storage solution.
 
 A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
 
