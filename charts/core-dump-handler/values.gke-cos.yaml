@@ -1,4 +1,4 @@
-# Googel Kubernetes Engine cos_containerd requires a different host path, /mnt is writable
+# Google Kubernetes Engine cos_containerd requires a different host path, /mnt is writable
 daemonset:
   hostDirectory: "/home/kubernetes/bin"
   coreDirectory: "/home/kubernetes/cores"
