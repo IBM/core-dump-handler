@@ -291,7 +291,7 @@ async fn main() -> Result<(), anyhow::Error> {
 async fn process_file(zip_path: &Path, bucket: &Bucket) {
     info!("Uploading: {}", zip_path.display());
 
-    let mut f = File::open(&zip_path).expect("no file found");
+    let f = File::open(&zip_path).expect("no file found");
 
     match f.try_lock(FileLockMode::Shared) {
         Ok(_) => { /* If we can lock then we are ok */ }
@@ -309,9 +309,6 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
     }
 
     let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
-    let mut buffer = vec![0; metadata.len() as usize];
-    f.read_exact(&mut buffer)
-        .expect("Failed to read_exact for file");
     info!("zip size is {}", metadata.len());
     let path_str = match zip_path.to_str() {
         Some(v) => v,
@@ -327,8 +324,10 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
             return;
         }
     };
+    
+    let mut fasync = tokio::fs::File::open(zip_path).await.expect("file was removed");
 
-    let (_, code) = match bucket.put_object(upload_file_name, buffer.as_slice()).await {
+    let code = match bucket.put_object_stream(&mut fasync, upload_file_name).await {
         Ok(v) => v,
         Err(e) => {
             error!("Upload Failed {}", e);
