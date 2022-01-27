@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: coredump-container
-        image: {{ .Values.image.repository }}
+        image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
         resources:
           requests:
             memory: {{ .Values.image.request_mem }}

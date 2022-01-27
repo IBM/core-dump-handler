@@ -47,7 +47,7 @@ cleanup() {
     exit 1
 }
 
-cleanupclean {
+cleanupclean() {
     mc rm $file_name
     helm delete -n observe core-dump-handler
     exit 0

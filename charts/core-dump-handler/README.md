@@ -20,7 +20,7 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
 ```
 
-Where the `--set` options are configuration for your S3 compatible provider
+Where the `--set` options are configuration for your S3 protocol compatible provider
 
 For the following providers an additional option of values should be provided using the `--values` flag
 
@@ -66,7 +66,7 @@ Run a crashing container - this container writes a value to a null pointer
 
 ### OpenShift
 
-The agent runs in privileged mode you can enable to create a custom SCC along its service account during installation. 
+The agent runs in privileged mode you can enable to create a custom SCC along its service account during installation.
 This configuration is catered for when you use the recommended values files `values.openshift.yaml` or `values.roks.yaml` but you may wish to either provide the config directly or apply the config using `oc`.
 
 ```
@@ -121,7 +121,6 @@ The agent pod has the following environment variables and these are all set by t
 
 * COMP_FILENAME_TEMPLATE - Defines the template that generates the filename using [tinytemplate](https://crates.io/crates/tinytemplate#quickstart) and the [params object](https://github.com/IBM/core-dump-handler/blob/main/core-dump-composer/src/config.rs#L29)
 
-    
 * DEPLOY_CRIO_CONFIG - Defines whether the agent should deploy a crictl config to the host
 
     false (Default): Most hosts will already have crictl configuration so this is ignored
@@ -171,7 +170,10 @@ General
 * storage: The size of the storage for the cores (Default 1Gi)
 * storageClass: The storage class for volume (Default hostclass)
 
-Image 
+Image
+* registry: image registry	(Default quay.io)
+* repository: image repository (Default icdh/core-dump-handler)
+* tag: image tag - immutable tags are recommended (Default 7.0.0)
 * request_mem: The request memory for the agent pod (Default "64Mi")
 * request_cpu: The request cpu for the agent pod (Default "250m")
 * limit_mem: The limit memory setting for the agent (Default "128Mi")
