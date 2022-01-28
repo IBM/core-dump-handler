@@ -6,28 +6,72 @@ This helm chart is designed to deploy functionality that automatically saves cor
 
 The [Helm](https://helm.sh/) cli to run the chart
 
-An [S3](https://en.wikipedia.org/wiki/Amazon_S3) compatible object storage solution such as [IBM Cloud Object Storage](https://cloud.ibm.com/objectstorage/create)
+An [S3 Protocol Compatible](https://en.wikipedia.org/wiki/Amazon_S3) object storage solution.
 
 A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
 
 ## Installing the Chart
 
 ```
-git clone https://github.com/IBM/core-dump-handler
-cd core-dump-handler/charts/core-dump-handler
+helm repo add core-dump-handler https://ibm.github.io/core-dump-handler/
+
 helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
 --set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX
 ```
 
-Where the `--set` options are configuration for your S3 compatible provider
-Details for [IBM Cloud are available](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-uhc-hmac-credentials-main)
+Where the `--set` options are configuration for your S3 protocol compatible provider
+
+For the following providers an additional option of values should be provided using the `--values` flag
+
+e.g.
+```
+helm install core-dump-handler . --create-namespace --namespace observe \
+--set daemonset.s3AccessKey=XXX --set daemonset.s3Secret=XXX \
+--set daemonset.s3BucketName=XXX --set daemonset.s3Region=XXX \
+--values values.aws.yaml
+```
+
+<table><thead><td>Provider</td><td>Product</td><td>Values</td></thead>
+<tr>
+    <td>AWS</td><td>EKS</td><td><a href="values.aws.yaml">values.aws.yaml</a></td>
+</tr>
+<tr>
+    <td>AWS</td><td>ROSA</td><td><a href="values.openshift.yaml">values.openshift.yaml</a></td>
+</tr>
+<tr>
+    <td>Digital Ocean</td><td>K8S</td><td><a href="values.do.yaml">values.do.yaml</a></td>
+</tr>
+<tr>
+    <td>Google</td><td>GKE COS</td><td><a href="values.gke-cos.yaml">values.gke-cos.yaml</a></td>
+</tr>
+<tr>
+    <td>IBM</td><td>ROKS</td><td><a href="values.roks.yaml">values.roks.yaml</a></td>
+</tr>
+<tr>
+    <td>Microsoft</td><td>ARO</td><td><a href="values.openshift.yaml">values.openshift.yaml</a></td>
+</tr>
+<tr>
+    <td>RedHat</td><td>On-Premises</td><td><a href="values.openshift.yaml">values.openshift.yaml</a></td>
+</tr>
+</table>
+
+### Verifying the Chart Installation
+
+Run a crashing container - this container writes a value to a null pointer
+
+1. kubectl run -i -t segfaulter --image=quay.io/icdh/segfaulter --restart=Never
+
+2. Validate the core dump has been uploaded to your object store instance.
 
 ### OpenShift
 
-As the agent runs in privileged mode you can enable to create a custom SCC along its service account during installation:
+The agent runs in privileged mode you can enable to create a custom SCC along its service account during installation.
+This configuration is catered for when you use the recommended values files `values.openshift.yaml` or `values.roks.yaml` but you may wish to either provide the config directly or apply the config using `oc`.
+
 ```
 helm install core-dump-handler . --create-namespace --namespace observe \
+...
 --set serviceAccount.create=true \
 --set serviceAccount.createScc=true
 ```
@@ -38,15 +82,18 @@ oc adm policy add-scc-to-user privileged -z core-dump-admin -n observe
 ```
 
 When running OpenShift on RHCOS (Red Hat CoreOS), you need to set different mount paths. A common writable path would be `/mnt/`, which you can control by setting:
+
 ```
 helm install core-dump-handler . --create-namespace --namespace observe \
+...
 --set daemonset.hostDirectory=/mnt/core-dump-handler \
 --set daemonset.coreDirectory=/mnt/core-dump-handler/cores
 ```
 
 Some OpenShift services such as OpenShift on IBM Cloud run on RHEL7 if that's the case then add the folowing option to the helm command or update the values.yaml.
-This will be apparent if you see errors relating to glibc in the composer.log in the install folder of the agent. [See Troubleshooting below](#troubleshooting)
+
 ```
+helm install core-dump-handler . --create-namespace --namespace observe \
 --set daemonset.vendor=rhel7
 ```
 
@@ -55,29 +102,9 @@ You can make use of a more compact values.yaml during installation to override f
 helm install core-dump-handler . --create-namespace --namespace observe --values values.openshift.yaml
 ```
 
-### Verifying the Chart Installation
-
-Run a crashing container - this container writes a value to a null pointer
-
-1. kubectl run -i -t segfaulter --image=quay.io/icdh/segfaulter --restart=Never
-
-2. Validate the core dump has been uploaded to your object store instance.
-
-     
-## Additional Parameters for Public Kubernetes Services 
-
-|Provider  |Product  |Version  |Additional Params  |
-|---|---|---|---|
-|AWS|EKS|1.21|--set daemonset.includeCrioExe=true|
-|Digital Ocean|K8S|1.21.5-do.0|--set daemonset.DeployCrioConfig=true --set daemonset.composerCrioImageCmd="images"|
-|Google|GKE|1.20.10-gke.1600|[cos_containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#cos-variants): --set daemonset.hostDirectory=/home/kubernetes/bin --set daemonset.coreDirectory=/home/kubernetes/cores [Ubuntu containerd image](https://cloud.google.com/kubernetes-engine/docs/concepts/node-images#ubuntu-variants): No additional params required.|
-|IBM|IKS|1.19,1.20|  |
-|IBM|ROKS|4.6|Must enable privileged policy [See OpenShift Section]("#openshift)|
-|Microsoft|AKS|1.19|  |
-
 ### Environment Variables
 
-The agent pod has the following environment variables:
+The agent pod has the following environment variables and these are all set by the chart but included here for informational purposes:
 
 * COMP_LOG_LEVEL - The log level configuration passed to the composer
 
@@ -90,8 +117,10 @@ The agent pod has the following environment variables:
 * COMP_CRIO_IMAGE_CMD - The command to use to get image information for the core dump.
 
     "img" (Default): This is the value most crictls expect.
+    "images": Digital Ocean, Newer OpenShift require this value
 
-    "images": Digital Ocean Required this value
+* COMP_FILENAME_TEMPLATE - Defines the template that generates the filename using [tinytemplate](https://crates.io/crates/tinytemplate#quickstart) and the [params object](https://github.com/IBM/core-dump-handler/blob/main/core-dump-composer/src/config.rs#L29)
+
 * DEPLOY_CRIO_CONFIG - Defines whether the agent should deploy a crictl config to the host
 
     false (Default): Most hosts will already have crictl configuration so this is ignored
@@ -141,27 +170,35 @@ General
 * storage: The size of the storage for the cores (Default 1Gi)
 * storageClass: The storage class for volume (Default hostclass)
 
-Image 
+Image
+* registry: image registry	(Default quay.io)
+* repository: image repository (Default icdh/core-dump-handler)
+* tag: image tag - immutable tags are recommended (Default 7.0.0)
 * request_mem: The request memory for the agent pod (Default "64Mi")
 * request_cpu: The request cpu for the agent pod (Default "250m")
 * limit_mem: The limit memory setting for the agent (Default "128Mi")
 * limit_cpu: The limit cpu setting for the agent (Default "500m")
 
+Composer
+* logLevel: The log level for the composer (Default "Warn")
+* ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
+* crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
+* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
+* logLength: The amount of lines to take from the crashing pod. (Default 500)
+
 Daemonset
 * hostDirectory: Maps to the HOST_DIR environment variable (Default "/var/mnt/core-dump-handler")
-* composerLogLevel: The log level for the composer (Default "Warn")
 * suidDumpable: Maps to the SUID_DUMPABLE environment variable (Default 2)
 * vendor: Maps to the VENDOR enviroment variable (Default default) 
 * interval: Maps to the INTERVAL enviroment variable (Default 60000)
 * schedule: Maps to the SCHEDULE enviroment variable (Default "")
 * useINotify: Maps to the USE_INOTIFY environment variable (Default false)
-* composerIgnoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
-* composerCrioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
 * DeployCrioConfig:  Maps to the DEPLOY_CRIO_CONFIG enviroment variable (Default false)
 * includeCrioExe: Maps to the DEPLOY_CRIO_EXE enviroment variable (Default false)
 * manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables.
 
-Set to false if you are using an external secrets managment system (Default true)
+    Set to false if you are using an external secrets managment system (Default true)
+
 * s3AccessKey : Maps to the S3_ACCESS_KEY enviroment variable
 * s3Secret : Maps to the S3_SECRET enviroment variable
 * s3BucketName : Maps to the S3_BUCKET_NAME enviroment variable

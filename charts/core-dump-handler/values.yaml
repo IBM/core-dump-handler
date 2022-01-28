@@ -1,8 +1,11 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/icdh/core-dump-handler
+  registry: quay.io
+  repository: icdh/core-dump-handler
+  tag: pod-logs
   pullPolicy: Always
+  pullSecrets: []
   request_mem: "64Mi"
   request_cpu: "250m"
   limit_mem: "128Mi"
@@ -17,21 +20,25 @@ hostStorage: 1Gi
 coreStorage: 10Gi
 storageClass: hostclass
 
+composer:
+  ignoreCrio: false
+  crioImageCmd: "img"
+  logLevel: "Warn"
+  # Double curlies are required otherwise helm trys to parse the string
+  filenameTemplate: "{{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}}"
+  logLength: 500
 
 daemonset:
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
-  composerLogLevel: "Warn"
   suidDumpable: 2
   vendor: default
   # interval: 60000
   # schedule: "1/60 * * * * *"
   useINotify: true
-  composerIgnoreCrio: false
-  composerCrioImageCmd: "img"
-  DeployCrioConfig: false
+  deployCrioConfig: false
   includeCrioExe: false
   # S3 access
   manageStoreSecret: true

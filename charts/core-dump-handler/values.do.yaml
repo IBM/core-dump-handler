@@ -1,0 +1,4 @@
+# Digital Ocean requires a crio.yaml and uses the images command
+daemonset:
+  deployCrioConfig : true
+  composerCrioImageCmd: "images"

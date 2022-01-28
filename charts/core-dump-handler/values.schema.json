@@ -90,29 +90,82 @@
             ],
             "title": "ClusterRole"
         },
+        "Composer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "filenameTemplate": {
+                    "type": "string"
+                },
+                "logLength": {
+                    "type": "integer",
+                    "minimum": 2000
+                },
+                "logLevel": {
+                    "type": "string"
+                },
+                "ignoreCrio": {
+                    "type": "boolean"
+                },
+                "crioImageCmd": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "crioImageCmd",
+                "ignoreCrio",
+                "logLevel",
+                "logLength",
+                "filenameTemplate"
+            ],
+            "title": "Composer"
+        },
         "Daemonset": {
             "type": "object",
             "additionalProperties": false,
             "not": {
                 "anyOf": [
-                    {"required": ["interval", "schedule"]},
-                    {"required": ["schedule", "useINotify"]},
-                    {"required": ["useINotify", "interval"]}
+                    {
+                        "required": [
+                            "interval",
+                            "schedule"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "schedule",
+                            "useINotify"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "useINotify",
+                            "interval"
+                        ]
+                    }
                 ]
             },
             "allOf": [
                 {
-                "if": {
-                    "properties": { "manageStoreSecret": { "const": true }},
-                    "required": ["manageStoreSecret"]
+                    "if": {
+                        "properties": {
+                            "manageStoreSecret": {
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "manageStoreSecret"
+                        ]
                     },
-                "then" : {
-                    "required": ["s3AccessKey",
-                        "s3BucketName",
-                        "s3Region",
-                        "s3Secret"]
+                    "then": {
+                        "required": [
+                            "s3AccessKey",
+                            "s3BucketName",
+                            "s3Region",
+                            "s3Secret"
+                        ]
+                    }
                 }
-             }
             ],
             "properties": {
                 "name": {
@@ -125,9 +178,6 @@
                     "type": "string"
                 },
                 "coreDirectory": {
-                    "type": "string"
-                },
-                "composerLogLevel": {
                     "type": "string"
                 },
                 "suidDumpable": {
@@ -146,13 +196,7 @@
                 "useINotify": {
                     "type": "boolean"
                 },
-                "composerIgnoreCrio": {
-                    "type": "boolean"
-                },
-                "composerCrioImageCmd": {
-                    "type": "string"
-                },
-                "DeployCrioConfig": {
+                "deployCrioConfig": {
                     "type": "boolean"
                 },
                 "includeCrioExe": {
@@ -178,10 +222,7 @@
                 }
             },
             "required": [
-                "DeployCrioConfig",
-                "composerCrioImageCmd",
-                "composerIgnoreCrio",
-                "composerLogLevel",
+                "deployCrioConfig",
                 "extraEnvVars",
                 "hostDirectory",
                 "coreDirectory",

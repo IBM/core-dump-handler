@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: coredump-container
-        image: {{ .Values.image.repository }}
+        image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
         resources:
           requests:
             memory: {{ .Values.image.request_mem }}
@@ -31,14 +31,18 @@ spec:
           mountPath:  {{ .Values.daemonset.coreDirectory }}
           mountPropagation: Bidirectional
         env:
+          - name: COMP_FILE_TEMPLATE
+          # value: {{ .Values.composer.filenameTemplate }}
+          - name: COMP_LOG_LENGTH
+            value: {{ .Values.composer.logLength | quote }}
           - name: COMP_LOG_LEVEL
-            value: {{ .Values.daemonset.composerLogLevel }}
+            value: {{ .Values.composer.logLevel }}
           - name: COMP_IGNORE_CRIO
-            value: {{ .Values.daemonset.composerIgnoreCrio | quote }}
+            value: {{ .Values.composer.ignoreCrio | quote }}
           - name: COMP_CRIO_IMAGE_CMD
-            value:  {{ .Values.daemonset.composerCrioImageCmd }}
+            value:  {{ .Values.composer.crioImageCmd }}
           - name: DEPLOY_CRIO_CONFIG
-            value:  {{ .Values.daemonset.DeployCrioConfig | quote }}
+            value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: CORE_DIR
@@ -74,7 +78,7 @@ spec:
           - name: INTERVAL
             value: {{ .Values.daemonset.interval | quote }}
           - name: SCHEDULE
-            value: {{ .Values.daemonset.schedule }}
+            value: {{ .Values.daemonset.schedule | quote}}
           - name: USE_INOTIFY
             value: {{ .Values.daemonset.useINotify | quote }}
           {{- if .Values.daemonset.extraEnvVars }}

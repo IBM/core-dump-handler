@@ -2,7 +2,6 @@ extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
-//use anyhow
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
 use log::{error, info, warn};
@@ -175,7 +174,7 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         };
         i_interval /= 1000;
-        schedule = format!("1/{} * * * * *", i_interval.to_string());
+        schedule = format!("1/{} * * * * *", i_interval);
         if use_inotify == "true" {
             warn!("Both schedule and INotify set. Running schedule")
         }
@@ -324,10 +323,15 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
             return;
         }
     };
-    
-    let mut fasync = tokio::fs::File::open(zip_path).await.expect("file was removed");
 
-    let code = match bucket.put_object_stream(&mut fasync, upload_file_name).await {
+    let mut fasync = tokio::fs::File::open(zip_path)
+        .await
+        .expect("file was removed");
+
+    let code = match bucket
+        .put_object_stream(&mut fasync, upload_file_name)
+        .await
+    {
         Ok(v) => v,
         Err(e) => {
             error!("Upload Failed {}", e);
@@ -448,21 +452,24 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
 }
 
 fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
-    let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "error".to_string());
+    let loglevel = env::var("COMP_LOG_LEVEL").unwrap_or_else(|_| "debug".to_string());
     let ignore_crio = env::var("COMP_IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-    let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "error".to_string());
+    let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
     let destination = format!("{}/{}", host_location, ".env");
     let use_crio_config = env::var("DEPLOY_CRIO_CONFIG")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
-
+    let filename_template = env::var("COMP_FILENAME_TEMPLATE").unwrap_or_else(|_| {
+        "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}".to_string()
+    });
+    let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\n",
-        loglevel, ignore_crio, crio_image, use_crio_config
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\n",
+        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length
     );
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;
@@ -470,10 +477,17 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+fn get_path() -> String {
+    let mut local_bin = env::var("LOCAL_BIN").unwrap_or_else(|_| "".to_string());
+    local_bin.push(':');
+    local_bin.push_str(BIN_PATH);
+    local_bin
+}
+
 fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
     info!("Getting sysctl for {}", name);
     let output = Command::new("sysctl")
-        .env("PATH", BIN_PATH)
+        .env("PATH", get_path())
         .args(&["-n", name])
         .output()?;
     let lines = String::from_utf8(output.stdout)?;
@@ -481,7 +495,7 @@ fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
     Ok(line.to_string())
 }
 fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::Error> {
-    info!("Starting sysctl for {} {}", name, location);
+    info!("Starting sysctl for {} {} with {}", name, location, value);
     let ctl = get_sysctl(name)?;
     // The values are different so let's back up and apply
     if ctl.as_str() != value {
@@ -499,7 +513,7 @@ fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::E
 fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
     let s = format!("{}={}", name, value);
     let output = Command::new("sysctl")
-        .env("PATH", BIN_PATH)
+        .env("PATH", get_path())
         .args(&["-w", s.as_str()])
         .status()?;
     if !output.success() {

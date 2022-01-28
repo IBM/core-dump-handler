@@ -1,25 +1,25 @@
 [package]
 name = "core-dump-composer"
-version = "6.0.0"
+version = "7.0.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = "3.0.0-beta.5"
+clap = "3.0.10"
 advisory-lock = "0.3.0"
-uuid = { version = "0.8", features = ["serde", "v4"] }
-zip = "0.5.6"
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
+zip = "0.5.13"
 dotenv  = "0.15.0"
 log = "0.4.14"
 log4rs = "1.0.0"
-anyhow = "1.0.40"
-serde_json = "1.0.64"
-serde_derive = "1.0.125"
+anyhow = "1.0.53"
+serde_json = "1.0.76"
+serde = { version = "1.0.134", features = ["derive"] }
 hostname = "0.3.1"
+libcrio = "1.4.0"
+tinytemplate = "1.2.1"
 
 [dev-dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
 rand = "0.7.3"
