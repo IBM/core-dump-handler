@@ -171,10 +171,16 @@ The services are written in Rust using [rustup](https://rustup.rs/).
 
 ```yaml
 image:
-  repository: YOUR_TAG_NAME 
+  registry: YOUR_REGISTRY
+  repository: YOUR_REPOSITORY
+  tag: YOUR_TAG
 ```
-or run the helm install command with the `--set image.repository=YOUR_TAG_NAME`.
-
+or run the helm install command with the settings
+```
+--set image.registry=YOUR_REGISTRY \
+--set image.repository=YOUR_REPOSITORY \
+--set image.tag=YOUR_TAG
+```
 ## Testing
 
 1. Login to your kubernetes cluster so that `kubectl` can be ran from the script.
