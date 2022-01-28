@@ -183,7 +183,31 @@ Composer
 * logLevel: The log level for the composer (Default "Warn")
 * ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
-* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
+* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable 
+    (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
+
+    Possible Values:
+
+    limit_size - Core file size soft resource limit of crashing process"),
+
+    exe_name - The process or thread's comm value, which typically is the
+               same as the executable filename (without path prefix, and
+               truncated to a maximum of 15 characters)
+
+    pid - PID of dumped process, as seen in the PID namespace in which the process resides.",
+
+    signal - Number of signal causing dump.
+
+    timestamp - Time of dump, expressed as seconds since the Epoch.
+
+    hostname - Same as nodename returned by uname(2)
+
+    pathname - Pathname of executable, with slashes ('/') replaced by exclamation marks ('!'),
+
+    uuid - a unique id generated for this core dump
+
+    namespace - the namespace the pod is associated with.
+
 * logLength: The amount of lines to take from the crashing pod. (Default 500)
 
 Daemonset
