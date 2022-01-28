@@ -323,10 +323,15 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
             return;
         }
     };
-    
-    let mut fasync = tokio::fs::File::open(zip_path).await.expect("file was removed");
 
-    let code = match bucket.put_object_stream(&mut fasync, upload_file_name).await {
+    let mut fasync = tokio::fs::File::open(zip_path)
+        .await
+        .expect("file was removed");
+
+    let code = match bucket
+        .put_object_stream(&mut fasync, upload_file_name)
+        .await
+    {
         Ok(v) => v,
         Err(e) => {
             error!("Upload Failed {}", e);
@@ -490,7 +495,7 @@ fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
     Ok(line.to_string())
 }
 fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::Error> {
-    info!("Starting sysctl for {} {}", name, location);
+    info!("Starting sysctl for {} {} with {}", name, location, value);
     let ctl = get_sysctl(name)?;
     // The values are different so let's back up and apply
     if ctl.as_str() != value {
