@@ -8,7 +8,9 @@
 
 - [Can I force an upload?](#can-i-force-an-upload)
 
-- [What are the storage configuration options?](#what-are-the-storage-configuration-options)
+- [How do I apply my own secrets?](#how-do-i-apply-my-own-secrets)
+
+- [How do I use the custom endpoint?](#how-do-i-use-the-custom-endpoint)
 
 ## How should I integrate my own uploader?
 
@@ -89,7 +91,7 @@ kubectl exec -it -n observe core-dump-handler-gcvtc -- /bin/bash
 ./core-dump-agent sweep
 ```
 
-## What are the storage configuration options?
+## How do I apply my own secrets?
 
 By default the upload to S3 compatible storage is configured using the storage parameters outlined in the install documents. However you may wish to integrate an external secrets management system to lay out your secrets outside of this helm chart.
 
@@ -99,7 +101,7 @@ In that case disable this chart from requiring the secrets by setting manageStor
 manageStoreSecret: false
 ```
 
-Or by passing the following option when you deploy the chart: 
+Or by passing the following option when you deploy the chart:
 ```
 --set manageStoreSecret=false
 ```
@@ -117,4 +119,18 @@ stringData:
   s3AccessKey: {{ .Values.daemonset.s3AccessKey }}
   s3BucketName: {{ .Values.daemonset.s3BucketName }}
   s3Region: {{ .Values.daemonset.s3Region }}
+```
+
+## How do I use the custom endpoint?
+
+The custom endpoint feature is available to connect to certain object stores that require it.
+The agent checks for the [S3_ENDPOINT environment variable](https://github.com/IBM/core-dump-handler/blob/main/core-dump-agent/src/main.rs#L357) and if it's present it creates a [Custom Region Struct](https://durch.github.io/rust-s3/s3/enum.Region.html#variant.Custom) with the value along with that of the s3Region. 
+
+The `S3_ENDPOINT` environment variable is set using the `extraEnvVars` property in `values.yaml`
+
+e.g.
+```
+extraEnvVars: |
+    - name: S3_ENDPOINT
+      value: https://the-endpoint
 ```
