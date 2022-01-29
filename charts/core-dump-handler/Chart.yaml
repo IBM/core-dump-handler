@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v6.0.0
+version: v7.0.0
 
-appVersion: "v6.0.0"
+appVersion: "v7.0.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -23,46 +23,43 @@ maintainers:
   - name: timbuchwaldt
     email: tim@buchwaldt.ws
     url: https://github.com/timbuchwaldt/
+  - name: tjungblu
+    email: thomas.jungblut@redhat.com
+    url: https://blog.thomasjungblut.com/
 
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Support for INotify events
+      description: RHCOS based OpenShift support
       links:
         - name: Github Issue
-          url: https://github.com/IBM/core-dump-handler/issues/29
+          url: https://github.com/IBM/core-dump-handler/issues/44
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/43
+          url: https://github.com/IBM/core-dump-handler/pull/46
     - kind: added
-      description: Support for CRON scheduling
+      description: Support for capturing logs
       links:
         - name: Github Issue
-          url: https://github.com/IBM/core-dump-handler/issues/29
+          url: https://github.com/IBM/core-dump-handler/issues/49
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/43
+          url: https://github.com/IBM/core-dump-handler/pull/51
     - kind: added
-      description: Support on-demand uploads with sweep command
+      description: Add tokio async upload of zipped core dumps
       links:
+        - name: Github Issue
+          url: https://github.com/IBM/core-dump-handler/issues/54
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/43
+          url: https://github.com/IBM/core-dump-handler/pull/55
     - kind: added
-      description: Dedicated core storage PV and PVC
+      description: Template for file names including namespace
       links:
+        - name: Github Issue
+          url: https://github.com/IBM/core-dump-handler/issues/50
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/43
-    - kind: added
-      description: JSON Schema constraints for S3 and Upload configuration
-      links:
-        - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/43
-    - kind: added
-      description: Added debug symbols and set panic to abort
-      links:
-        - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/43
+          url: https://github.com/IBM/core-dump-handler/pull/53
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/repository/icdh/core-dump-handler:v6.0.0
+      image: quay.io/repository/icdh/core-dump-handler:v7.0.0
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
