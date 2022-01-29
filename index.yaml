@@ -4,6 +4,70 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: added
+          description: RHCOS based OpenShift support
+          links:
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/44
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/46
+        - kind: added
+          description: Support for capturing logs
+          links:
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/49
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/51
+        - kind: added
+          description: Add tokio async upload of zipped core dumps
+          links:
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/54
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/55
+        - kind: added
+          description: Template for file names including namespace
+          links:
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/50
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/53
+      artifacthub.io/images: |
+        - name: core-dump-handler
+          image: quay.io/repository/icdh/core-dump-handler:v7.0.0
+      artifacthub.io/license: MIT
+      artifacthub.io/signKey: |
+        fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+        url: https://keybase.io/antonwhalley/pgp_keys.asc
+    apiVersion: v2
+    appVersion: v7.0.0
+    created: "2022-01-29T00:06:55.894419652Z"
+    description: A Helm chart for deploying a core dump management system to Kubernetes
+    digest: 584f5ab0b11819ce371edc66acdd410ee4674c455f6e9a4e6a795cdaff14d75c
+    icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+    keywords:
+    - coredump
+    - post-mortem
+    - observability
+    maintainers:
+    - email: anton@venshare.com
+      name: No9
+      url: https://github.com/No9/
+    - email: tim@buchwaldt.ws
+      name: timbuchwaldt
+      url: https://github.com/timbuchwaldt/
+    - email: thomas.jungblut@redhat.com
+      name: tjungblu
+      url: https://blog.thomasjungblut.com/
+    name: core-dump-handler
+    sources:
+    - https://github.com/ibm/core-dump-handler
+    type: application
+    urls:
+    - https://github.com/IBM/core-dump-handler/releases/download/v7.0.0/core-dump-handler-v7.0.0.tgz
+    version: v7.0.0
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: added
           description: Support for INotify events
           links:
             - name: Github Issue
@@ -148,4 +212,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-generated: "2021-11-08T21:27:32.979621092Z"
+generated: "2022-01-29T00:06:55.894759054Z"
