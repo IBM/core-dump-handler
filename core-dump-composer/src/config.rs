@@ -67,10 +67,6 @@ impl CoreConfig {
             uuid,
         };
 
-        // let dump_name = format!(
-        //     "{}-dump-{}-{}-{}-{}-{}",
-        //     uuid, params.timestamp, params.hostname, params.exe_name, params.pid, params.signal
-        // );
         let mut dot_env_path = env::current_exe()?;
         dot_env_path.pop();
         dot_env_path.push(".env");
@@ -135,8 +131,8 @@ impl CoreConfig {
     pub fn get_dump_info(&self) -> String {
         format!(
             "{{\"uuid\":\"{}\", \"dump_file\":\"{}\", \"timestamp\": \"{}\",
-        \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\", \"node_hostname\": \"{}\" }}",
-            self.params.uuid, self.get_core_filename(), self.params.timestamp, self.params.hostname, self.params.exe_name, self.params.pid, self.params.signal, self.os_hostname
+        \"hostname\": \"{}\", \"exe\": \"{}\", \"real_pid\": \"{}\", \"signal\": \"{}\", \"node_hostname\": \"{}\", \"path\": \"{}\" }}",
+            self.params.uuid, self.get_core_filename(), self.params.timestamp, self.params.hostname, self.params.exe_name, self.params.pid, self.params.signal, self.os_hostname, self.params.pathname
         )
     }
 

@@ -55,7 +55,7 @@ fn default_scenario() -> Result<(), std::io::Error> {
         .arg("-s")
         .arg("10")
         .arg("-E")
-        .arg("/target/debug/core-dump-composer")
+        .arg("!target!debug!core-dump-composer")
         .arg("-d")
         .arg(&output_folder)
         .arg("-t")
@@ -102,11 +102,18 @@ fn default_scenario() -> Result<(), std::io::Error> {
             let signal = json
                 .get("signal")
                 .expect("dump-info.json should have signal key");
+            assert_eq!("10", signal);
             let dump_name = json
                 .get("dump_file")
                 .expect("dump-info.json should have dump_name key");
             assert!(dump_name.to_string().contains("4-10.core"));
-            assert_eq!("10", signal);
+
+            let path = json
+                .get("path")
+                .expect("dump-info.json should have path key");
+            assert!(path
+                .to_string()
+                .contains("!target!debug!core-dump-composer"));
         }
         if current_path.contains("image-info.json") {
             let l_current_path = current_path.clone();
