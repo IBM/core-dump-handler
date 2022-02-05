@@ -18,6 +18,7 @@ pub struct CoreConfig {
     pub log_length: u32,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
+    pub core_event: bool,
     pub image_command: ImageCommand,
     pub bin_path: String,
     pub os_hostname: String,
@@ -83,6 +84,13 @@ impl CoreConfig {
             .to_lowercase()
             .parse::<bool>()
             .unwrap();
+
+        let core_event = env::var("CORE_EVENT")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_lowercase()
+            .parse::<bool>()
+            .unwrap();
+
         let log_length = env::var("LOG_LENGTH")
             .unwrap_or_else(|_| "500".to_string())
             .parse::<u32>()
@@ -115,6 +123,7 @@ impl CoreConfig {
         Ok(CoreConfig {
             log_level,
             ignore_crio,
+            core_event,
             dot_env_path,
             image_command,
             use_crio_config,

@@ -1,9 +1,11 @@
 extern crate dotenv;
 
+use crate::events::CoreEvent;
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use libcrio::Cli;
 use log::{debug, error, info};
 use serde_json::json;
+use serde_json::Value;
 use std::env;
 use std::fs::File;
 use std::io;
@@ -13,6 +15,7 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 mod config;
+mod events;
 mod logging;
 
 fn main() -> Result<(), anyhow::Error> {
@@ -55,6 +58,8 @@ fn main() -> Result<(), anyhow::Error> {
         config_path,
         image_command: l_image_command,
     };
+
+    // Even though ignore crio is set we will try and call it to support adding the file to the namespace
     let pod_object = match cli.pod(&cc.params.hostname) {
         Ok(v) => v,
         Err(e) => {
@@ -136,34 +141,15 @@ fn main() -> Result<(), anyhow::Error> {
     if cc.ignore_crio {
         zip.finish()?;
         file.unlock()?;
+        if cc.core_event {
+            let zip_name = format!("{}.zip", cc.get_templated_name());
+            let evtdir = cc.params.directory.clone();
+            let evt = CoreEvent::new_no_crio(cc.params, zip_name);
+            evt.write_event(&evtdir)?;
+        }
         process::exit(0);
     }
 
-    // let l_crictl_config_path = cc.crictl_config_path.clone();
-
-    // let config_path = if cc.use_crio_config {
-    //     Some(
-    //         l_crictl_config_path
-    //             .into_os_string()
-    //             .to_string_lossy()
-    //             .to_string(),
-    //     )
-    // } else {
-    //     None
-    // };
-    // let l_bin_path = cc.bin_path.clone();
-    // // let image_command = if cc.image_command == *"image" {
-    // //     libcrio::ImageCommand::Images
-    // // } else {
-    // //     libcrio::ImageCommand::Img
-    // // };
-    // let cli = Cli {
-    //     bin_path: l_bin_path,
-    //     config_path,
-    //     image_command
-    // };
-
-    // let l_pod_filename = cc.get_pod_filename().clone();
     debug!("Using runtime_file_name:{}", cc.get_pod_filename());
 
     match zip.start_file(cc.get_pod_filename(), options) {
@@ -262,7 +248,7 @@ fn main() -> Result<(), anyhow::Error> {
     };
 
     debug!("Successfully got the process details {}", ps_object);
-
+    let mut images: Vec<Value> = vec![];
     if let Some(containers) = ps_object["containers"].as_array() {
         for container in containers {
             let counter = 0;
@@ -310,7 +296,8 @@ fn main() -> Result<(), anyhow::Error> {
                     json!({})
                 }
             };
-
+            let img_clone = image.clone();
+            images.push(img_clone);
             debug!("Starting image file \n{}", cc.get_image_filename(counter));
             match zip.start_file(cc.get_image_filename(counter), options) {
                 Ok(v) => v,
@@ -321,6 +308,7 @@ fn main() -> Result<(), anyhow::Error> {
                     process::exit(1);
                 }
             };
+
             debug!("Writing image file \n{}", cc.get_image_filename(counter));
             match zip.write_all(image.to_string().as_bytes()) {
                 Ok(v) => v,
@@ -340,5 +328,11 @@ fn main() -> Result<(), anyhow::Error> {
 
     zip.finish()?;
     file.unlock()?;
+    if cc.core_event {
+        let zip_name = format!("{}.zip", cc.get_templated_name());
+        let evtdir = cc.params.directory.clone();
+        let evt = CoreEvent::new(cc.params, zip_name, pod_object, images);
+        evt.write_event(&evtdir)?;
+    }
     Ok(())
 }
