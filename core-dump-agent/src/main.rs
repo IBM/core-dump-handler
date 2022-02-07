@@ -1,6 +1,6 @@
 extern crate dotenv;
 extern crate s3;
-
+use crate::events::CoreEventManager;
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
@@ -20,6 +20,8 @@ use std::time::Duration;
 use thiserror::Error;
 use tokio::runtime::Handle;
 use tokio_cron_scheduler::{Job, JobScheduler};
+
+mod events;
 
 #[allow(dead_code)]
 struct Storage {
@@ -255,13 +257,6 @@ async fn main() -> Result<(), anyhow::Error> {
                         if event.mask.contains(EventMask::ISDIR) {
                             warn!("Unknown Directory created: {:?}", event.name);
                         } else {
-                            let bucket = match get_bucket() {
-                                Ok(v) => v,
-                                Err(e) => {
-                                    error!("Bucket creation failed in event: {}", e);
-                                    continue;
-                                }
-                            };
                             match event.name {
                                 Some(s) => {
                                     let file = format!(
@@ -269,8 +264,43 @@ async fn main() -> Result<(), anyhow::Error> {
                                         notify_location,
                                         s.to_str().unwrap_or_default()
                                     );
-                                    let p = Path::new(&file);
-                                    process_file(p, &bucket).await
+                                    if file.ends_with(".zip") {
+                                        let bucket = match get_bucket() {
+                                            Ok(v) => v,
+                                            Err(e) => {
+                                                error!("Bucket creation failed in event: {}", e);
+                                                continue;
+                                            }
+                                        };
+                                        let p = Path::new(&file);
+                                        process_file(p, &bucket).await
+                                    } else if file.ends_with("event.json") {
+                                        let remove_file = file.clone();
+                                        let cm = match CoreEventManager::new(file) {
+                                            Ok(v) => v,
+                                            Err(e) => {
+                                                error!("Error Reading event file: {}", e);
+                                                continue;
+                                            }
+                                        };
+                                        // Get config
+                                        match cm
+                                            .fire_created_event("http://localhost:8080".to_string())
+                                            .await
+                                        {
+                                            Ok(_) => match fs::remove_file(remove_file) {
+                                                Ok(_) => {}
+                                                Err(e) => {
+                                                    error!("Failed to delete event file: {}", e);
+                                                    continue;
+                                                }
+                                            },
+                                            Err(e) => {
+                                                error!("Failed to fire event: {}", e);
+                                                continue;
+                                            }
+                                        }
+                                    }
                                 }
                                 None => {
                                     continue;

@@ -17,6 +17,12 @@ tokio-cron-scheduler = "0.2.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 inotify = "0.9"
 thiserror = "1.0.30"
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
+serde_json = "1.0.76"
+serde = { version = "1.0.134", features = ["derive"] }
+cloudevents-sdk = { version = "0.4.0", features = ["reqwest"] }
+reqwest = "0.11.9"
 
 [dev-dependencies]
 fs_extra = "1.2"
+wiremock = "0.5.10"

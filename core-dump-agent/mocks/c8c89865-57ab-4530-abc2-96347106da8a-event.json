@@ -1,0 +1,20 @@
+{
+    "image_list": [
+        "docker.io/number9/example-crashing-nodejs-app@sha256:b8fea40ed9da77307702608d1602a812c5983e0ec0b788fc6298985a40be3800",
+        "icr.io/ibm/ibmcloud-object-storage-driver@sha256:c796a4c693b4b7bf366c89208e96648d082836ebcb3bd03d8b63aca6883a69b0"
+    ],
+    "key": "afile.zip",
+    "exe_path": "pathname",
+    "labels": {
+        "info.coredump.repo": "core-dump-handler",
+        "info.coredump.owner": "no9"
+    },
+    "limit_size": "limit-size",
+    "exe_name": "exe-name",
+    "pid": "pid",
+    "signal": "signal",
+    "timestamp": "timestamp",
+    "hostname": "hostname",
+    "namespace": null,
+    "uuid": "c8c89865-57ab-4530-abc2-96347106da8a"
+}
