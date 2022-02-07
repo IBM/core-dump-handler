@@ -264,43 +264,15 @@ async fn main() -> Result<(), anyhow::Error> {
                                         notify_location,
                                         s.to_str().unwrap_or_default()
                                     );
-                                    if file.ends_with(".zip") {
-                                        let bucket = match get_bucket() {
-                                            Ok(v) => v,
-                                            Err(e) => {
-                                                error!("Bucket creation failed in event: {}", e);
-                                                continue;
-                                            }
-                                        };
-                                        let p = Path::new(&file);
-                                        process_file(p, &bucket).await
-                                    } else if file.ends_with("event.json") {
-                                        let remove_file = file.clone();
-                                        let cm = match CoreEventManager::new(file) {
-                                            Ok(v) => v,
-                                            Err(e) => {
-                                                error!("Error Reading event file: {}", e);
-                                                continue;
-                                            }
-                                        };
-                                        // Get config
-                                        match cm
-                                            .fire_created_event("http://localhost:8080".to_string())
-                                            .await
-                                        {
-                                            Ok(_) => match fs::remove_file(remove_file) {
-                                                Ok(_) => {}
-                                                Err(e) => {
-                                                    error!("Failed to delete event file: {}", e);
-                                                    continue;
-                                                }
-                                            },
-                                            Err(e) => {
-                                                error!("Failed to fire event: {}", e);
-                                                continue;
-                                            }
+                                    let bucket = match get_bucket() {
+                                        Ok(v) => v,
+                                        Err(e) => {
+                                            error!("Bucket creation failed in event: {}", e);
+                                            continue;
                                         }
-                                    }
+                                    };
+                                    let p = Path::new(&file);
+                                    process_file(p, &bucket).await
                                 }
                                 None => {
                                     continue;
@@ -317,7 +289,40 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn process_file(zip_path: &Path, bucket: &Bucket) {
+async fn process_file(file_path: &Path, bucket: &Bucket) {
+    let file = file_path.display().to_string();
+    if file.ends_with(".zip") {
+        process_zip_file(file_path, bucket).await;
+    } else if file.ends_with("event.json") {
+        let remove_file = file.clone();
+        let cm = match CoreEventManager::new(file) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Error Reading event file: {}", e);
+                return;
+            }
+        };
+        // Get config
+        match cm
+            .fire_created_event("http://localhost:8080".to_string())
+            .await
+        {
+            Ok(_) => match fs::remove_file(remove_file) {
+                Ok(_) => {}
+                Err(e) => {
+                    error!("Failed to delete event file: {}", e);
+                    return;
+                }
+            },
+            Err(e) => {
+                error!("Failed to fire event: {}", e);
+                return;
+            }
+        }
+    }
+}
+
+async fn process_zip_file(zip_path: &Path, bucket: &Bucket) {
     info!("Uploading: {}", zip_path.display());
 
     let f = File::open(&zip_path).expect("no file found");
