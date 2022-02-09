@@ -3,6 +3,49 @@ entries:
   core-dump-handler:
   - annotations:
       artifacthub.io/changes: |
+        - kind: fixed
+          description: Resolved schema issue and bumped tokio scheduler
+          links:
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/63
+            - name: Github Issue
+              url: https://github.com/IBM/core-dump-handler/issues/62
+      artifacthub.io/images: |
+        - name: core-dump-handler
+          image: quay.io/repository/icdh/core-dump-handler:v8.0.0
+      artifacthub.io/license: MIT
+      artifacthub.io/signKey: |
+        fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+        url: https://keybase.io/antonwhalley/pgp_keys.asc
+    apiVersion: v2
+    appVersion: v8.0.0
+    created: "2022-02-09T00:35:42.770784731Z"
+    description: A Helm chart for deploying a core dump management system to Kubernetes
+    digest: e2355994ba303b6c263de5e1bb552598bcf19bb439d86c3b6e2e3c2732e6ca19
+    icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+    keywords:
+    - coredump
+    - post-mortem
+    - observability
+    maintainers:
+    - email: anton@venshare.com
+      name: No9
+      url: https://github.com/No9/
+    - email: tim@buchwaldt.ws
+      name: timbuchwaldt
+      url: https://github.com/timbuchwaldt/
+    - email: thomas.jungblut@redhat.com
+      name: tjungblu
+      url: https://blog.thomasjungblut.com/
+    name: core-dump-handler
+    sources:
+    - https://github.com/ibm/core-dump-handler
+    type: application
+    urls:
+    - https://github.com/IBM/core-dump-handler/releases/download/v8.0.0/core-dump-handler-v8.0.0.tgz
+    version: v8.0.0
+  - annotations:
+      artifacthub.io/changes: |
         - kind: added
           description: Add exe path to the dump file
           links:
@@ -253,4 +296,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-generated: "2022-01-30T00:06:22.212115566Z"
+generated: "2022-02-09T00:35:42.770815431Z"
