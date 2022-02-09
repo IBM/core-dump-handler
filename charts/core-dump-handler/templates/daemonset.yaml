@@ -32,7 +32,7 @@ spec:
           mountPropagation: Bidirectional
         env:
           - name: COMP_FILE_TEMPLATE
-          # value: {{ .Values.composer.filenameTemplate }}
+            value: {{ .Values.composer.filenameTemplate | quote }}
           - name: COMP_LOG_LENGTH
             value: {{ .Values.composer.logLength | quote }}
           - name: COMP_LOG_LEVEL

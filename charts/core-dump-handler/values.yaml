@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: icdh/core-dump-handler
-  tag: v8.0.1
+  tag: v8.0.2
   pullPolicy: Always
   pullSecrets: []
   request_mem: "64Mi"
@@ -24,8 +24,7 @@ composer:
   ignoreCrio: false
   crioImageCmd: "img"
   logLevel: "Warn"
-  # Double curlies are required otherwise helm trys to parse the string
-  filenameTemplate: "{{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}}"
+  filenameTemplate: "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"
   logLength: 500
 
 daemonset:

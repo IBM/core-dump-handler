@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.0.1
+version: v8.0.2
 
-appVersion: "v8.0.1"
+appVersion: "v8.0.2"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -30,13 +30,13 @@ maintainers:
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: Change to default to iNotify
+      description: Fix template quote
       links:
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/64
+          url: https://github.com/IBM/core-dump-handler/pull/67
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/repository/icdh/core-dump-handler:v8.0.1
+      image: quay.io/repository/icdh/core-dump-handler:v8.0.2
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
