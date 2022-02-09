@@ -4,7 +4,7 @@ extern crate s3;
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
-use log::{error, info, warn};
+use log::{debug, error, info, warn};
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
 use s3::region::Region;
@@ -204,16 +204,18 @@ async fn main() -> Result<(), anyhow::Error> {
             match sched.add(s_job) {
                 Ok(v) => v,
                 Err(e) => {
-                    error!("Job Add failed {}", e);
-                    panic!("Job Scheduing failed, {}", e)
+                    error!("Job Add failed {:#?}", e);
+                    panic!("Job Scheduing failed, {:#?}", e)
                 }
             }
             info!("Added Job to Schedule");
             loop {
                 match sched.tick() {
-                    Ok(v) => v,
+                    Ok(_) => {
+                        debug!("Executed tick");
+                    }
                     Err(e) => {
-                        error!("Job Tick failed {}", e);
+                        error!("Job Tick failed {:#?}", e);
                     }
                 };
                 std::thread::sleep(Duration::from_millis(500));

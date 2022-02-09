@@ -233,7 +233,7 @@ dependencies = [
 
 [[package]]
 name = "core-dump-composer"
-version = "7.0.0"
+version = "7.1.0"
 dependencies = [
  "advisory-lock",
  "anyhow",
@@ -1687,9 +1687,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-cron-scheduler"
-version = "0.2.3"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b2c664a1a2c807bb7753c535341089c05b6a5421b7c1956e0226862c069f0b2"
+checksum = "bf4a5188e880d89645ee45e875cefec5bf9a975fe0deb1b6d71445ec22b4c8d6"
 dependencies = [
  "chrono",
  "cron",
