@@ -4,6 +4,47 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: fixed
+          description: Fix template quote
+          links:
+            - name: Github PR
+              url: https://github.com/IBM/core-dump-handler/pull/67
+      artifacthub.io/images: |
+        - name: core-dump-handler
+          image: quay.io/repository/icdh/core-dump-handler:v8.0.2
+      artifacthub.io/license: MIT
+      artifacthub.io/signKey: |
+        fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+        url: https://keybase.io/antonwhalley/pgp_keys.asc
+    apiVersion: v2
+    appVersion: v8.0.2
+    created: "2022-02-09T23:58:43.179535089Z"
+    description: A Helm chart for deploying a core dump management system to Kubernetes
+    digest: f42da3687dce799b160a5755c6e8577cd5b5e4787727974577b1ec92c6b7e4b5
+    icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+    keywords:
+    - coredump
+    - post-mortem
+    - observability
+    maintainers:
+    - email: anton@venshare.com
+      name: No9
+      url: https://github.com/No9/
+    - email: tim@buchwaldt.ws
+      name: timbuchwaldt
+      url: https://github.com/timbuchwaldt/
+    - email: thomas.jungblut@redhat.com
+      name: tjungblu
+      url: https://blog.thomasjungblut.com/
+    name: core-dump-handler
+    sources:
+    - https://github.com/ibm/core-dump-handler
+    type: application
+    urls:
+    - https://github.com/IBM/core-dump-handler/releases/download/v8.0.2/core-dump-handler-v8.0.2.tgz
+    version: v8.0.2
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: fixed
           description: Change to default to iNotify
           links:
             - name: Github PR
@@ -337,4 +378,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-generated: "2022-02-09T01:14:10.375354683Z"
+generated: "2022-02-09T23:58:43.179964691Z"
