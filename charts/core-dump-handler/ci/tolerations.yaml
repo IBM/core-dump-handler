@@ -5,6 +5,7 @@ image:
   repository: icdh/core-dump-handler
   tag: main
   pullPolicy: Always
+  pullSecrets: []
   request_mem: "64Mi"
   request_cpu: "250m"
   limit_mem: "128Mi"
@@ -34,21 +35,27 @@ daemonset:
   coreDirectory: "/var/mnt/core-dump-handler/cores"
   suidDumpable: 2
   vendor: default
-  interval: 60000
+  # interval: 60000
   # schedule: "1/60 * * * * *"
-  # useINotify: false
+  useINotify: true
+  deployCrioConfig: false
   includeCrioExe: false
   # S3 access
   manageStoreSecret: true
-  s3AccessKey : XXX
-  s3Secret : XXX
-  s3BucketName : XXX
-  s3Region : XXX
+  s3AccessKey: XXX
+  s3Secret: XXX
+  s3BucketName: XXX
+  s3Region: XXX
   extraEnvVars: ""
 
 serviceAccount:
   create: true
   name: "core-dump-admin"
+
+# OpenShift specific for SecurityContextConstraints
+scc:
+  create: false
+  name: "core-dump-admin-privileged"
 
 clusterRole:
   name: "core-dump-event-reporter"
@@ -61,13 +68,17 @@ clusterRoleBinding:
 nodeSelector: {}
 # eg
 # gpu-enabled: true
-affinity: {}
-
-# Tolerations for the daemonset's pod assignment
-# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-tolerations: []
-# eg
-# - key: "key"
-#   operator: "Equal"
-#   value: "value"
-#   effect: "NoSchedule"
+tolerations:
+  - effect: NoSchedule
+    key: stage
+    operator: Equal
+    value: component
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: stage
+              operator: In
+              values:
+                - component

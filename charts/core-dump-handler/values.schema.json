@@ -50,7 +50,10 @@
                     "$ref": "#/definitions/Affinity"
                 },
                 "tolerations": {
-                    "$ref": "#/definitions/Affinity"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Affinity"
+                    }
                 }
             },
             "required": [

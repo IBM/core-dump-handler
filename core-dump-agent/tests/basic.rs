@@ -49,8 +49,9 @@ fn basic() -> Result<(), std::io::Error> {
         .env("SUID_DUMPABLE", "2")
         .env("CORE_DIR", &core_path)
         .env("LOCAL_BIN", &home_path)
+        .env("SCHEDULE", "1/1 * * * * *")
         .spawn()?;
-    thread::sleep(Duration::from_secs(2));
+    thread::sleep(Duration::from_secs(11));
     // This is very cludgy way of proceeding with the test.
     // The initialization and the running uploader should be split into two process.
     // and most of the code should be moved into structs to make it more testable.

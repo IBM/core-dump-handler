@@ -19,21 +19,24 @@ hostStorage: 1Gi
 coreStorage: 10Gi
 storageClass: hostclass
 
+composer:
+  ignoreCrio: false
+  crioImageCmd: "img"
+  logLevel: "Warn"
+  # Double curlies are required otherwise helm trys to parse the string
+  filenameTemplate: "{{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}}"
+  logLength: 500
 
 daemonset:
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
-  composerLogLevel: "Warn"
   suidDumpable: 2
   vendor: default
   schedule: "1/60 * * * * *"
   # useINotify: true
   # interval: 1230
-  composerIgnoreCrio: false
-  composerCrioImageCmd: "img"
-  DeployCrioConfig: false
   includeCrioExe: false
   # S3 access
   manageStoreSecret: false
@@ -57,7 +60,7 @@ affinity: {}
 
 # Tolerations for the daemonset's pod assignment
 # ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-tolerations: {}
+tolerations: []
 # eg
 # - key: "key"
 #   operator: "Equal"
