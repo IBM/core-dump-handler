@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: icdh/core-dump-handler
-  tag: v8.0.0
+  tag: v8.0.1
   pullPolicy: Always
   pullSecrets: []
   request_mem: "64Mi"
