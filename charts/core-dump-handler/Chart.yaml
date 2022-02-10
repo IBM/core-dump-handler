@@ -33,10 +33,12 @@ annotations:
       description: Fix template quote
       links:
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/67
+          url: https://github.com/IBM/core-dump-handler/pull/68
+        - name: Github Issue
+          url: https://github.com/IBM/core-dump-handler/issues/65
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/repository/icdh/core-dump-handler:v8.0.2
+      image: quay.io/repository/icdh/core-dump-handler:v8.0.3
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
