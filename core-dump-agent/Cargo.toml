@@ -1,6 +1,6 @@
 [package]
 name = "core-dump-agent"
-version = "8.0.0"
+version = "8.0.3"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2021"
 

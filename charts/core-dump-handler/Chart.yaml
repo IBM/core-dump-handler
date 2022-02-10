@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.0.2
+version: v8.0.3
 
-appVersion: "v8.0.2"
+appVersion: "v8.0.3"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
