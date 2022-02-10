@@ -4,7 +4,7 @@ extern crate s3;
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
-use log::{debug, error, info, warn};
+use log::{error, info, warn};
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
 use s3::region::Region;
@@ -164,7 +164,7 @@ async fn main() -> Result<(), anyhow::Error> {
             interval, schedule, interval
         );
     }
-    // Overwriting the schedule string if interval present
+
     if !interval.is_empty() {
         let mut i_interval = match interval.parse::<u64>() {
             Ok(v) => v,
@@ -179,49 +179,39 @@ async fn main() -> Result<(), anyhow::Error> {
             warn!("Both schedule and INotify set. Running schedule")
         }
     }
-    //Need to clone here before it gets borrowed
+
     let notify_location = core_location.clone();
-    let schedule_task;
     if !schedule.is_empty() {
-        info!("Schedule is Starting...");
-        schedule_task = tokio::spawn(async move {
-            info!("Schedule Initialising with: {}", schedule);
-            let mut sched = JobScheduler::new();
-            let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
-                let handle = Handle::current();
-                let core_str = core_location.clone();
-                handle.spawn(async move {
-                    run_polling_agent(&core_str).await;
-                });
-            }) {
-                Ok(v) => v,
-                Err(e) => {
-                    error!("Schedule Job Creation with {} failed, {}", schedule, e);
-                    panic!("Schedule Job Creation with {} failed, {}", schedule, e)
-                }
-            };
-            info!("Created Schedule job: {:?}", s_job.guid());
-            match sched.add(s_job) {
-                Ok(v) => v,
-                Err(e) => {
-                    error!("Job Add failed {:#?}", e);
-                    panic!("Job Scheduing failed, {:#?}", e)
-                }
+        info!("Schedule Initialising with: {}", schedule);
+        let mut sched = JobScheduler::new();
+        let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
+            let handle = Handle::current();
+            let core_str = core_location.clone();
+            handle.spawn(async move {
+                run_polling_agent(&core_str).await;
+            });
+        }) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Schedule Job Creation with {} failed, {}", schedule, e);
+                panic!("Schedule Job Creation with {} failed, {}", schedule, e)
             }
-            info!("Added Job to Schedule");
-            loop {
-                match sched.tick() {
-                    Ok(_) => {
-                        debug!("Executed tick");
-                    }
-                    Err(e) => {
-                        error!("Job Tick failed {:#?}", e);
-                    }
-                };
-                std::thread::sleep(Duration::from_millis(500));
+        };
+        info!("Created Schedule job: {:?}", s_job.guid());
+        match sched.add(s_job) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Job Add failed {:#?}", e);
+                panic!("Job Scheduing failed, {:#?}", e)
             }
-        });
-        schedule_task.await?;
+        }
+        match sched.start().await {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Schedule Start failed {:#?}", e);
+                panic!("Schedule Start failed, {:#?}", e)
+            }
+        };
     }
 
     if use_inotify == "true" {
