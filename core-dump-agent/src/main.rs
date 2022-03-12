@@ -362,11 +362,12 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
     let credentials = if s3_access_key.is_empty() || s3_secret.is_empty() {
         Credentials::new(None, None, None, None, None)
     } else {
-        Credentials::new(Some(s3_access_key.as_str()),
-                         Some(s3_secret.as_str()),
-                         None,
-                         None,
-                         None,
+        Credentials::new(
+            Some(s3_access_key.as_str()),
+            Some(s3_secret.as_str()),
+            None,
+            None,
+            None,
         )
     };
 
