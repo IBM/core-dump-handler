@@ -142,7 +142,7 @@ The IBM Cloud Core Dump Handler requires the following resources on each worker 
 
 1. Delete the chart. Don't worry this won't impact the data stored in object storage.
 ```
-$ helm delete coredump-handler . --namespace observe
+$ helm delete core-dump-handler . --namespace observe
 ```
 2. Ensure the persitent volume for`host-name` are deleted before continuing
 ```
@@ -150,13 +150,13 @@ $ kubectl get pv -n observe
 ```
 3. Install the chart using the same bucket name as per the first install but tell the chart not to creat it. 
 ```
-$ helm install coredump-handler . --namespace observe 
+$ helm install core-dump-handler . --namespace observe 
 ```
 
 ## Removing the Chart
 
 ```
-helm delete coredump-handler -n observe
+helm delete core-dump-handler -n observe
 ```
 
 ## Build and Deploy a Custom Version
