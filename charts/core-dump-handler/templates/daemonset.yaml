@@ -57,11 +57,13 @@ spec:
               secretKeyRef:
                 name: s3config
                 key: s3AccessKey
+                optional: true
           - name: S3_SECRET
             valueFrom:
               secretKeyRef:
                 name: s3config
                 key: s3Secret
+                optional: true
           - name: S3_BUCKET_NAME
             valueFrom:
               secretKeyRef:
