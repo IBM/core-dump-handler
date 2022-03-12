@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.0.3
+version: v8.1.0
 
-appVersion: "v8.0.3"
+appVersion: "v8.1.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -30,15 +30,15 @@ maintainers:
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: Fix template quote
+      description: Support for EKS gitops pipelines
       links:
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/68
+          url: https://github.com/IBM/core-dump-handler/pull/76
         - name: Github Issue
-          url: https://github.com/IBM/core-dump-handler/issues/65
+          url: https://github.com/IBM/core-dump-handler/issues/75
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/repository/icdh/core-dump-handler:v8.0.3
+      image: quay.io/repository/icdh/core-dump-handler:v8.1.0
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
