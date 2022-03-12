@@ -1,3 +1,4 @@
 # AWS requires a crio client to be copied to the server
 daemonset:
   includeCrioExe: true
+  vendor: rhel7 # EKS EC2 images have an old libc=2.26

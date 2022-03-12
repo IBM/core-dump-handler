@@ -102,6 +102,41 @@ You can make use of a more compact values.yaml during installation to override f
 helm install core-dump-handler . --create-namespace --namespace observe --values values.openshift.yaml
 ```
 
+### EKS setup for gitops pipelines (`eksctl` or similar)
+
+Set up a service account with a role that has access to S3 bucket (in `cluster.yaml`):
+
+```yaml
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+      name: core-dump-admin
+      namespace: core-dump
+    attachPolicyARNs:
+      - arn:aws:iam::123456789011:policy/s3-write-policy
+```
+
+**Note**: here the namespace is `core-dump`, change it to the namespace where you installed the chart
+
+Example S3 policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::my-core-dump-bucket",
+        "arn:aws:s3:::my-core-dump-bucket/*"
+      ]
+    }
+  ]
+}
+```
+
 ### Environment Variables
 
 The agent pod has the following environment variables and these are all set by the chart but included here for informational purposes:
