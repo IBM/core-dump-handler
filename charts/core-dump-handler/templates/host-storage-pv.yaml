@@ -6,6 +6,9 @@ metadata:
     type: local
 spec:
   storageClassName: {{ .Values.storageClass }}
+  claimRef:
+    name: host-storage-pvc
+    namespace: {{ .Release.Namespace }}
   capacity:
     storage: {{ .Values.hostStorage }}
   accessModes:
