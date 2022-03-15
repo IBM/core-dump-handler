@@ -46,6 +46,9 @@ helm install core-dump-handler . --create-namespace --namespace observe \
     <td>Google</td><td>GKE COS</td><td><a href="values.gke-cos.yaml">values.gke-cos.yaml</a></td>
 </tr>
 <tr>
+    <td>IBM</td><td>IKS</td><td><a href="values.ibm.yaml">values.ibm.yaml</a></td>
+</tr>
+<tr>
     <td>IBM</td><td>ROKS</td><td><a href="values.roks.yaml">values.roks.yaml</a></td>
 </tr>
 <tr>

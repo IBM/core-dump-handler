@@ -72,7 +72,8 @@ fn main() -> Result<(), anyhow::Error> {
     // Create the base zip file that we are going to put everything into
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
-        .unix_permissions(0o444);
+        .unix_permissions(0o444)
+        .large_file(true);
 
     let file = match File::create(cc.get_zip_full_path()) {
         Ok(v) => v,
