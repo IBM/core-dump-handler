@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.1.1
+version: v8.2.0
 
-appVersion: "v8.1.1"
+appVersion: "v8.2.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -30,15 +30,15 @@ maintainers:
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: Fix for PV to PVC using claimRef
+      description: Fix for big core files
       links:
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/79
+          url: https://github.com/IBM/core-dump-handler/pull/83
         - name: Github Issue
-          url: https://github.com/IBM/core-dump-handler/issues/78
+          url: https://github.com/IBM/core-dump-handler/issues/82
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/repository/icdh/core-dump-handler:v8.1.1
+      image: quay.io/repository/icdh/core-dump-handler:v8.2.0
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
