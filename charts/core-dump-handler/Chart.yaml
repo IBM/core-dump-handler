@@ -33,9 +33,9 @@ annotations:
       description: Fix for big core files
       links:
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/83
+          url: https://github.com/IBM/core-dump-handler/pull/82
         - name: Github Issue
-          url: https://github.com/IBM/core-dump-handler/issues/82
+          url: https://github.com/IBM/core-dump-handler/issues/81
   artifacthub.io/images: |
     - name: core-dump-handler
       image: quay.io/repository/icdh/core-dump-handler:v8.2.0
