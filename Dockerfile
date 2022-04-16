@@ -26,9 +26,12 @@ ENV PATH=/root/.cargo/bin:${PATH}
 
 RUN cargo build --release
 
-FROM registry.access.redhat.com/ubi8/ubi
+RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-amd64.tar.gz --output crictl-v1.22.0-linux-amd64.tar.gz
+RUN tar zxvf crictl-v1.22.0-linux-amd64.tar.gz
 
-RUN yum install -y procps-ng
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+
+RUN  microdnf update && microdnf install -y procps-ng
 
 WORKDIR "/app"
 COPY --from=rhel8builder /app-build/target/release/core-dump-agent ./
@@ -39,6 +42,5 @@ WORKDIR "/app/vendor/rhel7"
 COPY --from=rhel7builder /app-build/target/release/core-dump-composer ./
 RUN mv core-dump-composer cdc
 WORKDIR "/app"
-RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-amd64.tar.gz --output crictl-v1.22.0-linux-amd64.tar.gz
-RUN tar zxvf crictl-v1.22.0-linux-amd64.tar.gz
+COPY --from=rhel8builder /app-build/crictl ./
 CMD ["./core-dump-agent"]
