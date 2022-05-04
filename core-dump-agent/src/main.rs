@@ -359,7 +359,9 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
         }
     };
 
-    let credentials = if s3_access_key.is_empty() || s3_secret.is_empty() {
+    let credentials = if env::var("AWS_WEB_IDENTITY_TOKEN_FILE").is_ok() {
+        Credentials::from_sts_env(std::env!("CARGO_PKG_NAME"))
+    } else if s3_access_key.is_empty() || s3_secret.is_empty() {
         Credentials::new(None, None, None, None, None)
     } else {
         Credentials::new(
@@ -369,12 +371,12 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
             None,
             None,
         )
-    };
+    }?;
 
     let s3 = Storage {
         name: "aws".into(),
         region,
-        credentials: credentials.unwrap(),
+        credentials,
         bucket: s3_bucket_name,
         location_supported: false,
     };
