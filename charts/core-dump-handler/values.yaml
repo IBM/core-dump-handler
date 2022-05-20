@@ -50,6 +50,8 @@ daemonset:
 serviceAccount:
   create: true
   name: "core-dump-admin"
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here
 
 # OpenShift specific for SecurityContextConstraints
 scc:

@@ -1,0 +1,9 @@
+# AWS requires a crio client to be copied to the server
+daemonset:
+  includeCrioExe: true
+  vendor: rhel7 # EKS EC2 images have an old libc=2.26
+
+serviceAccount:
+  annotations:
+    # See https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here

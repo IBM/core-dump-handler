@@ -37,6 +37,9 @@ helm install core-dump-handler . --create-namespace --namespace observe \
     <td>AWS</td><td>EKS</td><td><a href="values.aws.yaml">values.aws.yaml</a></td>
 </tr>
 <tr>
+    <td>AWS</td><td>EKS with IAM roles for service accounts</td><td><a href="values.aws.sts.yaml">values.aws.yaml</a></td>
+</tr>
+<tr>
     <td>AWS</td><td>ROSA</td><td><a href="values.openshift.yaml">values.openshift.yaml</a></td>
 </tr>
 <tr>
@@ -139,6 +142,14 @@ Example S3 policy:
   ]
 }
 ```
+
+### EKS setup with IAM roles for service accounts
+
+This allows core-dump-handler to automatically assume the correct role with permissions on the S3 bucket without providing fixed credentials in the secret.
+
+See [this guide](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html).
+
+[Example of `values.yaml`](values.aws.sts.yaml)
 
 ### Environment Variables
 
