@@ -76,7 +76,7 @@ This configuration is catered for when you use the recommended values files `val
 helm install core-dump-handler . --create-namespace --namespace observe \
 ...
 --set serviceAccount.create=true \
---set serviceAccount.createScc=true
+--set scc.create=true
 ```
 
 Manually, you can run this using `oc adm policy` where `-z` is the service account name and `-n` is the namespace.
