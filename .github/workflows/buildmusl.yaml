@@ -1,13 +1,17 @@
-name: Build musl
+name: Build and Push musl
 
 on:
-  pull_request:
   push:
+    tags:
+      - 'v*'
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      - 
+        name: Get the tag name
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -18,11 +22,17 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       -
+        name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
         name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: false
-          tags: icdh/core-dump-handler-musl:latest
+          push: true
+          tags: number9/core-dump-handler-musl:${{ env.TAG }}
           file: musl.Dockerfile
