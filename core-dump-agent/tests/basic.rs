@@ -49,6 +49,10 @@ fn basic() -> Result<(), std::io::Error> {
         .env("SUID_DUMPABLE", "2")
         .env("CORE_DIR", &core_path)
         .env("LOCAL_BIN", &home_path)
+        .env("S3_BUCKET_NAME", "safdasdf")
+        .env("S3_REGION", "asfdasdf")
+        .env("S3_ACCESS_KEY", "asdfads")
+        .env("S3_SECRET", "asfdds")
         .env("SCHEDULE", "1/1 * * * * *")
         .spawn()?;
     thread::sleep(Duration::from_secs(11));
