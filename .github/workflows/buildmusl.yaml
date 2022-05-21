@@ -24,4 +24,5 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: false
-          tags: user/app:latest
+          tags: icdh/core-dump-handler-musl:latest
+          file: musl.Dockerfile
