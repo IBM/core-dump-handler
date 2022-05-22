@@ -7,44 +7,54 @@ on:
     tags:
       - 'v*'
 
-jobs:
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - 
-        name: Get the tag name
-        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-      - 
-        name: Branch name
-        run: echo running on branch ${GITHUB_REF##*/}
-      - 
-        name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: number9/core-dump-handler-musl:${{ steps.extract_branch.outputs.branch }}
-          file: musl.Dockerfile
+env:
+  IMAGE_NAME: core-dump-handler-musl
+  IMAGE_TAGS: arm-build ${{ github.sha }}
+  IMAGE_REGISTRY: quay.io
+  IMAGE_NAMESPACE: icdh
 
-# ${{ env.TAG }}
+jobs:
+  push-quay:
+    name: Build and push manifest
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        install_latest: [ true, false ]
+
+    steps:
+      # Checkout push-to-registry action github repository
+      - name: Checkout Push to Registry action
+        uses: actions/checkout@v2
+
+      - name: Install latest podman
+        if: matrix.install_latest
+        run: |
+          bash .github/install_latest_podman.sh
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+      - name: Build Image
+        id: build_image
+        uses: redhat-actions/buildah-build@main
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }}
+          archs: amd64, arm64
+          containerfiles: |
+            ./musl.Dockerfile
+      # Push the image manifest to Quay.io (Image Registry)
+      - name: Push To Quay
+        uses: ./
+        id: push
+        with:
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Echo outputs
+        run: |
+          echo "${{ toJSON(steps.push.outputs) }}"
