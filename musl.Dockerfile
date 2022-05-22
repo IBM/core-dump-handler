@@ -1,12 +1,12 @@
 FROM docker.io/alpine:3.15.4 as builder
 
-ARG TARGETARCH
+ARG ARCH
 
 RUN apk update && apk add curl binutils build-base
 
-RUN if [ $TARGETARCH == "amd64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable-x86_64-unknown-linux-musl -y; fi
+RUN if [ $ARCH == "amd64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable-x86_64-unknown-linux-musl -y; fi
 
-RUN if [ $TARGETARCH == "arm64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable-aarch64-unknown-linux-musl -y; fi
+RUN if [ $ARCH == "arm64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable-aarch64-unknown-linux-musl -y; fi
 
 RUN ls -a /root/.cargo/bin
 
@@ -17,8 +17,8 @@ WORKDIR "/app-build"
 ENV PATH=/root/.cargo/bin:${PATH}
 RUN cargo build --release
 
-RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-$TARGETARCH.tar.gz --output crictl-v1.22.0-linux-$TARGETARCH.tar.gz
-RUN tar zxvf crictl-v1.22.0-linux-$TARGETARCH.tar.gz
+RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-$ARCH.tar.gz --output crictl-v1.22.0-linux-$ARCH.tar.gz
+RUN tar zxvf crictl-v1.22.0-linux-$ARCH.tar.gz
 
 FROM docker.io/alpine:3.15.4
 
