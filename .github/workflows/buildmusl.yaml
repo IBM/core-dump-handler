@@ -20,17 +20,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        install_latest: [ true, false ]
+        arch: [ amd64, arm64 ]
 
     steps:
       # Checkout push-to-registry action github repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v2
 
-      - name: Install latest podman
-        if: matrix.install_latest
-        run: |
-          bash .github/install_latest_podman.sh
       - name: Install qemu dependency
         run: |
           sudo apt-get update
@@ -41,7 +37,8 @@ jobs:
         with:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.IMAGE_TAGS }}
-          archs: amd64, arm64
+          arch: ${{ matrix.arch }}
+          build-args: ARCH=${{ matrix.arch }}
           containerfiles: |
             ./musl.Dockerfile
       # Push the image manifest to Quay.io (Image Registry)
