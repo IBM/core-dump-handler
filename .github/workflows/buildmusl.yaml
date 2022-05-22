@@ -2,6 +2,8 @@ name: Build and Push musl
 
 on:
   push:
+    branches:
+      - arm-build
     tags:
       - 'v*'
 
@@ -12,6 +14,9 @@ jobs:
       - 
         name: Get the tag name
         run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+      - 
+        name: Branch name
+        run: echo running on branch ${GITHUB_REF##*/}
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -34,5 +39,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: number9/core-dump-handler-musl:${{ env.TAG }}
+          tags: number9/core-dump-handler-musl:${GITHUB_REF##*/}
           file: musl.Dockerfile
+
+# ${{ env.TAG }}
