@@ -39,7 +39,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: number9/core-dump-handler-musl:${GITHUB_REF##*/}
+          tags: number9/core-dump-handler-musl:${{ GITHUB_REF##*/ }}
           file: musl.Dockerfile
 
 # ${{ env.TAG }}
