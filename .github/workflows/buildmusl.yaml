@@ -17,6 +17,11 @@ jobs:
       - 
         name: Branch name
         run: echo running on branch ${GITHUB_REF##*/}
+      - 
+        name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       -
         name: Checkout
         uses: actions/checkout@v2
@@ -39,7 +44,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: number9/core-dump-handler-musl:${{ GITHUB_REF##*/ }}
+          tags: number9/core-dump-handler-musl:${{ steps.extract_branch.outputs.branch }}
           file: musl.Dockerfile
 
 # ${{ env.TAG }}
