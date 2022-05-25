@@ -7,10 +7,10 @@ metadata:
     "helm.sh/hook": pre-install
   name: {{ .Values.scc.name }}
 allowHostDirVolumePlugin: true
-allowHostIPC: true
-allowHostNetwork: true
-allowHostPID: true
-allowHostPorts: true
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
 allowPrivilegeEscalation: true
 allowPrivilegedContainer: true
 allowedCapabilities:
@@ -28,11 +28,7 @@ seLinuxContext:
 supplementalGroups:
   type: RunAsAny
 volumes:
-- configMap
-- downwardAPI
-- emptyDir
 - persistentVolumeClaim
-- projected
 - secret
 priority: 10
 users:
