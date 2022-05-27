@@ -69,6 +69,13 @@ fn main() -> Result<(), anyhow::Error> {
         .unwrap_or("unknown");
 
     cc.set_namespace(namespace.to_string());
+
+    let podname = pod_object["metadata"]["name"]
+        .as_str()
+        .unwrap_or("unknown");
+
+    cc.set_podname(podname.to_string());
+
     // Create the base zip file that we are going to put everything into
     let options = FileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
