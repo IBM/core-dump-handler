@@ -1,3 +1,5 @@
+extern crate dotenv;
+
 use clap::{App, Arg, ArgMatches};
 use libcrio::ImageCommand;
 use log::error;
@@ -70,6 +72,11 @@ impl CoreConfig {
         let mut dot_env_path = env::current_exe()?;
         dot_env_path.pop();
         dot_env_path.push(".env");
+
+        match dotenv::from_path(dot_env_path.clone()) {
+            Ok(v) => v,
+            Err(e) => error!("error loading .env file {}", e),
+        }
 
         let mut crictl_config_path = env::current_exe()?;
         crictl_config_path.pop();
