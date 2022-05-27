@@ -36,6 +36,7 @@ pub struct CoreParams {
     pub hostname: String,
     pub pathname: String,
     pub namespace: Option<String>,
+    pub podname: Option<String>,
     pub uuid: Uuid,
 }
 
@@ -64,6 +65,7 @@ impl CoreConfig {
             hostname,
             pathname,
             namespace: None,
+            podname: None,
             uuid,
         };
 
@@ -163,6 +165,10 @@ impl CoreConfig {
     }
     pub fn set_namespace(&mut self, namespace: String) {
         self.params.namespace = Some(namespace)
+    }
+
+    pub fn set_podname(&mut self, podname: String) {
+        self.params.podname = Some(podname)
     }
 
     pub fn get_dump_info_filename(&self) -> String {
