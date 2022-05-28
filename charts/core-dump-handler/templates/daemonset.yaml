@@ -31,7 +31,7 @@ spec:
           mountPath:  {{ .Values.daemonset.coreDirectory }}
           mountPropagation: Bidirectional
         env:
-          - name: COMP_FILE_TEMPLATE
+          - name: COMP_FILENAME_TEMPLATE
             value: {{ .Values.composer.filenameTemplate | quote }}
           - name: COMP_LOG_LENGTH
             value: {{ .Values.composer.logLength | quote }}
