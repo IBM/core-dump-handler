@@ -4,6 +4,7 @@ members = [
 "core-dump-composer",
 "core-dump-agent"
 ]
+resolver = "2"
 
 [profile.release]
 debug = true

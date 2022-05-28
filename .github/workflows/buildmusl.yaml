@@ -1,0 +1,57 @@
+name: Build and Push musl
+
+on:
+  push:
+    branches:
+      - arm-build
+    tags:
+      - 'v*'
+
+env:
+  IMAGE_NAME: core-dump-handler-musl
+  IMAGE_TAGS: arm-build ${{ github.sha }}
+  IMAGE_REGISTRY: quay.io
+  IMAGE_NAMESPACE: icdh
+
+jobs:
+  push-quay:
+    name: Build and push manifest
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ amd64, arm64 ]
+
+    steps:
+      # Checkout push-to-registry action github repository
+      - name: Checkout Push to Registry action
+        uses: actions/checkout@v2
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+      - name: Build Image
+        id: build_image
+        uses: redhat-actions/buildah-build@main
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }}
+          arch: ${{ matrix.arch }}
+          build-args: ARCH=${{ matrix.arch }}
+          containerfiles: |
+            ./musl.Dockerfile
+      # Push the image manifest to Quay.io (Image Registry)
+      - name: Push To Quay
+        uses: redhat-actions/push-to-registry@v2
+        id: push
+        with:
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Echo outputs
+        run: |
+          echo "${{ toJSON(steps.push.outputs) }}"

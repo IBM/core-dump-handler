@@ -183,7 +183,13 @@ async fn main() -> Result<(), anyhow::Error> {
     let notify_location = core_location.clone();
     if !schedule.is_empty() {
         info!("Schedule Initialising with: {}", schedule);
-        let mut sched = JobScheduler::new();
+        let sched = match JobScheduler::new() {
+            Ok(v) => v,
+            Err(e) => {
+                error!("Schedule Creation Failed with {}", e);
+                panic!("Schedule Creation Failed with {}", e)
+            }
+        };
         let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
             let handle = Handle::current();
             let core_str = core_location.clone();
@@ -202,14 +208,14 @@ async fn main() -> Result<(), anyhow::Error> {
             Ok(v) => v,
             Err(e) => {
                 error!("Job Add failed {:#?}", e);
-                panic!("Job Scheduing failed, {:#?}", e)
+                panic!("Job Scheduing failed, {:#?}", e);
             }
-        }
-        match sched.start().await {
+        };
+        match sched.start() {
             Ok(v) => v,
             Err(e) => {
                 error!("Schedule Start failed {:#?}", e);
-                panic!("Schedule Start failed, {:#?}", e)
+                panic!("Schedule Start failed, {:#?}", e);
             }
         };
     }
@@ -380,7 +386,7 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
         bucket: s3_bucket_name,
         location_supported: false,
     };
-    Bucket::new_with_path_style(&s3.bucket, s3.region, s3.credentials)
+    Ok(Bucket::new(&s3.bucket, s3.region, s3.credentials)?.with_path_style())
 }
 
 async fn run_polling_agent(core_location: &str) {
