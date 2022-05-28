@@ -3,7 +3,7 @@ name: Build and Push musl
 on:
   push:
     branches:
-      - arm-build
+      - main
     tags:
       - 'v*'
 

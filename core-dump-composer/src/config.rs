@@ -79,7 +79,6 @@ impl CoreConfig {
             Ok(v) => v,
             Err(e) => error!("error loading .env file {}", e),
         }
-
         let mut crictl_config_path = env::current_exe()?;
         crictl_config_path.pop();
         crictl_config_path.push("crictl.yaml");

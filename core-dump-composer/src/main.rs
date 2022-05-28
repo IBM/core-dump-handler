@@ -18,12 +18,6 @@ mod logging;
 fn main() -> Result<(), anyhow::Error> {
     let mut cc = config::CoreConfig::new()?;
     cc.set_namespace("default".to_string());
-    let mut envloadmsg = String::from("Loading .env");
-    let l_dot_env_path = cc.dot_env_path.clone();
-    match dotenv::from_path(l_dot_env_path) {
-        Ok(v) => v,
-        Err(e) => envloadmsg = format!("no .env file found so using Debug level logging {}", e),
-    }
     let l_log_level = cc.log_level.clone();
     let log_path = logging::init_logger(l_log_level)?;
     debug!("Arguments: {:?}", env::args());
@@ -32,7 +26,7 @@ fn main() -> Result<(), anyhow::Error> {
         "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
         cc.ignore_crio, cc.image_command, cc.use_crio_config
     );
-    info!("{}", envloadmsg);
+    
     info!("Set logfile to: {:?}", &log_path);
     debug!("Creating dump for {}", cc.get_templated_name());
 

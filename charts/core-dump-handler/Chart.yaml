@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.4.0
+version: v8.5.0
 
-appVersion: "v8.4.0"
+appVersion: "v8.5.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -29,14 +29,34 @@ maintainers:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: Add to authenticate against AWS via STS
+    - kind: added
+      description: Support for ARM and MUSL Libraries 
       links:
         - name: Github PR
-          url: https://github.com/IBM/core-dump-handler/pull/87
+          url: https://github.com/IBM/core-dump-handler/pull/93
+    - kind: fixed
+      description: Large config output hangs composer
+      links:
+        - name: Github Issue
+          url: https://github.com/No9/libcrio/issues/2
+    - kind: added
+      description: Support Podname in template
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/92
+    - kind: fixed
+      description: Loading order of the .env in composer
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/91
+    - kind: fixed
+      description: Restrict Security Context Constraints
+      links:
+        - name: Github PR
+          url: https://github.com/IBM/core-dump-handler/pull/90
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/icdh/core-dump-handler:v8.4.0
+      image: quay.io/icdh/core-dump-handler:v8.5.0
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34

@@ -151,6 +151,17 @@ See [this guide](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-
 
 [Example of `values.yaml`](values.aws.sts.yaml)
 
+### AWS Graviton and MUSL support
+
+An MUSL based ARM build is available in https://quay.io/repository/icdh/core-dump-handler-musl 
+Simply change the repository tag in the values.yaml
+```
+    repository: icdh/core-dump-handler-musl
+```
+Or set the value at the command prompt
+```
+helm --set image.repository=icdh/core-dump-handler-musl
+```
 ### Environment Variables
 
 The agent pod has the following environment variables and these are all set by the chart but included here for informational purposes:
