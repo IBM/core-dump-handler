@@ -3,13 +3,13 @@ name: Build and Push musl
 on:
   push:
     branches:
-      - arm-build
+      - main
     tags:
       - 'v*'
 
 env:
   IMAGE_NAME: core-dump-handler-musl
-  IMAGE_TAGS: arm-build ${{ github.sha }}
+  IMAGE_TAGS: v8.5.0 ${{ github.sha }}
   IMAGE_REGISTRY: quay.io
   IMAGE_NAMESPACE: icdh
 
