@@ -30,7 +30,7 @@ maintainers:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Support for ARM and MUSL Libraries 
+      description: Support for ARM and MUSL Libraries
       links:
         - name: Github PR
           url: https://github.com/IBM/core-dump-handler/pull/93
