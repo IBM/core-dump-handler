@@ -26,7 +26,7 @@ fn main() -> Result<(), anyhow::Error> {
         "Environment config:\n IGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}",
         cc.ignore_crio, cc.image_command, cc.use_crio_config
     );
-    
+
     info!("Set logfile to: {:?}", &log_path);
     debug!("Creating dump for {}", cc.get_templated_name());
 
