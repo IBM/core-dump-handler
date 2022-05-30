@@ -2,14 +2,12 @@ name: Build and Push musl
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
 env:
   IMAGE_NAME: core-dump-handler-musl
-  IMAGE_TAGS: v8.5.0 ${{ github.sha }}
+  IMAGE_TAGS: ${{ github.sha }}
   IMAGE_REGISTRY: quay.io
   IMAGE_NAMESPACE: icdh
 
@@ -26,6 +24,9 @@ jobs:
       # Checkout push-to-registry action github repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v2
+      
+      - id: tag
+        run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
 
       - name: Install qemu dependency
         run: |
@@ -36,22 +37,32 @@ jobs:
         uses: redhat-actions/buildah-build@main
         with:
           image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.IMAGE_TAGS }}
+          tags: ${{ steps.tag.outputs.TAG }}-linux-${{ matrix.arch }}
           arch: ${{ matrix.arch }}
           build-args: ARCH=${{ matrix.arch }}
           containerfiles: |
             ./musl.Dockerfile
-      # Push the image manifest to Quay.io (Image Registry)
       - name: Push To Quay
         uses: redhat-actions/push-to-registry@v2
         id: push
         with:
           image: ${{ steps.build_image.outputs.image }}
-          tags: ${{ steps.build_image.outputs.tags }}
+          tags: ${{ steps.tag.outputs.TAG }}-linux-${{ matrix.arch }}
           registry: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Echo outputs
+      - name: Docker Login
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+          registry: quay.io
+      - name: Build Manifest 
+        id: manifests
+        continue-on-error: true
         run: |
-          echo "${{ toJSON(steps.push.outputs) }}"
+          docker manifest create \
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{env.IMAGE_NAME}}:${{ steps.tag.outputs.TAG }}  \
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{env.IMAGE_NAME}}:${{ steps.tag.outputs.TAG }}-linux-amd64 \
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{env.IMAGE_NAME}}:${{ steps.tag.outputs.TAG }}-linux-arm64
+      - run: docker manifest push ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{env.IMAGE_NAME}}:${{ steps.tag.outputs.TAG }}
