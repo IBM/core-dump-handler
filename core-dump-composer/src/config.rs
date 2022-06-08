@@ -1,6 +1,6 @@
 extern crate dotenv;
 
-use clap::{App, Arg, ArgMatches};
+use clap::{Arg, ArgMatches, Command};
 use libcrio::ImageCommand;
 use log::error;
 use serde::Serialize;
@@ -214,7 +214,7 @@ impl CoreConfig {
 }
 
 pub fn try_get_matches() -> clap::Result<ArgMatches> {
-    App::new("Core Dump Composer")
+    Command::new("Core Dump Composer")
         .version("0.1.0")
         .author("Anton Whalley <anton@venshare.com>")
         .about("Processes Core Dumps in a K8s System")
