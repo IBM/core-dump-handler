@@ -417,9 +417,10 @@ async fn run_polling_agent(core_location: &str) {
 
 fn generate_crio_config(host_location: &str) -> Result<(), std::io::Error> {
     info!("Generating crio file");
+    let endpoint = env::var("CRIO_ENDPOINT").unwrap_or_else(|_| "unix:///run/containerd/containerd.sock".to_string());
     let destination = format!("{}/{}", host_location, "crictl.yaml");
     let mut crictl_file = File::create(destination)?;
-    let text = "runtime-endpoint: unix:///run/containerd/containerd.sock\nimage-endpoint: unix:///run/containerd/containerd.sock\ntimeout: 2\ndebug: false\npull-image-on-create: false";
+    let text = format!("runtime-endpoint: {}\nimage-endpoint: {}\ntimeout: 2\ndebug: false\npull-image-on-create: false", endpoint, endpoint);
     crictl_file.write_all(text.as_bytes())?;
     crictl_file.flush()?;
     Ok(())
