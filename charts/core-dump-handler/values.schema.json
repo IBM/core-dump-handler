@@ -205,6 +205,9 @@
                 "crioEndpoint": {
                     "type": "string"
                 },
+                "podSelectorLabel": {
+                    "type": "string"
+                },
                 "includeCrioExe": {
                     "type": "boolean"
                 },

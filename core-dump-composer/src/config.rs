@@ -18,6 +18,7 @@ pub struct CoreConfig {
     pub crictl_config_path: PathBuf,
     pub log_level: String,
     pub log_length: u32,
+    pub pod_selector_label: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
     pub image_command: ImageCommand,
@@ -85,6 +86,7 @@ impl CoreConfig {
         let mut base_path = env::current_exe()?;
         base_path.pop();
 
+        let pod_selector_label = env::var("POD_SELECTOR_LABEL").unwrap_or_default();
         let log_level = env::var("LOG_LEVEL").unwrap_or_default();
         let ignore_crio = env::var("IGNORE_CRIO")
             .unwrap_or_else(|_| "false".to_string())
@@ -122,6 +124,7 @@ impl CoreConfig {
 
         Ok(CoreConfig {
             log_level,
+            pod_selector_label,
             ignore_crio,
             dot_env_path,
             image_command,

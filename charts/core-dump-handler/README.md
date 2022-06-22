@@ -214,6 +214,7 @@ The agent pod has the following environment variables and these are all set by t
 * INTERVAL - The amount of time in milliseconds between each check of the core dump folder for files to upload.
 * SCHEDULE - A CRON formatted string [See cron library](https://github.com/mvniekerk/tokio-cron-scheduler#usage).
 * USE_INOTIFY - Set a listener for the coredump folder can be used in conjunction with SCHEDULE
+* POD_SELECTOR_LABEL - Optional selector label to filter pods that have core dump collection enabled. Default (empty) disables filter.
 
 ### Secrets
 
