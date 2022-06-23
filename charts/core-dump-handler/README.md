@@ -179,6 +179,11 @@ The agent pod has the following environment variables and these are all set by t
     "img" (Default): This is the value most crictls expect.
     "images": Digital Ocean, Newer OpenShift require this value
 
+* CRIO_ENDPOINT - The CRIO endpoint to use.
+
+    "unix:///run/containerd/containerd.sock" (Default): This is the default for most containerd nodes
+    "unix:///var/run/dockershim.sock": Should match most nodes that still use dockershim
+
 * COMP_FILENAME_TEMPLATE - Defines the template that generates the filename using [tinytemplate](https://crates.io/crates/tinytemplate#quickstart) and the [params object](https://github.com/IBM/core-dump-handler/blob/main/core-dump-composer/src/config.rs#L29)
 
 * DEPLOY_CRIO_CONFIG - Defines whether the agent should deploy a crictl config to the host

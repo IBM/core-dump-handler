@@ -202,6 +202,9 @@
                 "deployCrioConfig": {
                     "type": "boolean"
                 },
+                "crioEndpoint": {
+                    "type": "string"
+                },
                 "includeCrioExe": {
                     "type": "boolean"
                 },
