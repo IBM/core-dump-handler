@@ -472,7 +472,7 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
         "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}".to_string()
     });
     let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
-    let pod_selector_label = env::var("POD_SELECTOR_LABEL").unwrap_or_default();
+    let pod_selector_label = env::var("COMP_POD_SELECTOR_LABEL").unwrap_or_default();
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(

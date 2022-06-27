@@ -27,6 +27,7 @@ composer:
   # Double curlies are required otherwise helm trys to parse the string
   filenameTemplate: "{{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}}"
   logLength: 500
+  podSelectorLabel: ""
 
 daemonset:
   name: "core-dump-handler"
@@ -34,7 +35,6 @@ daemonset:
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
   crioEndpoint: "unix:///run/containerd/containerd.sock"
-  podSelectorLabel: ""
   suidDumpable: 2
   vendor: default
   # interval: 60000

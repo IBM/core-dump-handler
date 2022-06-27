@@ -64,7 +64,7 @@ fn main() -> Result<(), anyhow::Error> {
             "Pod selector specified. Will record only if pod has label {}",
             &cc.pod_selector_label
         );
-        let pod_labels = pod_object["metadata"]["labels"].as_object().unwrap();
+        let pod_labels = pod_object["labels"].as_object().unwrap();
         // check if pod_labels has pod_selector_label
         if pod_labels.get(&cc.pod_selector_label).is_none() {
             info!(

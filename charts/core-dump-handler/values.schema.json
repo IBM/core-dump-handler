@@ -112,6 +112,9 @@
                 },
                 "crioImageCmd": {
                     "type": "string"
+                },
+                "podSelectorLabel": {
+                    "type": "string"
                 }
             },
             "required": [
@@ -203,9 +206,6 @@
                     "type": "boolean"
                 },
                 "crioEndpoint": {
-                    "type": "string"
-                },
-                "podSelectorLabel": {
                     "type": "string"
                 },
                 "includeCrioExe": {

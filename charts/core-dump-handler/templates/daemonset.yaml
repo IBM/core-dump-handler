@@ -41,12 +41,12 @@ spec:
             value: {{ .Values.composer.ignoreCrio | quote }}
           - name: COMP_CRIO_IMAGE_CMD
             value:  {{ .Values.composer.crioImageCmd }}
+          - name: COMP_POD_SELECTOR_LABEL
+            value:  {{ .Values.composer.podSelectorLabel }}
           - name: DEPLOY_CRIO_CONFIG
             value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: CRIO_ENDPOINT
             value:  {{ .Values.daemonset.crioEndpoint | quote }}
-          - name: POD_SELECTOR_LABEL
-            value:  {{ .Values.daemonset.podSelectorLabel }}
           - name: HOST_DIR
             value: {{ .Values.daemonset.hostDirectory }}
           - name: CORE_DIR
