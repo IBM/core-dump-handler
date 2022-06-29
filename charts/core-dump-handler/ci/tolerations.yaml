@@ -27,6 +27,7 @@ composer:
   # Double curlies are required otherwise helm trys to parse the string
   filenameTemplate: "{{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}}"
   logLength: 500
+  podSelectorLabel: ""
 
 daemonset:
   name: "core-dump-handler"

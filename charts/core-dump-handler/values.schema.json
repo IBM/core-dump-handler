@@ -112,6 +112,9 @@
                 },
                 "crioImageCmd": {
                     "type": "string"
+                },
+                "podSelectorLabel": {
+                    "type": "string"
                 }
             },
             "required": [

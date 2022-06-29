@@ -214,6 +214,7 @@ The agent pod has the following environment variables and these are all set by t
 * INTERVAL - The amount of time in milliseconds between each check of the core dump folder for files to upload.
 * SCHEDULE - A CRON formatted string [See cron library](https://github.com/mvniekerk/tokio-cron-scheduler#usage).
 * USE_INOTIFY - Set a listener for the coredump folder can be used in conjunction with SCHEDULE
+* COMP_POD_SELECTOR_LABEL - Optional selector label to filter pods that have core dump collection enabled. Default (empty) disables filter and enables collection for all. E.g. when selector label is set as "my.org/batch-workload" only pods that have a label named "my.org/batch-workload" (any value) will be enabled for core dump collection.
 
 ### Secrets
 
@@ -274,6 +275,7 @@ Composer
     namespace - the namespace the pod is associated with.
 
 * logLength: The amount of lines to take from the crashing pod. (Default 500)
+* podSelectorLabel: Enable composer only if pod has label matching the specified selector. (Default "" matches all pods)
 
 Daemonset
 * hostDirectory: Maps to the HOST_DIR environment variable (Default "/var/mnt/core-dump-handler")

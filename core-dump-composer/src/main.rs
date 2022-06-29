@@ -58,6 +58,25 @@ fn main() -> Result<(), anyhow::Error> {
         }
     };
 
+    // match the label filter if there's one, and skip the whole process if it doesn't match
+    if !cc.pod_selector_label.is_empty() {
+        debug!(
+            "Pod selector specified. Will record only if pod has label {}",
+            &cc.pod_selector_label
+        );
+        let pod_labels = pod_object["labels"].as_object().unwrap();
+        // check if pod_labels has pod_selector_label
+        if pod_labels.get(&cc.pod_selector_label).is_none() {
+            info!(
+                "Skipping pod as it did not match selector label {}",
+                &cc.pod_selector_label
+            );
+            process::exit(0);
+        }
+    } else {
+        debug!("No pod selector specified, selecting all pods");
+    }
+
     let namespace = pod_object["metadata"]["namespace"]
         .as_str()
         .unwrap_or("unknown");

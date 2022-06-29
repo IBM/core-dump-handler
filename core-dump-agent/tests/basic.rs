@@ -95,7 +95,7 @@ fn basic() -> Result<(), std::io::Error> {
         "FILENAME_TEMPLATE={uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"
     ));
     assert!(env_content.contains("LOG_LENGTH=500"));
-    assert_eq!(env_content.lines().count(), 6);
+    assert_eq!(env_content.lines().count(), 7);
     //TODO: [No9] Test uploading of a corefile
     //TODO: [No9] Test remove option
     //TODO: [No9] Test sweep option
