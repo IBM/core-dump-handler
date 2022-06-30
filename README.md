@@ -6,6 +6,10 @@ This helm chart is designed to deploy functionality that automatically saves cor
 [![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 [![build status](https://github.com/ibm/core-dump-handler/workflows/CI/badge.svg)](https://github.com/ibm/core-dump-handler/actions)
 
+## Contributions
+
+Please read the [CONTRIBUTING.md](CONTRIBUTING.md) it has some important notes.
+Pay specific attention to the **Coding style guidelines** and the **Developer Certificate of Origin**
 
 ## Code Of Conduct
 

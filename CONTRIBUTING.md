@@ -3,10 +3,6 @@
 Our project welcomes external contributions. If you have an itch, please feel
 free to scratch it.
 
-It should also be noted that **[core-dump-handler](https://github.com/IBM/core-dump-handler/) is an [_OPEN Open Source Projects_](https://openopensource.org/).**
-
-Individuals making significant and valuable contributions are given commit-access to a project to contribute as they see fit. A project is more like an open wiki than a standard guarded open source project.
-
 To contribute minor code or documentation, please submit a [pull request](https://github.com/ibm/core-dump-handler/pulls).
 
 A good way to familiarize yourself with the codebase and contribution process is
@@ -17,6 +13,73 @@ Before embarking on a more ambitious contribution, please quickly [get in touch]
 requires extensive rework (by you or by us), sits in backlog for a long time, or
 cannot be accepted at all!**
 
+## Setup
+
+This project is based on Rust - The easiest way to get setup is to us the [rustup install system](https://rustup.rs/).
+
+To perform an end to end integration test you may want to use a [free cluster](https://cloud.ibm.com/docs/containers?topic=containers-getting-started#clusters_gs) on IBM Cloud.
+
+Instructions on how to install are available in the main [README.md](https://github.com/IBM/core-dump-handler#installing-the-chart)
+
+## Testing
+PR's that modify the codebase will be expected to run against a cluster using the `integration/run.sh` before being accepted.
+
+## Coding style guidelines
+Code contributions should be PR'd with `cargo fmt` ran
+
+
+## Developer Certificate of Origin
+
+This project used the [Developer Certificate of Origin](https://developercertificate.org/). It requires all commit messages to contain the Signed-off-by line with an email address that matches the commit author.
+
+```
+Developer Certificate of Origin
+Version 1.1
+
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+
+Developer's Certificate of Origin 1.1
+
+By making a contribution to this project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the open source license
+    indicated in the file; or
+
+(b) The contribution is based upon previous work that, to the best
+    of my knowledge, is covered under an appropriate open source
+    license and I have the right under that license to submit that
+    work with modifications, whether created in whole or in part
+    by me, under the same open source license (unless I am
+    permitted to submit under a different license), as indicated
+    in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including all
+    personal information I submit with it, including my sign-off) is
+    maintained indefinitely and may be redistributed consistent with
+    this project or the open source license(s) involved.
+```
+
+In order to comply with the DCO please sign every commit as follows:
+```
+$ git commit -s -m 'This is my commit message'
+```
+or
+
+```
+This is my commit message
+
+Signed-off-by: Random J Developer <random@developer.example.org>
+```
 
 ## Releases
 
@@ -41,7 +104,7 @@ are not interested in accepting into the code base.
 ### Fixing bugs
 
 If you would like to fix a bug, please feel free to open a [PR directly for a small change](https://github.com/ibm/core-dump-handler/pulls).
-If you think the fix will be high impact then consider [opening an issue](https://github.com/ibm/repo-template/issues) before sending a
+If you think the fix will be high impact then consider [opening an issue](https://github.com/ibm/core-dump-handler/issues) before sending a
 pull request so it can be tracked.
 
 ### Merge approval
@@ -59,19 +122,4 @@ No new restrictions/conditions are permitted.
 - As a contributor, you MUST have the legal right to grant permission for your contribution to be used under these conditions.
 
 ## Communication
-Please use the [issue list] to keep communication transparent (https://github.com/ibm/repo-template/issues)
-
-## Setup
-The quickest way to get setup is to use a [free cluster](https://cloud.ibm.com/docs/containers?topic=containers-getting-started#clusters_gs) on IBM Cloud so you can test your work. 
-
-Instructions on how to install are available in the main [README.md](https://github.com/IBM/core-dump-handler#installing-the-chart)
-
-## Testing
-PR's that modify the codebase will be expected to run against a cluster using the `integration/run.sh` before being accepted.
-
-## Coding style guidelines
-Code contributions should be PR'd with `cargo fmt` ran 
-
-**[core-dump-handler](https://github.com/IBM/core-dump-handler/) is an [_OPEN Open Source Projects_](https://openopensource.org/).**
-
-Individuals making significant and valuable contributions are given commit-access to a project to contribute as they see fit. A project is more like an open wiki than a standard guarded open source project.
+Please use the [issue list] to keep communication transparent (https://github.com/ibm/core-dump-handler/issues)
