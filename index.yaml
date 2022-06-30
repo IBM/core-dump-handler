@@ -3,6 +3,57 @@ entries:
   core-dump-handler:
   - annotations:
       artifacthub.io/changes: |
+        - kind: added
+          description: configurable crictl endpoint
+          links:
+            - name: GitHub PR
+              url: https://github.com/IBM/core-dump-handler/pull/97
+        - kind: added
+          description: optional pod selector labels
+          links:
+            - name: GitHub PR
+              url: https://github.com/IBM/core-dump-handler/pull/98
+        - kind: changed
+          description: updated deps and docs
+          links:
+            - name: GitHub PR
+              url: https://github.com/IBM/core-dump-handler/pull/100
+      artifacthub.io/images: |
+        - name: core-dump-handler
+          image: quay.io/icdh/core-dump-handler:v8.6.0
+      artifacthub.io/license: MIT
+      artifacthub.io/signKey: |
+        fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+        url: https://keybase.io/antonwhalley/pgp_keys.asc
+    apiVersion: v2
+    appVersion: v8.6.0
+    created: "2022-06-30T23:00:43.546822567Z"
+    description: A Helm chart for deploying a core dump management system to Kubernetes
+    digest: 63af76638aeb5a6a8f03e80007dbf197eb809c2d8804c15f7be0a6a8f0e9f653
+    icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+    keywords:
+    - coredump
+    - post-mortem
+    - observability
+    maintainers:
+    - email: anton@venshare.com
+      name: No9
+      url: https://github.com/No9/
+    - email: tim@buchwaldt.ws
+      name: timbuchwaldt
+      url: https://github.com/timbuchwaldt/
+    - email: thomas.jungblut@redhat.com
+      name: tjungblu
+      url: https://blog.thomasjungblut.com/
+    name: core-dump-handler
+    sources:
+    - https://github.com/ibm/core-dump-handler
+    type: application
+    urls:
+    - https://github.com/IBM/core-dump-handler/releases/download/v8.6.0/core-dump-handler-v8.6.0.tgz
+    version: v8.6.0
+  - annotations:
+      artifacthub.io/changes: |
         - kind: fixed
           description: MUSL Build fix
           links:
@@ -775,4 +826,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-generated: "2022-05-30T19:23:45.381928438Z"
+generated: "2022-06-30T23:00:43.546974269Z"
