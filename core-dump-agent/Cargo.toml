@@ -1,6 +1,6 @@
 [package]
 name = "core-dump-agent"
-version = "8.5.0"
+version = "8.6.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2021"
 resolver = "2"
@@ -13,7 +13,7 @@ dotenv  = "0.15.0"
 env_logger = "0.9.0"
 log = "0.4.14"
 advisory-lock = "0.3.0"
-tokio-cron-scheduler = "0.7.0"
+tokio-cron-scheduler = "0.7.4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 inotify = "0.10"
 thiserror = "1.0.31"
