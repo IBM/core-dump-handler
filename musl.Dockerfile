@@ -6,7 +6,7 @@ RUN apk update && apk add curl binutils build-base
 
 RUN if [ $ARCH == "amd64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable-x86_64-unknown-linux-musl -y; fi
 
-RUN if [ $ARCH == "arm64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable-aarch64-unknown-linux-musl -y; fi
+RUN if [ $ARCH == "arm64" ]; then curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain 1.61.0-aarch64-unknown-linux-musl -y; fi
 
 RUN ls -a /root/.cargo/bin
 
