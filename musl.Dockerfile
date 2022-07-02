@@ -15,7 +15,7 @@ COPY . /app-build
 WORKDIR "/app-build"
 
 ENV PATH=/root/.cargo/bin:${PATH}
-RUN cargo build --release
+RUN cargo build --verbose --release
 
 RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-$ARCH.tar.gz --output crictl-v1.22.0-linux-$ARCH.tar.gz
 RUN tar zxvf crictl-v1.22.0-linux-$ARCH.tar.gz
