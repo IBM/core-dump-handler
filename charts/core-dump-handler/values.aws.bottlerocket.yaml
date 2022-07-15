@@ -1,0 +1,16 @@
+# AWS requires a crio client to be copied to the server
+daemonset:
+  includeCrioExe: true
+  deployCrioConfig: true
+  vendor: default
+  # Bottlerocket requires the host containerd socket mounted, it is located here as of 1.8.0
+  # Depending on the outcome of this issue, it may move in the future
+  # https://github.com/bottlerocket-os/bottlerocket/issues/2212
+  crioEndpoint: "unix:///run/dockershim.sock"
+  mountContainerRuntimeEndpoint: true
+  hostContainerRuntimeEndpoint: "/run/dockershim.sock"
+
+serviceAccount:
+  annotations:
+    # See https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789000:role/iam-role-name-here

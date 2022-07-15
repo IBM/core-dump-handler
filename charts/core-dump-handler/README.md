@@ -40,6 +40,9 @@ helm install core-dump-handler . --create-namespace --namespace observe \
     <td>AWS</td><td>EKS with IAM roles for service accounts</td><td><a href="values.aws.sts.yaml">values.aws.yaml</a></td>
 </tr>
 <tr>
+    <td>AWS</td><td>EKS with Bottlerocket nodes</td><td><a href="values.aws.bottlerocket.yaml">values.bottlerocket.yaml</a></td>
+</tr>
+<tr>
     <td>AWS</td><td>ROSA</td><td><a href="values.openshift.yaml">values.openshift.yaml</a></td>
 </tr>
 <tr>

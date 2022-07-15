@@ -171,7 +171,19 @@
                             "s3Secret"
                         ]
                     }
-                }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "mountContainerRuntimeEndpoint": {
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "hostContainerRuntimeEndpoint"
+                        ]
+                    }
+                 }
             ],
             "properties": {
                 "name": {
@@ -206,6 +218,12 @@
                     "type": "boolean"
                 },
                 "crioEndpoint": {
+                    "type": "string"
+                },
+                "mountContainerRuntimeEndpoint": {
+                    "type": "boolean"
+                },
+                "hostContainerRuntimeEndpoint": {
                     "type": "string"
                 },
                 "includeCrioExe": {

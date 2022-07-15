@@ -30,6 +30,10 @@ spec:
         - name: core-volume
           mountPath:  {{ .Values.daemonset.coreDirectory }}
           mountPropagation: Bidirectional
+        {{- if .Values.daemonset.mountContainerRuntimeEndpoint }}
+        - mountPath: {{ .Values.daemonset.hostContainerRuntimeEndpoint }}
+          name: container-runtime
+        {{- end }}
         env:
           - name: COMP_FILENAME_TEMPLATE
             value: {{ .Values.composer.filenameTemplate | quote }}
@@ -115,3 +119,8 @@ spec:
       - name: core-volume
         persistentVolumeClaim:
           claimName:  core-storage-pvc
+      {{- if .Values.daemonset.mountContainerRuntimeEndpoint }}
+      - name: container-runtime
+        hostPath:
+          path: {{ .Values.daemonset.hostContainerRuntimeEndpoint }}
+      {{- end }}
