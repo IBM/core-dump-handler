@@ -34,6 +34,8 @@ daemonset:
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
   crioEndpoint: "unix:///run/containerd/containerd.sock"
+  mountContainerRuntimeEndpoint: false
+  hostContainerRuntimeEndpoint: "/run/containerd/containerd.sock"
   suidDumpable: 2
   vendor: default
   # interval: 60000
