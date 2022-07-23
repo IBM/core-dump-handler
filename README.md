@@ -2,9 +2,10 @@
 
 This helm chart is designed to deploy functionality that automatically saves core dumps from most public cloud kubernetes service providers and private kubernetes instances to an S3 compatible storage service.
 
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler) 
-[![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
 [![build status](https://github.com/ibm/core-dump-handler/workflows/CI/badge.svg)](https://github.com/ibm/core-dump-handler/actions)
+[![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/5827/badge)](https://bestpractices.coreinfrastructure.org/projects/5827)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/core-dump-handler)](https://artifacthub.io/packages/search?repo=core-dump-handler)
 
 ## Contributions
 
@@ -165,8 +166,6 @@ helm delete core-dump-handler -n observe
 
 ## Build and Deploy a Custom Version
 
-The services are written in Rust using [rustup](https://rustup.rs/).
-
 1. Build the image `docker build -t YOUR_TAG_NAME .`
 
 2. Push the image to your container registry
@@ -187,36 +186,18 @@ or run the helm install command with the settings
 ```
 ## Testing
 
-1. Login to your kubernetes cluster so that `kubectl` can be ran from the script.
+### unit testing
 
-1. Ensure you have an minio client in your PATH on your machine.
+1. The services are written in Rust using [rustup](https://rustup.rs/).
 
-    ```
-    which mc
-    /usr/local/bin
-    ```
-1. If you don't have an minio client it can be installed on linux with
+1. Local unit tests can be ran using `cargo test` in the base folder
 
-    ```
-    wget https://dl.min.io/client/mc/release/linux-amd64/mc
-    chmod +x mc
-    sudo cp mc /usr/local/bin/mc
-    ```
-    Other OSes are detailed here https://docs.min.io/docs/minio-client-quickstart-guide.html
+### integration testing
 
-1. Publish the container definition for this project to a registry
+1. Currently only IBM Cloud ROKS and IKS are supported but we are happy to carry integration tests for other services but we can't run them before release.
 
-   ```
-   docker build -t REPOSITORYNAME:YOUR_TAG .
-   docker push REPOSITORYNAME:YOUR_TAG
-   ```
+1. To run the integration tests build follow the [instructions for a custom build](https://github.com/IBM/core-dump-handler/#build-and-deploy-a-custom-version)
 
-1. Modify the image definition in the yaml
-
-    ```yaml
-    image:
-    repository: REPOSITORYNAME:YOUR_TAG
-    ```
 1. In the root of the project folder create a file called `.env` with the following configuration
 
     ```
@@ -230,9 +211,17 @@ or run the helm install command with the settings
 
     ```
     cd integration
-    ./run.sh
+    ./run-ibm.sh
     ```
 
+
+## Releases
+
+Releases are built on a pre-release branch e.g. `pre-8.5.0` integration tests are ran manually and a release is generated when merged to main.
+
+It currently isn't possible to automate this as the kubernetes integration in github actions is not reliable enough.
+
+If you wish to test a pre-release with your own integration testing then please raise an issue and we can collaborate on your test run.
 
 ## Troubleshooting
 
