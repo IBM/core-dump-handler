@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: pre-8.6.1
+version: v8.6.1
 
-appVersion: "pre-8.6.1"
+appVersion: "v8.6.1"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -41,7 +41,7 @@ annotations:
           url: https://github.com/IBM/core-dump-handler/pull/107
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/icdh/core-dump-handler:pre-8.6.1
+      image: quay.io/icdh/core-dump-handler:v8.6.1
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
