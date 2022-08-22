@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.6.0
+version: v8.6.1
 
-appVersion: "v8.6.0"
+appVersion: "v8.6.1"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -30,23 +30,18 @@ maintainers:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: configurable crictl endpoint
+      description:  Allow mounting the host container runtime socket
       links:
         - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/97
+          url: https://github.com/IBM/core-dump-handler/pull/104
     - kind: added
-      description: optional pod selector labels
+      description: Update security documentation and Integration test docs
       links:
         - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/98
-    - kind: changed
-      description: updated deps and docs
-      links:
-        - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/100
+          url: https://github.com/IBM/core-dump-handler/pull/107
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/icdh/core-dump-handler:v8.6.0
+      image: quay.io/icdh/core-dump-handler:v8.6.1
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
