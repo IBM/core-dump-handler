@@ -38,6 +38,7 @@ pub struct CoreParams {
     pub directory: String,
     pub hostname: String,
     pub pathname: String,
+    pub timeout: u64,
     pub namespace: Option<String>,
     pub podname: Option<String>,
     pub uuid: Uuid,
@@ -56,6 +57,12 @@ impl CoreConfig {
         let directory = matches.value_of("directory").unwrap_or("").to_string();
         let hostname = matches.value_of("hostname").unwrap_or("").to_string();
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
+        let timeout = matches
+            .value_of("timeout")
+            .unwrap_or("60")
+            .parse::<u64>()
+            .unwrap();
+
         let uuid = Uuid::new_v4();
 
         let params = CoreParams {
@@ -67,6 +74,7 @@ impl CoreConfig {
             directory,
             hostname,
             pathname,
+            timeout,
             namespace: None,
             podname: None,
             uuid,
@@ -291,6 +299,14 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .required(false)
                 .takes_value(true)
                 .help("Hostname (same as nodename returned by uname(2))"),
+        )
+        .arg(
+            Arg::new("timeout")
+                .short('T')
+                .long("timeout")
+                .required(false)
+                .takes_value(true)
+                .help("Timeout in seconds to wait for processing of the Coredump"),
         )
         .arg(
             Arg::new("test-threads")

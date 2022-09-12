@@ -9,6 +9,9 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::process;
+use std::sync::mpsc::channel;
+use std::thread;
+use std::time::Duration;
 use zip::write::FileOptions;
 use zip::ZipWriter;
 
@@ -16,7 +19,24 @@ mod config;
 mod logging;
 
 fn main() -> Result<(), anyhow::Error> {
-    let mut cc = config::CoreConfig::new()?;
+    let (send, recv) = channel();
+    let cc = config::CoreConfig::new()?;
+    let timeout = cc.params.timeout.clone();
+
+    thread::spawn(move || {
+        let result = handle(cc);
+        send.send(result).unwrap();
+    });
+
+    let result = recv.recv_timeout(Duration::from_secs(timeout));
+
+    match result {
+        Ok(inner_result) => inner_result,
+        Err(error) => panic!("Timeout: {}", error),
+    }
+}
+
+fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
     cc.set_namespace("default".to_string());
     let l_log_level = cc.log_level.clone();
     let log_path = logging::init_logger(l_log_level)?;
