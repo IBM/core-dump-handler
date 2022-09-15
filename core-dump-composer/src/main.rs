@@ -21,7 +21,7 @@ mod logging;
 fn main() -> Result<(), anyhow::Error> {
     let (send, recv) = channel();
     let cc = config::CoreConfig::new()?;
-    let timeout = cc.params.timeout.clone();
+    let timeout = cc.params.timeout;
 
     thread::spawn(move || {
         let result = handle(cc);
@@ -32,7 +32,10 @@ fn main() -> Result<(), anyhow::Error> {
 
     match result {
         Ok(inner_result) => inner_result,
-        Err(error) => panic!("Timeout: {}", error),
+        Err(_error) => {
+            println!("timeout");
+            process::exit(1);
+        }
     }
 }
 

@@ -59,7 +59,7 @@ impl CoreConfig {
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
         let timeout = matches
             .value_of("timeout")
-            .unwrap_or("60")
+            .unwrap_or("120")
             .parse::<u64>()
             .unwrap();
 
