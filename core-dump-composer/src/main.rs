@@ -33,7 +33,7 @@ fn main() -> Result<(), anyhow::Error> {
     match result {
         Ok(inner_result) => inner_result,
         Err(_error) => {
-            println!("timeout");
+            error!("Timeout error during coredump processing.");
             process::exit(1);
         }
     }
