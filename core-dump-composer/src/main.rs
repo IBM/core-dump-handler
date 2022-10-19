@@ -305,8 +305,7 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
     debug!("Successfully got the process details {}", ps_object);
 
     if let Some(containers) = ps_object["containers"].as_array() {
-        for container in containers {
-            let counter = 0;
+        for (counter, container) in containers.iter().enumerate() {
             let img_ref = match container["imageRef"].as_str() {
                 Some(v) => v,
                 None => {
