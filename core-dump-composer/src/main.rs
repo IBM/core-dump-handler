@@ -111,8 +111,13 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
     cc.set_podname(podname.to_string());
 
     // Create the base zip file that we are going to put everything into
+    let compression_method = if cc.disable_compression {
+        zip::CompressionMethod::Stored
+    } else {
+        zip::CompressionMethod::Deflated
+    };
     let options = FileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated)
+        .compression_method(compression_method)
         .unix_permissions(0o444)
         .large_file(true);
 
@@ -159,20 +164,14 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
 
     let stdin = io::stdin();
     let mut stdin = stdin.lock();
-    let mut data = [0u8; 8192];
 
-    while let Ok(n) = stdin.read(&mut data) {
-        if n == 0 {
-            break;
+    match io::copy(&mut stdin, &mut zip) {
+        Ok(v) => v,
+        Err(e) => {
+            error!("Error writing core file \n{}", e);
+            process::exit(1);
         }
-        match zip.write_all(&data) {
-            Ok(v) => v,
-            Err(e) => {
-                error!("Error writing core file \n{}", e);
-                process::exit(1);
-            }
-        };
-    }
+    };
     zip.flush()?;
 
     if cc.ignore_crio {

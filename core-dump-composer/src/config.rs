@@ -26,6 +26,7 @@ pub struct CoreConfig {
     pub os_hostname: String,
     pub filename_template: String,
     pub params: CoreParams,
+    pub disable_compression: bool,
 }
 
 #[derive(Serialize)]
@@ -62,6 +63,7 @@ impl CoreConfig {
             .unwrap_or("120")
             .parse::<u64>()
             .unwrap();
+        let disable_compression = matches.contains_id("disable-compression");
 
         let uuid = Uuid::new_v4();
 
@@ -144,6 +146,7 @@ impl CoreConfig {
             filename_template,
             log_length,
             params,
+            disable_compression,
         })
     }
 
@@ -208,11 +211,11 @@ impl CoreConfig {
         format!("{}-ps-info.json", self.get_templated_name())
     }
 
-    pub fn get_image_filename(&self, counter: u32) -> String {
+    pub fn get_image_filename(&self, counter: usize) -> String {
         format!("{}-{}-image-info.json", self.get_templated_name(), counter)
     }
 
-    pub fn get_log_filename(&self, counter: u32) -> String {
+    pub fn get_log_filename(&self, counter: usize) -> String {
         format!("{}-{}.log", self.get_templated_name(), counter)
     }
     pub fn get_zip_full_path(&self) -> String {
@@ -314,6 +317,13 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .required(false)
                 .takes_value(true)
                 .help("test-threads mapped to support the test scenarios"),
+        )
+        .arg(
+            Arg::new("disable-compression")
+                .short('D')
+                .long("disable-compression")
+                .takes_value(false)
+                .help("Disables deflate compression in resulting zip file and stores data uncompressed."),
         )
         .try_get_matches()
 }
