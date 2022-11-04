@@ -60,7 +60,7 @@ impl CoreConfig {
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
         let timeout = matches
             .value_of("timeout")
-            .unwrap_or("120")
+            .unwrap_or("600")
             .parse::<u64>()
             .unwrap();
         let disable_compression = matches.contains_id("disable-compression");
