@@ -473,11 +473,15 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     });
     let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
     let pod_selector_label = env::var("COMP_POD_SELECTOR_LABEL").unwrap_or_default();
+    let timeout = env::var("COMP_TIMEOUT").unwrap_or_else(|_| "600".to_string());
+    let compression = env::var("COMP_COMPRESSION")
+        .unwrap_or_else(|_| "true".to_string())
+        .to_lowercase();
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\n",
-        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\nTIMEOUT={}\nCOMPRESSION={}\n",
+        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label, timeout, compression
     );
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;

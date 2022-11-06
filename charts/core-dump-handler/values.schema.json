@@ -115,6 +115,13 @@
                 },
                 "podSelectorLabel": {
                     "type": "string"
+                },
+                "timeout": {
+                    "type": "integer",
+                    "minimum": 120
+                },
+                "compression": {
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -122,7 +129,9 @@
                 "ignoreCrio",
                 "logLevel",
                 "logLength",
-                "filenameTemplate"
+                "filenameTemplate",
+                "timeout",
+                "compression"
             ],
             "title": "Composer"
         },
@@ -183,7 +192,7 @@
                             "hostContainerRuntimeEndpoint"
                         ]
                     }
-                 }
+                }
             ],
             "properties": {
                 "name": {

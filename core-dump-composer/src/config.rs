@@ -21,12 +21,13 @@ pub struct CoreConfig {
     pub pod_selector_label: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
+    pub timeout: u32,
+    pub compression: bool,
     pub image_command: ImageCommand,
     pub bin_path: String,
     pub os_hostname: String,
     pub filename_template: String,
     pub params: CoreParams,
-    pub disable_compression: bool,
 }
 
 #[derive(Serialize)]
@@ -39,7 +40,6 @@ pub struct CoreParams {
     pub directory: String,
     pub hostname: String,
     pub pathname: String,
-    pub timeout: u64,
     pub namespace: Option<String>,
     pub podname: Option<String>,
     pub uuid: Uuid,
@@ -58,12 +58,12 @@ impl CoreConfig {
         let directory = matches.value_of("directory").unwrap_or("").to_string();
         let hostname = matches.value_of("hostname").unwrap_or("").to_string();
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
-        let timeout = matches
-            .value_of("timeout")
-            .unwrap_or("600")
-            .parse::<u64>()
-            .unwrap();
-        let disable_compression = matches.contains_id("disable-compression");
+        // let timeout = matches
+        //     .value_of("timeout")
+        //     .unwrap_or("600")
+        //     .parse::<u64>()
+        //     .unwrap();
+        // let disable_compression = matches.contains_id("disable-compression");
 
         let uuid = Uuid::new_v4();
 
@@ -76,7 +76,6 @@ impl CoreConfig {
             directory,
             hostname,
             pathname,
-            timeout,
             namespace: None,
             podname: None,
             uuid,
@@ -112,6 +111,14 @@ impl CoreConfig {
             .unwrap_or_else(|_| "false".to_string().to_lowercase())
             .parse::<bool>()
             .unwrap();
+        let compression = env::var("COMPRESSION")
+            .unwrap_or_else(|_| "true".to_string().to_lowercase())
+            .parse::<bool>()
+            .unwrap();
+        let timeout = env::var("TIMEOUT")
+            .unwrap_or_else(|_| "600".to_string())
+            .parse::<u32>()
+            .unwrap();
         let os_hostname = hostname::get()
             .unwrap_or_else(|_| OsString::from_str("unknown").unwrap_or_default())
             .into_string()
@@ -146,7 +153,8 @@ impl CoreConfig {
             filename_template,
             log_length,
             params,
-            disable_compression,
+            compression,
+            timeout,
         })
     }
 

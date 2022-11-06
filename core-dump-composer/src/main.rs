@@ -21,14 +21,13 @@ mod logging;
 fn main() -> Result<(), anyhow::Error> {
     let (send, recv) = channel();
     let cc = config::CoreConfig::new()?;
-    let timeout = cc.params.timeout;
-
+    let recv_time: u64 = cc.timeout as u64;
     thread::spawn(move || {
         let result = handle(cc);
         send.send(result).unwrap();
     });
 
-    let result = recv.recv_timeout(Duration::from_secs(timeout));
+    let result = recv.recv_timeout(Duration::from_secs(recv_time));
 
     match result {
         Ok(inner_result) => inner_result,
@@ -111,10 +110,10 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
     cc.set_podname(podname.to_string());
 
     // Create the base zip file that we are going to put everything into
-    let compression_method = if cc.disable_compression {
-        zip::CompressionMethod::Stored
-    } else {
+    let compression_method = if cc.compression {
         zip::CompressionMethod::Deflated
+    } else {
+        zip::CompressionMethod::Stored
     };
     let options = FileOptions::default()
         .compression_method(compression_method)
