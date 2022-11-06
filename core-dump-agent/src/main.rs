@@ -288,7 +288,7 @@ async fn main() -> Result<(), anyhow::Error> {
 async fn process_file(zip_path: &Path, bucket: &Bucket) {
     info!("Uploading: {}", zip_path.display());
 
-    let f = File::open(&zip_path).expect("no file found");
+    let f = File::open(zip_path).expect("no file found");
 
     match f.try_lock(FileLockMode::Shared) {
         Ok(_) => { /* If we can lock then we are ok */ }
@@ -305,7 +305,7 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
         }
     }
 
-    let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
+    let metadata = fs::metadata(zip_path).expect("unable to read metadata");
     info!("zip size is {}", metadata.len());
     let path_str = match zip_path.to_str() {
         Some(v) => v,
@@ -496,7 +496,7 @@ fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
     info!("Getting sysctl for {}", name);
     let output = Command::new("sysctl")
         .env("PATH", get_path())
-        .args(&["-n", name])
+        .args(["-n", name])
         .output()?;
     let lines = String::from_utf8(output.stdout)?;
     let line = lines.lines().take(1).next().unwrap_or("");
@@ -522,7 +522,7 @@ fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
     let s = format!("{}={}", name, value);
     let output = Command::new("sysctl")
         .env("PATH", get_path())
-        .args(&["-w", s.as_str()])
+        .args(["-w", s.as_str()])
         .status()?;
     if !output.success() {
         let e = Error::InvalidOverWrite {

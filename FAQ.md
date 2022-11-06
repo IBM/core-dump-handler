@@ -4,6 +4,8 @@
 
 - [Why is my core dump truncated?](#why-is-my-core-dump-truncated)
 
+- [Why is my zip file corrupted?](#why-is-my-zip-file-corrupted)
+
 - [Why is my log file exactly half of my configured line count?](#why-is-my-log-file-exactly-half-of-my-configured-line-count)
 
 - [Can I force an upload?](#can-i-force-an-upload)
@@ -11,6 +13,8 @@
 - [How do I apply my own secrets?](#how-do-i-apply-my-own-secrets)
 
 - [How do I use the custom endpoint?](#how-do-i-use-the-custom-endpoint)
+
+- [Why am I getting the wrong container info?](#why-am-i-getting-the-wrong-container-info)
 
 ## How should I integrate my own uploader?
 
@@ -73,6 +77,14 @@ terminationGracePeriodSeconds: 120
 ```
 Also see [Kubernetes best practices: terminating with grace](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace)
 
+## Why is my zip file corrupted?
+
+As of v8.7.0 there is now have a timer on the core dump to prevent repeated hanging core dumps taking down the system.
+For very large core dumps this means the process can be truncated and the zipfile incomplete.
+
+In v8.8.0 We have added the nocompression option to zip process to improve performance and you can increase the timeout default which is currently set to 10 minutes.
+
+
 ## Why is my log file exactly half of my configured line count?
 
 This appears to be a bug in some kubernetes services.
@@ -134,3 +146,9 @@ extraEnvVars: |
     - name: S3_ENDPOINT
       value: https://the-endpoint
 ```
+
+## Why am I getting the wrong container info?
+
+Core dump handler trys to find the container information for the crashing process based on the hostname of the pod. This works fine in most scenarios but when pods are created directly in multiple namespaces or the same Statefulsets are created in the same namespaces.
+
+The current recommendation is to create a unique name in both of those scenarios. [See issue 115](https://github.com/IBM/core-dump-handler/issues/115)
