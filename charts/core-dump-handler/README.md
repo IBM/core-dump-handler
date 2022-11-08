@@ -182,6 +182,14 @@ The agent pod has the following environment variables and these are all set by t
     "img" (Default): This is the value most crictls expect.
     "images": Digital Ocean, Newer OpenShift require this value
 
+* COMP_TIMEOUT - The timeout for the composer in seconds. Defaults to 600.
+
+    In testing ~ 3 mins per 512Mb so we have set it to 10 mins.
+
+* COMP_COMPRESSION - Enable compression Default: true
+
+    Given the amount of time compression there is an option to disable it.
+
 * CRIO_ENDPOINT - The CRIO endpoint to use.
 
     "unix:///run/containerd/containerd.sock" (Default): This is the default for most containerd nodes
@@ -252,7 +260,9 @@ Composer
 * logLevel: The log level for the composer (Default "Warn")
 * ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
-* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable 
+* timeout: Maps to the COMP_TIMEOUT environment variable ("Default 600)
+* compression: Maps to the COMP_COMPRESSION environment varable (Default "true")
+* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable
     (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
 
     Possible Values:
