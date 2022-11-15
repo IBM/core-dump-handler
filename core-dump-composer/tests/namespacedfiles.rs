@@ -68,6 +68,7 @@ fn namespaced_files_scenario() -> Result<(), std::io::Error> {
         .expect("failed to execute core dump composer");
 
     println!("{}", String::from_utf8_lossy(&cdc.stdout));
+    println!("{}", String::from_utf8_lossy(&cdc.stderr));
 
     Command::new("unzip")
         .arg("output/*.zip")
