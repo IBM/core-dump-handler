@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: icdh/core-dump-handler
-  tag: v8.7.0
+  tag: schema-updates
   pullPolicy: Always
   pullSecrets: []
   request_mem: "64Mi"
@@ -27,6 +27,8 @@ composer:
   filenameTemplate: "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"
   logLength: 500
   podSelectorLabel: ""
+  timeout: 600
+  compression: true
 
 daemonset:
   name: "core-dump-handler"

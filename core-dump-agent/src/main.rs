@@ -288,7 +288,7 @@ async fn main() -> Result<(), anyhow::Error> {
 async fn process_file(zip_path: &Path, bucket: &Bucket) {
     info!("Uploading: {}", zip_path.display());
 
-    let f = File::open(&zip_path).expect("no file found");
+    let f = File::open(zip_path).expect("no file found");
 
     match f.try_lock(FileLockMode::Shared) {
         Ok(_) => { /* If we can lock then we are ok */ }
@@ -305,7 +305,7 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
         }
     }
 
-    let metadata = fs::metadata(&zip_path).expect("unable to read metadata");
+    let metadata = fs::metadata(zip_path).expect("unable to read metadata");
     info!("zip size is {}", metadata.len());
     let path_str = match zip_path.to_str() {
         Some(v) => v,
@@ -473,11 +473,15 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     });
     let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
     let pod_selector_label = env::var("COMP_POD_SELECTOR_LABEL").unwrap_or_default();
+    let timeout = env::var("COMP_TIMEOUT").unwrap_or_else(|_| "600".to_string());
+    let compression = env::var("COMP_COMPRESSION")
+        .unwrap_or_else(|_| "true".to_string())
+        .to_lowercase();
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\n",
-        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\nTIMEOUT={}\nCOMPRESSION={}\n",
+        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label, timeout, compression
     );
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;
@@ -496,7 +500,7 @@ fn get_sysctl(name: &str) -> Result<String, anyhow::Error> {
     info!("Getting sysctl for {}", name);
     let output = Command::new("sysctl")
         .env("PATH", get_path())
-        .args(&["-n", name])
+        .args(["-n", name])
         .output()?;
     let lines = String::from_utf8(output.stdout)?;
     let line = lines.lines().take(1).next().unwrap_or("");
@@ -522,7 +526,7 @@ fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
     let s = format!("{}={}", name, value);
     let output = Command::new("sysctl")
         .env("PATH", get_path())
-        .args(&["-w", s.as_str()])
+        .args(["-w", s.as_str()])
         .status()?;
     if !output.success() {
         let e = Error::InvalidOverWrite {

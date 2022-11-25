@@ -47,6 +47,10 @@ spec:
             value:  {{ .Values.composer.crioImageCmd }}
           - name: COMP_POD_SELECTOR_LABEL
             value:  {{ .Values.composer.podSelectorLabel }}
+          - name: COMP_TIMEOUT
+            value:  {{ .Values.composer.timeout | quote }}
+          - name: COMP_COMPRESSION
+            value:  {{ .Values.composer.compression | quote }}
           - name: DEPLOY_CRIO_CONFIG
             value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: CRIO_ENDPOINT
