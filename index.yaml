@@ -4,6 +4,52 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: added
+          description:  Parameterise the timeout for core dumps and compression time
+          links:
+            - name: GitHub PR
+              url: https://github.com/IBM/core-dump-handler/pull/116
+        - kind: added
+          description: Disable zip compresssion to speed up core dump times
+          links:
+            - name: GitHub PR
+              url: https://github.com/IBM/core-dump-handler/pull/114
+      artifacthub.io/images: |
+        - name: core-dump-handler
+          image: quay.io/icdh/core-dump-handler:v8.8.0
+      artifacthub.io/license: MIT
+      artifacthub.io/signKey: |
+        fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
+        url: https://keybase.io/antonwhalley/pgp_keys.asc
+    apiVersion: v2
+    appVersion: v8.8.0
+    created: "2022-12-03T17:04:44.32800779Z"
+    description: A Helm chart for deploying a core dump management system to Kubernetes
+    digest: caa4ad0ae62a4c1403faa4812729258bf9092432ab3e455bb86ac48bcfa81f29
+    icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
+    keywords:
+    - coredump
+    - post-mortem
+    - observability
+    maintainers:
+    - email: anton@venshare.com
+      name: No9
+      url: https://github.com/No9/
+    - email: tim@buchwaldt.ws
+      name: timbuchwaldt
+      url: https://github.com/timbuchwaldt/
+    - email: thomas.jungblut@redhat.com
+      name: tjungblu
+      url: https://blog.thomasjungblut.com/
+    name: core-dump-handler
+    sources:
+    - https://github.com/ibm/core-dump-handler
+    type: application
+    urls:
+    - https://github.com/IBM/core-dump-handler/releases/download/v8.8.0/core-dump-handler-v8.8.0.tgz
+    version: v8.8.0
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: added
           description:  Wrap the composer process with in a thread to support time outs
           links:
             - name: GitHub PR
@@ -918,4 +964,4 @@ entries:
     urls:
     - https://github.com/IBM/core-dump-handler/releases/download/v5.0.1/core-dump-handler-v5.0.1.tgz
     version: v5.0.1
-generated: "2022-10-05T22:05:04.366557042Z"
+generated: "2022-12-03T17:04:44.328206392Z"
