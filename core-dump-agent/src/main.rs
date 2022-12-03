@@ -183,7 +183,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let notify_location = core_location.clone();
     if !schedule.is_empty() {
         info!("Schedule Initialising with: {}", schedule);
-        let sched = match JobScheduler::new() {
+        let sched = match JobScheduler::new().await {
             Ok(v) => v,
             Err(e) => {
                 error!("Schedule Creation Failed with {}", e);
@@ -204,14 +204,14 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         };
         info!("Created Schedule job: {:?}", s_job.guid());
-        match sched.add(s_job) {
+        match sched.add(s_job).await {
             Ok(v) => v,
             Err(e) => {
                 error!("Job Add failed {:#?}", e);
                 panic!("Job Scheduing failed, {:#?}", e);
             }
         };
-        match sched.start() {
+        match sched.start().await {
             Ok(v) => v,
             Err(e) => {
                 error!("Schedule Start failed {:#?}", e);
