@@ -1,6 +1,6 @@
 [package]
 name = "core-dump-agent"
-version = "8.6.0"
+version = "8.8.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2021"
 resolver = "2"
@@ -10,26 +10,26 @@ resolver = "2"
 [dependencies]
 anyhow = "1.0.57"
 dotenv  = "0.15.0"
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 log = "0.4.14"
 advisory-lock = "0.3.0"
-tokio-cron-scheduler = "0.7.4"
+tokio-cron-scheduler = "0.8.1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 inotify = "0.10"
 thiserror = "1.0.31"
 
 [target.x86_64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.32.3"
 default-features = false
 features = ["tokio-rustls-tls"]
 
 [target.aarch64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.32.3"
 default-features = false
 features = ["tokio-rustls-tls"]
 
 [target.x86_64-unknown-linux-gnu.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.32.3"
 
 [dev-dependencies]
 fs_extra = "1.2"
