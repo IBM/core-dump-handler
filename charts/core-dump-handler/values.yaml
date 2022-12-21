@@ -41,8 +41,8 @@ daemonset:
   suidDumpable: 2
   vendor: default
   # interval: 60000
-  # schedule: "1/60 * * * * *"
-  useINotify: true
+  schedule: "1/1 * * * * *"
+  # useINotify: false
   deployCrioConfig: false
   includeCrioExe: false
   # S3 access
