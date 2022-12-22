@@ -212,6 +212,9 @@ async fn main() -> Result<(), anyhow::Error> {
                 panic!("Schedule Start failed, {:#?}", e);
             }
         };
+        loop {
+            std::thread::sleep(Duration::from_millis(1000));
+        }
     }
 
     if use_inotify == "true" {
