@@ -186,9 +186,16 @@ async fn main() -> Result<(), anyhow::Error> {
             }
         };
 
-        let s_job = match Job::new_async(schedule.as_str(), move |_uuid, _l| {
+        let s_job = match Job::new_async(schedule.as_str(), move |uuid, mut l| {
             Box::pin(async move {
-                run_polling_agent().await;
+                let next_tick = l.next_tick_for_job(uuid).await;
+                match next_tick {
+                    Ok(Some(ts)) => {
+                        info!("Next scheduled run {:?}", ts);
+                        run_polling_agent().await;
+                    }
+                    _ => warn!("Could not get next tick for job"),
+                }
             })
         }) {
             Ok(v) => v,
