@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: icdh/core-dump-handler
-  tag: v8.8.0
+  tag: scheduler-fix
   pullPolicy: Always
   pullSecrets: []
   request_mem: "64Mi"
@@ -42,7 +42,7 @@ daemonset:
   vendor: default
   # interval: 60000
   schedule: "1/1 * * * * *"
-  # useINotify: false
+  # useINotify: true
   deployCrioConfig: false
   includeCrioExe: false
   # S3 access
