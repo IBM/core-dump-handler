@@ -57,9 +57,9 @@ spec:
           - name: COMP_COMPRESSION
             value:  {{ .Values.composer.compression | quote }}
           - name: COMP_CORE_EVENTS
-            value: {{ .Values.composer.coreEvents }}
+            value: {{ .Values.composer.coreEvents | quote }}
           - name: COMP_CORE_EVENT_DIR
-            value: {{ .Values.daemonset.eventDirectory }}
+            value: {{ .Values.daemonset.eventDirectory | quote }}
           - name: DEPLOY_CRIO_CONFIG
             value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: CRIO_ENDPOINT
