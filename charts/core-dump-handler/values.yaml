@@ -37,7 +37,7 @@ daemonset:
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
-  eventDirectory: "/var/mnt/core-dump-handler/events" 
+  eventDirectory: "/var/mnt/core-dump-handler/events"
   crioEndpoint: "unix:///run/containerd/containerd.sock"
   mountContainerRuntimeEndpoint: false
   hostContainerRuntimeEndpoint: "/run/containerd/containerd.sock"
