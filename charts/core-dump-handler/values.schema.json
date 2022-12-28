@@ -122,6 +122,9 @@
                 },
                 "compression": {
                     "type": "boolean"
+                },
+                "coreEvents": {
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -131,7 +134,8 @@
                 "logLength",
                 "filenameTemplate",
                 "timeout",
-                "compression"
+                "compression",
+                "coreEvents"
             ],
             "title": "Composer"
         },
@@ -207,6 +211,9 @@
                 "coreDirectory": {
                     "type": "string"
                 },
+                "eventDirectory": {
+                    "type": "string"
+                },
                 "suidDumpable": {
                     "type": "integer"
                 },
@@ -262,6 +269,7 @@
                 "extraEnvVars",
                 "hostDirectory",
                 "coreDirectory",
+                "eventDirectory",
                 "includeCrioExe",
                 "label",
                 "manageStoreSecret",

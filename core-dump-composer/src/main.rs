@@ -1,9 +1,12 @@
 extern crate dotenv;
 
+use crate::events::CoreEvent;
+
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use libcrio::Cli;
 use log::{debug, error, info};
 use serde_json::json;
+use serde_json::Value;
 use std::env;
 use std::fs::File;
 use std::io;
@@ -16,6 +19,7 @@ use zip::write::FileOptions;
 use zip::ZipWriter;
 
 mod config;
+mod events;
 mod logging;
 
 fn main() -> Result<(), anyhow::Error> {
@@ -174,36 +178,17 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
     zip.flush()?;
 
     if cc.ignore_crio {
+        if cc.core_events {
+            let zip_name = format!("{}.zip", cc.get_templated_name());
+            let evtdir = format!("{}", cc.event_location.display());
+            let evt = CoreEvent::new_no_crio(cc.params, zip_name);
+            evt.write_event(&evtdir)?;
+        }
         zip.finish()?;
         file.unlock()?;
         process::exit(0);
     }
 
-    // let l_crictl_config_path = cc.crictl_config_path.clone();
-
-    // let config_path = if cc.use_crio_config {
-    //     Some(
-    //         l_crictl_config_path
-    //             .into_os_string()
-    //             .to_string_lossy()
-    //             .to_string(),
-    //     )
-    // } else {
-    //     None
-    // };
-    // let l_bin_path = cc.bin_path.clone();
-    // // let image_command = if cc.image_command == *"image" {
-    // //     libcrio::ImageCommand::Images
-    // // } else {
-    // //     libcrio::ImageCommand::Img
-    // // };
-    // let cli = Cli {
-    //     bin_path: l_bin_path,
-    //     config_path,
-    //     image_command
-    // };
-
-    // let l_pod_filename = cc.get_pod_filename().clone();
     debug!("Using runtime_file_name:{}", cc.get_pod_filename());
 
     match zip.start_file(cc.get_pod_filename(), options) {
@@ -302,7 +287,7 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
     };
 
     debug!("Successfully got the process details {}", ps_object);
-
+    let mut images: Vec<Value> = vec![];
     if let Some(containers) = ps_object["containers"].as_array() {
         for (counter, container) in containers.iter().enumerate() {
             let img_ref = match container["imageRef"].as_str() {
@@ -350,6 +335,8 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
                 }
             };
 
+            let img_clone = image.clone();
+            images.push(img_clone);
             debug!("Starting image file \n{}", cc.get_image_filename(counter));
             match zip.start_file(cc.get_image_filename(counter), options) {
                 Ok(v) => v,
@@ -379,5 +366,11 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
 
     zip.finish()?;
     file.unlock()?;
+    if cc.core_events {
+        let zip_name = format!("{}.zip", cc.get_templated_name());
+        let evtdir = format!("{}", cc.event_location.display());
+        let evt = CoreEvent::new(cc.params, zip_name, pod_object, images);
+        evt.write_event(&evtdir)?;
+    }
     Ok(())
 }

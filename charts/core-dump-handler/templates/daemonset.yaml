@@ -30,6 +30,11 @@ spec:
         - name: core-volume
           mountPath:  {{ .Values.daemonset.coreDirectory }}
           mountPropagation: Bidirectional
+        {{- if .Values.composer.events }}
+        - name: event-volume
+          mountPath:  {{ .Values.daemonset.eventDirectory }}
+          mountPropagation: Bidirectional
+        {{- end }}  
         {{- if .Values.daemonset.mountContainerRuntimeEndpoint }}
         - mountPath: {{ .Values.daemonset.hostContainerRuntimeEndpoint }}
           name: container-runtime
@@ -51,6 +56,10 @@ spec:
             value:  {{ .Values.composer.timeout | quote }}
           - name: COMP_COMPRESSION
             value:  {{ .Values.composer.compression | quote }}
+          - name: COMP_CORE_EVENTS
+            value: {{ .Values.composer.coreEvents }}
+          - name: COMP_CORE_EVENT_DIR
+            value: {{ .Values.daemonset.eventDirectory }}
           - name: DEPLOY_CRIO_CONFIG
             value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: CRIO_ENDPOINT
@@ -59,6 +68,8 @@ spec:
             value: {{ .Values.daemonset.hostDirectory }}
           - name: CORE_DIR
             value: {{ .Values.daemonset.coreDirectory }}
+          - name: EVENT_DIR
+            value: {{ .Values.daemonset.eventDirectory }}
           - name: SUID_DUMPABLE
             value: {{ .Values.daemonset.suidDumpable | quote }}
           - name: DEPLOY_CRIO_EXE

@@ -190,6 +190,12 @@ The agent pod has the following environment variables and these are all set by t
 
     Given the amount of time compression there is an option to disable it.
 
+* COMP_CORE_EVENTS - Enable the creation of a core event file Default: false
+
+    Generates a file in a dedicated folder to be picked up by an external process.
+
+* COMP_CORE_EVENT_DIR - The folder where the core dump event is saved.
+
 * CRIO_ENDPOINT - The CRIO endpoint to use.
 
     "unix:///run/containerd/containerd.sock" (Default): This is the default for most containerd nodes
@@ -261,7 +267,8 @@ Composer
 * ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
 * timeout: Maps to the COMP_TIMEOUT environment variable ("Default 600)
-* compression: Maps to the COMP_COMPRESSION environment varable (Default "true")
+* compression: Maps to the COMP_COMPRESSION environment variable (Default "true")
+* coreEvents: Maps to the COMP_CORE_EVENTS envrironment variable (Default "false")
 * filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable
     (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
 
@@ -292,8 +299,10 @@ Composer
 
 Daemonset
 * hostDirectory: Maps to the HOST_DIR environment variable (Default "/var/mnt/core-dump-handler")
+* coreDirectory: Maps to the CORE_DIR environment variable (Default "/var/mnt/core-dump-handler/cores")
+* eventDirectory: Maps to the EVENT_DIR environment variable (Default "/var/mnt/core-dump-handler/events")
 * suidDumpable: Maps to the SUID_DUMPABLE environment variable (Default 2)
-* vendor: Maps to the VENDOR enviroment variable (Default default) 
+* vendor: Maps to the VENDOR enviroment variable (Default default)
 * interval: Maps to the INTERVAL enviroment variable (Default 60000)
 * schedule: Maps to the SCHEDULE enviroment variable (Default "")
 * useINotify: Maps to the USE_INOTIFY environment variable (Default false)
