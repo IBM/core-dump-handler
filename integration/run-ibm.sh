@@ -1,8 +1,9 @@
 #! /bin/bash
 
 cd ../
+set -a
 export $(grep -v '^#' .env | xargs)
-
+set +a
 cd ./charts/core-dump-handler
 
 helm install core-dump-handler . --create-namespace --namespace observe \
