@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.8.0
+version: v8.9.0
 
-appVersion: "v8.8.0"
+appVersion: "v8.9.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -30,18 +30,20 @@ maintainers:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description:  Parameterise the timeout for core dumps and compression time
+      description:  Experimental event file creation
       links:
         - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/116
-    - kind: added
-      description: Disable zip compresssion to speed up core dump times
+          url: https://github.com/IBM/core-dump-handler/pull/122
+    - kind: fixed
+      description: Scheduler crashing due to updated depenendency
       links:
+        - name: GitHub Issue
+          url: https://github.com/IBM/core-dump-handler/issues/120
         - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/114
+          url: https://github.com/IBM/core-dump-handler/pull/121
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/icdh/core-dump-handler:v8.8.0
+      image: quay.io/icdh/core-dump-handler:v8.9.0
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34
