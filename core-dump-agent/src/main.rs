@@ -18,7 +18,6 @@ use std::process;
 use std::process::Command;
 use std::time::Duration;
 use thiserror::Error;
-use tokio::runtime::Handle;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 #[allow(dead_code)]
@@ -59,7 +58,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
-    let core_dir = env::var("CORE_DIR").unwrap_or_else(|_| DEFAULT_CORE_DIR.to_string());
+    let core_dir_command = env::var("CORE_DIR").unwrap_or_else(|_| DEFAULT_CORE_DIR.to_string());
     let suid = env::var("SUID_DUMPABLE").unwrap_or_else(|_| DEFAULT_SUID_DUMPABLE.to_string());
     let deploy_crio_config = env::var("DEPLOY_CRIO_CONFIG")
         .unwrap_or_else(|_| "false".to_string())
@@ -94,9 +93,8 @@ async fn main() -> Result<(), anyhow::Error> {
             info!("Uploading {}", file);
             process_file(p, &bucket).await;
         } else {
-            let core_store = core_dir.clone();
-            info!("Uploading all content in {}", core_store);
-            run_polling_agent(core_store.as_str()).await;
+            info!("Uploading all content in {}", core_dir_command);
+            run_polling_agent().await;
         }
         process::exit(0);
     }
@@ -119,7 +117,7 @@ async fn main() -> Result<(), anyhow::Error> {
         format!("{}/core_pattern.bak", host_location).as_str(),
         format!(
             "|{}/{} -c=%c -e=%e -p=%p -s=%s -t=%t -d={} -h=%h -E=%E",
-            host_location, CDC_NAME, core_dir
+            host_location, CDC_NAME, core_dir_command
         )
         .as_str(),
     )?;
@@ -134,8 +132,6 @@ async fn main() -> Result<(), anyhow::Error> {
         format!("{}/suid_dumpable.bak", host_location).as_str(),
         &suid,
     )?;
-
-    let core_location = core_dir.clone();
 
     create_env_file(host_location)?;
     // Run polling agent on startup to clean up files.
@@ -155,7 +151,7 @@ async fn main() -> Result<(), anyhow::Error> {
             std::thread::sleep(Duration::from_millis(1000));
         }
     } else {
-        run_polling_agent(core_location.as_str()).await;
+        run_polling_agent().await;
     }
 
     if !interval.is_empty() && !schedule.is_empty() {
@@ -180,7 +176,6 @@ async fn main() -> Result<(), anyhow::Error> {
         }
     }
 
-    let notify_location = core_location.clone();
     if !schedule.is_empty() {
         info!("Schedule Initialising with: {}", schedule);
         let sched = match JobScheduler::new().await {
@@ -190,12 +185,18 @@ async fn main() -> Result<(), anyhow::Error> {
                 panic!("Schedule Creation Failed with {}", e)
             }
         };
-        let s_job = match Job::new(schedule.as_str(), move |_uuid, _l| {
-            let handle = Handle::current();
-            let core_str = core_location.clone();
-            handle.spawn(async move {
-                run_polling_agent(&core_str).await;
-            });
+
+        let s_job = match Job::new_async(schedule.as_str(), move |uuid, mut l| {
+            Box::pin(async move {
+                let next_tick = l.next_tick_for_job(uuid).await;
+                match next_tick {
+                    Ok(Some(ts)) => {
+                        info!("Next scheduled run {:?}", ts);
+                        run_polling_agent().await;
+                    }
+                    _ => warn!("Could not get next tick for job"),
+                }
+            })
         }) {
             Ok(v) => v,
             Err(e) => {
@@ -218,6 +219,9 @@ async fn main() -> Result<(), anyhow::Error> {
                 panic!("Schedule Start failed, {:#?}", e);
             }
         };
+        loop {
+            std::thread::sleep(Duration::from_millis(100));
+        }
     }
 
     if use_inotify == "true" {
@@ -231,14 +235,14 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             };
             info!("INotify Initialised...");
-            match inotify.add_watch(&notify_location, WatchMask::CLOSE) {
+            match inotify.add_watch(&core_dir_command, WatchMask::CLOSE) {
                 Ok(_) => {}
                 Err(e) => {
                     error!("Add watch failed: {}", e);
                     panic!("Add watch failed: {}", e)
                 }
             };
-            info!("INotify watching : {}", notify_location);
+            info!("INotify watching : {}", core_dir_command);
             let mut buffer = [0; 4096];
             loop {
                 let events = match inotify.read_events_blocking(&mut buffer) {
@@ -264,7 +268,7 @@ async fn main() -> Result<(), anyhow::Error> {
                                 Some(s) => {
                                     let file = format!(
                                         "{}/{}",
-                                        notify_location,
+                                        core_dir_command,
                                         s.to_str().unwrap_or_default()
                                     );
                                     let p = Path::new(&file);
@@ -389,7 +393,8 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
     Ok(Bucket::new(&s3.bucket, s3.region, s3.credentials)?.with_path_style())
 }
 
-async fn run_polling_agent(core_location: &str) {
+async fn run_polling_agent() {
+    let core_location = env::var("CORE_DIR").unwrap_or_else(|_| DEFAULT_CORE_DIR.to_string());
     info!("Executing Agent with location : {}", core_location);
 
     let bucket = match get_bucket() {
