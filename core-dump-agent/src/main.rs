@@ -474,14 +474,23 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
     let pod_selector_label = env::var("COMP_POD_SELECTOR_LABEL").unwrap_or_default();
     let timeout = env::var("COMP_TIMEOUT").unwrap_or_else(|_| "600".to_string());
+
     let compression = env::var("COMP_COMPRESSION")
         .unwrap_or_else(|_| "true".to_string())
+        .to_lowercase();
+
+    let core_events = env::var("COMP_CORE_EVENTS")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
+
+    let event_directory = env::var("COMP_CORE_EVENT_DIR")
+        .unwrap_or_else(|_| format!("{}/{}", host_location, "events"))
         .to_lowercase();
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\nTIMEOUT={}\nCOMPRESSION={}\n",
-        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label, timeout, compression
+        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\nTIMEOUT={}\nCOMPRESSION={}\nCORE_EVENTS={}\nEVENT_DIRECTORY={}\n",
+        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label, timeout, compression, core_events, event_directory
     );
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;

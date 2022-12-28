@@ -1,6 +1,6 @@
 [package]
 name = "core-dump-composer"
-version = "8.8.0"
+version = "8.9.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2021"
 

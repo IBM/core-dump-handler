@@ -1,0 +1,13 @@
+{{ if .Values.composer.coreEvents }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: event-storage-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.eventStorage }}
+  storageClassName: {{ .Values.storageClass }}
+{{ end }}

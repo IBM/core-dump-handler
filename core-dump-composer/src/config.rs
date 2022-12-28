@@ -21,8 +21,10 @@ pub struct CoreConfig {
     pub pod_selector_label: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
+    pub core_events: bool,
     pub timeout: u32,
     pub compression: bool,
+    pub event_location: PathBuf,
     pub image_command: ImageCommand,
     pub bin_path: String,
     pub os_hostname: String,
@@ -58,12 +60,6 @@ impl CoreConfig {
         let directory = matches.value_of("directory").unwrap_or("").to_string();
         let hostname = matches.value_of("hostname").unwrap_or("").to_string();
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
-        // let timeout = matches
-        //     .value_of("timeout")
-        //     .unwrap_or("600")
-        //     .parse::<u64>()
-        //     .unwrap();
-        // let disable_compression = matches.contains_id("disable-compression");
 
         let uuid = Uuid::new_v4();
 
@@ -119,6 +115,11 @@ impl CoreConfig {
             .unwrap_or_else(|_| "600".to_string())
             .parse::<u32>()
             .unwrap();
+        let core_events = env::var("CORE_EVENTS")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_lowercase()
+            .parse::<bool>()
+            .unwrap();
         let os_hostname = hostname::get()
             .unwrap_or_else(|_| OsString::from_str("unknown").unwrap_or_default())
             .into_string()
@@ -138,7 +139,9 @@ impl CoreConfig {
             ImageCommand::from_str(&image_command_string).unwrap_or(ImageCommand::Img);
         let filename_template =
             env::var("FILENAME_TEMPLATE").unwrap_or_else(|_| String::from(DEFAULT_TEMPLATE));
-
+        let event_location = PathBuf::from(
+            env::var("EVENT_DIRECTORY").unwrap_or_else(|_| format!("{}/events", base_path_str)),
+        );
         Ok(CoreConfig {
             log_level,
             pod_selector_label,
@@ -154,6 +157,8 @@ impl CoreConfig {
             log_length,
             params,
             compression,
+            core_events,
+            event_location,
             timeout,
         })
     }
