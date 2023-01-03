@@ -222,7 +222,13 @@ The agent pod has the following environment variables and these are all set by t
 * S3_ACCESS_KEY - The S3 access key for the bucket that will be uploaded to
 * S3_SECRET - The secret that is used along with the access key
 * S3_BUCKET_NAME - The name of the bucket to upload files too
-* S3_REGION - The region configuration for the bucket
+* S3_REGION - The region configuration for the bucket.
+
+  When using an S3 compatible service you should enter the hostname of the service for this value.
+  
+  e.g. --set S3_REGION=host.mycloud.com 
+
+  See https://github.com/IBM/core-dump-handler/issues/124 for further discussion. 
 * VENDOR - Some older hosts may require targeted builds for the composer.
 
     default(Default) - A RHEL8 build
