@@ -19,17 +19,17 @@ inotify = "0.10"
 thiserror = "1.0.31"
 
 [target.x86_64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.32.3"
+version = "0.31.0"
 default-features = false
 features = ["tokio-rustls-tls"]
 
 [target.aarch64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.32.3"
+version = "0.31.0"
 default-features = false
 features = ["tokio-rustls-tls"]
 
 [target.x86_64-unknown-linux-gnu.dependencies.rust-s3]
-version = "0.32.3"
+version = "0.31.0"
 
 [dev-dependencies]
 fs_extra = "1.2"
