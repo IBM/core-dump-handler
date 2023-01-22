@@ -1,0 +1,12 @@
+storageClass: standard
+image:
+  tag: latest
+  pullPolicy: Never
+composer:
+  logLevel: "Debug"
+daemonset:
+  mountContainerRuntimeEndpoint: true
+  hostContainerRuntimeEndpoint: "/var/run/cri-dockerd.sock"
+  crioEndpoint: "unix:///var/run/cri-dockerd.sock"
+  deployCrioConfig: true
+  includeCrioExe: true
