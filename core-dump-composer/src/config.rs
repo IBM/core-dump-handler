@@ -132,15 +132,14 @@ impl CoreConfig {
             .unwrap_or_else(|_| "/var/mnt/core-dump-handler".to_string());
 
         let bin_path = format!(
-            "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{}",
-            base_path_str
+            "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{base_path_str}"
         );
         let image_command =
             ImageCommand::from_str(&image_command_string).unwrap_or(ImageCommand::Img);
         let filename_template =
             env::var("FILENAME_TEMPLATE").unwrap_or_else(|_| String::from(DEFAULT_TEMPLATE));
         let event_location = PathBuf::from(
-            env::var("EVENT_DIRECTORY").unwrap_or_else(|_| format!("{}/events", base_path_str)),
+            env::var("EVENT_DIRECTORY").unwrap_or_else(|_| format!("{base_path_str}/events")),
         );
         Ok(CoreConfig {
             log_level,

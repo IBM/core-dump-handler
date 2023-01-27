@@ -114,22 +114,20 @@ async fn main() -> Result<(), anyhow::Error> {
     copy_core_dump_composer_to_hostdir(host_location)?;
     apply_sysctl(
         "kernel.core_pattern",
-        format!("{}/core_pattern.bak", host_location).as_str(),
+        format!("{host_location}/core_pattern.bak").as_str(),
         format!(
-            "|{}/{} -c=%c -e=%e -p=%p -s=%s -t=%t -d={} -h=%h -E=%E",
-            host_location, CDC_NAME, core_dir_command
-        )
+            "|{host_location}/{CDC_NAME} -c=%c -e=%e -p=%p -s=%s -t=%t -d={core_dir_command} -h=%h -E=%E")
         .as_str(),
     )?;
     apply_sysctl(
         "kernel.core_pipe_limit",
-        format!("{}/core_pipe_limit.bak", host_location).as_str(),
+        format!("{host_location}/core_pipe_limit.bak").as_str(),
         "128",
     )?;
 
     apply_sysctl(
         "fs.suid_dumpable",
-        format!("{}/suid_dumpable.bak", host_location).as_str(),
+        format!("{host_location}/suid_dumpable.bak").as_str(),
         &suid,
     )?;
 
@@ -165,12 +163,12 @@ async fn main() -> Result<(), anyhow::Error> {
         let mut i_interval = match interval.parse::<u64>() {
             Ok(v) => v,
             Err(e) => {
-                error!("Error parsing interval : {} Error: {}", interval, e);
-                panic!("Error parsing interval {}", e);
+                error!("Error parsing interval : {interval} Error: {e}");
+                panic!("Error parsing interval {e}");
             }
         };
         i_interval /= 1000;
-        schedule = format!("1/{} * * * * *", i_interval);
+        schedule = format!("1/{i_interval} * * * * *");
         if use_inotify == "true" {
             warn!("Both schedule and INotify set. Running schedule")
         }
@@ -181,8 +179,8 @@ async fn main() -> Result<(), anyhow::Error> {
         let sched = match JobScheduler::new().await {
             Ok(v) => v,
             Err(e) => {
-                error!("Schedule Creation Failed with {}", e);
-                panic!("Schedule Creation Failed with {}", e)
+                error!("Schedule Creation Failed with {e}");
+                panic!("Schedule Creation Failed with {e}")
             }
         };
 
@@ -200,23 +198,23 @@ async fn main() -> Result<(), anyhow::Error> {
         }) {
             Ok(v) => v,
             Err(e) => {
-                error!("Schedule Job Creation with {} failed, {}", schedule, e);
-                panic!("Schedule Job Creation with {} failed, {}", schedule, e)
+                error!("Schedule Job Creation with {schedule} failed, {e}");
+                panic!("Schedule Job Creation with {schedule} failed, {e}")
             }
         };
         info!("Created Schedule job: {:?}", s_job.guid());
         match sched.add(s_job).await {
             Ok(v) => v,
             Err(e) => {
-                error!("Job Add failed {:#?}", e);
-                panic!("Job Scheduing failed, {:#?}", e);
+                error!("Job Add failed {e:#?}");
+                panic!("Job Scheduing failed, {e:#?}");
             }
         };
         match sched.start().await {
             Ok(v) => v,
             Err(e) => {
-                error!("Schedule Start failed {:#?}", e);
-                panic!("Schedule Start failed, {:#?}", e);
+                error!("Schedule Start failed {e:#?}");
+                panic!("Schedule Start failed, {e:#?}");
             }
         };
         loop {
@@ -230,16 +228,16 @@ async fn main() -> Result<(), anyhow::Error> {
             let mut inotify = match Inotify::init() {
                 Ok(v) => v,
                 Err(e) => {
-                    error!("Inotify init failed: {}", e);
-                    panic!("Inotify init failed: {}", e)
+                    error!("Inotify init failed: {e}");
+                    panic!("Inotify init failed: {e}")
                 }
             };
             info!("INotify Initialised...");
             match inotify.add_watch(&core_dir_command, WatchMask::CLOSE) {
                 Ok(_) => {}
                 Err(e) => {
-                    error!("Add watch failed: {}", e);
-                    panic!("Add watch failed: {}", e)
+                    error!("Add watch failed: {e}");
+                    panic!("Add watch failed: {e}")
                 }
             };
             info!("INotify watching : {}", core_dir_command);
@@ -426,7 +424,7 @@ fn generate_crio_config(host_location: &str) -> Result<(), std::io::Error> {
         .unwrap_or_else(|_| "unix:///run/containerd/containerd.sock".to_string());
     let destination = format!("{}/{}", host_location, "crictl.yaml");
     let mut crictl_file = File::create(destination)?;
-    let text = format!("runtime-endpoint: {}\nimage-endpoint: {}\ntimeout: 2\ndebug: false\npull-image-on-create: false", endpoint, endpoint);
+    let text = format!("runtime-endpoint: {endpoint}\nimage-endpoint: {endpoint}\ntimeout: 2\ndebug: false\npull-image-on-create: false");
     crictl_file.write_all(text.as_bytes())?;
     crictl_file.flush()?;
     Ok(())
@@ -444,14 +442,14 @@ fn copy_core_dump_composer_to_hostdir(host_location: &str) -> Result<(), std::io
     let version = env::var("VENDOR").unwrap_or_else(|_| "default".to_string());
     match version.to_lowercase().as_str() {
         "default" => {
-            let location = format!("./vendor/default/{}", CDC_NAME);
-            let destination = format!("{}/{}", host_location, CDC_NAME);
+            let location = format!("./vendor/default/{CDC_NAME}");
+            let destination = format!("{host_location}/{CDC_NAME}");
             info!("Copying the composer from {} to {}", location, destination);
             fs::copy(location, destination)?;
         }
         "rhel7" => {
-            let location = format!("./vendor/rhel7/{}", CDC_NAME);
-            let destination = format!("{}/{}", host_location, CDC_NAME);
+            let location = format!("./vendor/rhel7/{CDC_NAME}");
+            let destination = format!("{host_location}/{CDC_NAME}");
             info!("Copying the composer from {} to {}", location, destination);
             fs::copy(location, destination)?;
         }
@@ -494,9 +492,7 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={}\nIGNORE_CRIO={}\nCRIO_IMAGE_CMD={}\nUSE_CRIO_CONF={}\nFILENAME_TEMPLATE={}\nLOG_LENGTH={}\nPOD_SELECTOR_LABEL={}\nTIMEOUT={}\nCOMPRESSION={}\nCORE_EVENTS={}\nEVENT_DIRECTORY={}\n",
-        loglevel, ignore_crio, crio_image, use_crio_config, filename_template, log_length, pod_selector_label, timeout, compression, core_events, event_directory
-    );
+        "LOG_LEVEL={loglevel}\nIGNORE_CRIO={ignore_crio}\nCRIO_IMAGE_CMD={crio_image}\nUSE_CRIO_CONF={use_crio_config}\nFILENAME_TEMPLATE={filename_template}\nLOG_LENGTH={log_length}\nPOD_SELECTOR_LABEL={pod_selector_label}\nTIMEOUT={timeout}\nCOMPRESSION={compression}\nCORE_EVENTS={core_events}\nEVENT_DIRECTORY={event_directory}\n");
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
@@ -537,7 +533,7 @@ fn apply_sysctl(name: &str, location: &str, value: &str) -> Result<(), anyhow::E
 }
 
 fn overwrite_sysctl(name: &str, value: &str) -> Result<(), anyhow::Error> {
-    let s = format!("{}={}", name, value);
+    let s = format!("{name}={value}");
     let output = Command::new("sysctl")
         .env("PATH", get_path())
         .args(["-w", s.as_str()])
@@ -557,11 +553,11 @@ fn remove() -> Result<(), anyhow::Error> {
     restore_sysctl("kernel", "core_pipe_limit")?;
     restore_sysctl("fs", "suid_dumpable")?;
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
-    let exe = format!("{}/{}", host_dir, CDC_NAME);
-    let env_file = format!("{}/{}", host_dir, ".env");
-    let crictl_file = format!("{}/{}", host_dir, "crictl.yaml");
-    let composer_file = format!("{}/{}", host_dir, "composer.log");
-    let crictl_exe = format!("{}/{}", host_dir, "crictl");
+    let exe = format!("{host_dir}/{CDC_NAME}");
+    let env_file = format!("{host_dir}/.env");
+    let crictl_file = format!("{host_dir}/crictl.yaml");
+    let composer_file = format!("{host_dir}/composer.log");
+    let crictl_exe = format!("{host_dir}/crictl");
 
     fs::remove_file(exe)?;
     fs::remove_file(env_file)?;
@@ -581,8 +577,8 @@ fn remove() -> Result<(), anyhow::Error> {
 fn restore_sysctl(prefix: &str, name: &str) -> Result<(), anyhow::Error> {
     info!("Restoring Backup of {}", name);
     let host_dir = env::var("HOST_DIR").unwrap_or_else(|_| DEFAULT_BASE_DIR.to_string());
-    let file_name = format!("{}/{}.bak", host_dir, name);
-    let sysctl_name = format!("{}.{}", prefix, name);
+    let file_name = format!("{host_dir}/{name}.bak");
+    let sysctl_name = format!("{prefix}.{name}");
     let line = fs::read_to_string(&file_name)?;
     overwrite_sysctl(sysctl_name.as_str(), line.as_str())?;
     fs::remove_file(file_name)?;

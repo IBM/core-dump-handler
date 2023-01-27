@@ -18,6 +18,9 @@
 
 ## How should I integrate my own uploader?
 
+**This custom upload scenario is being replaced by the event pattern implemented in v8.9.0.**
+**More documentation will follow as a client is implemented**
+
 The core dump handler is designed to quickly move the cores *"off-box"* to an object storage environment with as much additional runtime information as possible.
 In order to provide the following benefits:
 
@@ -27,7 +30,7 @@ In order to provide the following benefits:
 
 - As Object Storage APIs have migrated to S3 as a defacto standard post processing services for scrubbers and indexing the data are easier to implement.
 
-It's strongly recommened that you maintain the upload pattern of moving the cores off the machine but you may wish to move them to a none S3 compabible host.
+It's strongly recommended that you maintain the upload pattern of moving the cores off the machine but you may wish to move them to a none S3 compabible host.
 
 This scenario is possible but the following aspects need consideration:
 

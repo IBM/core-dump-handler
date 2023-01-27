@@ -120,25 +120,25 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "aws-creds"
-version = "0.30.0"
+version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aeeee1a5defa63cba39097a510dfe63ef53658fc8995202a610f6a8a4d03639"
+checksum = "ec6e9e20e9681aeb61c81913fad0dba4ed797b4a113c83f8d2d5ad71430efc92"
 dependencies = [
  "attohttpc",
  "dirs",
  "rust-ini",
  "serde",
  "serde-xml-rs",
+ "serde_derive",
  "thiserror",
- "time 0.3.17",
  "url",
 ]
 
 [[package]]
 name = "aws-region"
-version = "0.25.1"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f92a8af5850d0ea0916ca3e015ab86951ded0bf4b70fd27896e81ae1dfb0af37"
+checksum = "9bdd1c0f4aa70f72812a2f3ec325d6d6162fb80cff093f847b4c394fd78c3643"
 dependencies = [
  "thiserror",
 ]
@@ -1073,11 +1073,11 @@ checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
 
 [[package]]
 name = "minidom"
-version = "0.15.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9dddfe21863f8d600ed2bd1096cb9b5cd6ff984be6185cf9d563fb4a107bffc5"
+checksum = "30565dc73d2f452e92e07ba1bdc0222efe5d1594586d19292de8ad8e53fdd031"
 dependencies = [
- "rxml",
+ "quick-xml",
 ]
 
 [[package]]
@@ -1343,6 +1343,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quick-xml"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8533f14c8382aaad0d592c812ac3b826162128b65662331e1127b45c3d18536b"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1497,9 +1506,9 @@ dependencies = [
 
 [[package]]
 name = "rust-s3"
-version = "0.32.3"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6009d9d4cf910505534d62d380a0aa305805a2af0b5c3ad59a3024a0715b847"
+checksum = "d0a329eb6f0bb3fda88b0bb15495f94450ace48f3369f6bb036cffe03798a537"
 dependencies = [
  "async-trait",
  "aws-creds",
@@ -1560,25 +1569,6 @@ checksum = "0864aeff53f8c05aa08d86e5ef839d3dfcf07aeba2db32f12db0ef716e87bd55"
 dependencies = [
  "base64",
 ]
-
-[[package]]
-name = "rxml"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a071866b8c681dc2cfffa77184adc32b57b0caad4e620b6292609703bceb804"
-dependencies = [
- "bytes",
- "pin-project-lite",
- "rxml_validation",
- "smartstring",
- "tokio",
-]
-
-[[package]]
-name = "rxml_validation"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53bc79743f9a66c2fb1f951cd83735f275d46bfe466259fbc5897bb60a0d00ee"
 
 [[package]]
 name = "ryu"
@@ -1756,15 +1746,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 
 [[package]]
-name = "smartstring"
-version = "0.2.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e714dff2b33f2321fdcd475b71cec79781a692d846f37f415fb395a1d2bcd48e"
-dependencies = [
- "static_assertions",
-]
-
-[[package]]
 name = "socket2"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1779,12 +1760,6 @@ name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
-
-[[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strsim"
