@@ -56,7 +56,7 @@ impl CoreEvent {
                         name.to_string(),
                         label.as_str().unwrap_or_default().to_string(),
                     );
-                    println!("{:?}", label);
+                    println!("{label:?}");
                 }
             }
         }
