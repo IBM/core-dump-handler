@@ -55,6 +55,8 @@ daemonset:
   s3BucketName: XXX
   s3Region: XXX
   extraEnvVars: ""
+  envFrom: []
+  sidecarContainers: []
 
 serviceAccount:
   create: true
