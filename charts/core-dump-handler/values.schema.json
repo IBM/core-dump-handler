@@ -262,6 +262,12 @@
                 },
                 "extraEnvVars": {
                     "type": "string"
+                },
+                "envFrom": {
+                    "type": "array"
+                },
+                "sidecarContainers": {
+                    "type": "array"
                 }
             },
             "required": [

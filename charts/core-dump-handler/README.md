@@ -323,3 +323,5 @@ Daemonset
 * s3BucketName : Maps to the S3_BUCKET_NAME enviroment variable
 * 3Region : Maps to the S3_REGION enviroment variable
 * extraEnvVars: Option for passing additional configuration to the agent such as endpoint properties.
+* envFrom: Array of [EnvFromSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#envfromsource-v1-core) to inject into main container.
+* sidecarContainers: Array of [Container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#container-v1-core) to define as part of the pod.
