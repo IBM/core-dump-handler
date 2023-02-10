@@ -3,6 +3,7 @@ use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
+use std::env::temp_dir;
 use std::fs::File;
 use uuid::Uuid;
 
@@ -85,13 +86,16 @@ impl CoreEvent {
     }
 
     pub fn write_event(&self, eventlocation: &str) -> Result<(), anyhow::Error> {
-        let full_path = format!("{}/{}-event.json", eventlocation, self.uuid);
-        let file = File::create(full_path)?;
-        file.lock(FileLockMode::Exclusive)?;
-        serde_json::to_writer(&file, &self)?;
-        file.unlock()?;
-        Ok(())
-    }
+      let file_name = format!("{}-event.json", self.uuid);
+      let temp_path = temp_dir().join(file_name.clone());
+      let dest_path = std::path::Path::new(eventlocation).join(file_name.clone());
+      let file = File::create(temp_path.clone())?;
+      file.lock(FileLockMode::Exclusive)?;
+      serde_json::to_writer(&file, &self)?;
+      file.unlock()?;
+      std::fs::rename(temp_path, dest_path).unwrap();
+      Ok(())
+  }
 }
 
 #[cfg(test)]
