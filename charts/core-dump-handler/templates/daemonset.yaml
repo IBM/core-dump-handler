@@ -6,6 +6,10 @@ spec:
   selector:
     matchLabels:
       name: {{ .Values.daemonset.label }}
+  {{- with .Values.daemonset.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | trim | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       labels:

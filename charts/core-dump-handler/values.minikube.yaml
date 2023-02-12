@@ -5,6 +5,10 @@ composer:
   logLevel: "Debug"
   coreEvents: true
 daemonset:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   mountContainerRuntimeEndpoint: true
   hostContainerRuntimeEndpoint: "/var/run/cri-dockerd.sock"
   crioEndpoint: "unix:///var/run/cri-dockerd.sock"

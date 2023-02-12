@@ -325,3 +325,4 @@ Daemonset
 * extraEnvVars: Option for passing additional configuration to the agent such as endpoint properties.
 * envFrom: Array of [EnvFromSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#envfromsource-v1-core) to inject into main container.
 * sidecarContainers: Array of [Container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#container-v1-core) to define as part of the pod.
+* updateStrategy: [DaemonsetUpdateStrategy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#daemonsetupdatestrategy-v1-apps) is a struct used to control the update strategy for the DaemonSet.

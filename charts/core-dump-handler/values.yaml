@@ -57,6 +57,7 @@ daemonset:
   extraEnvVars: ""
   envFrom: []
   sidecarContainers: []
+  updateStrategy: {}
 
 serviceAccount:
   create: true
