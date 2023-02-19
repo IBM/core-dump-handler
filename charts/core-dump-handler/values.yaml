@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   registry: quay.io
   repository: icdh/core-dump-handler
-  tag: v8.7.0
+  tag: v8.10.0
   pullPolicy: Always
   pullSecrets: []
   request_mem: "64Mi"
@@ -18,6 +18,7 @@ fullnameOverride: ""
 # Size of the Persistent volume to create
 hostStorage: 1Gi
 coreStorage: 10Gi
+eventStorage: 1Gi
 storageClass: hostclass
 
 composer:
@@ -27,19 +28,23 @@ composer:
   filenameTemplate: "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"
   logLength: 500
   podSelectorLabel: ""
+  timeout: 600
+  compression: true
+  coreEvents: false
 
 daemonset:
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
+  eventDirectory: "/var/mnt/core-dump-handler/events"
   crioEndpoint: "unix:///run/containerd/containerd.sock"
   mountContainerRuntimeEndpoint: false
   hostContainerRuntimeEndpoint: "/run/containerd/containerd.sock"
   suidDumpable: 2
   vendor: default
   # interval: 60000
-  # schedule: "1/60 * * * * *"
+  # schedule: "1/1 * * * * *"
   useINotify: true
   deployCrioConfig: false
   includeCrioExe: false
@@ -50,6 +55,9 @@ daemonset:
   s3BucketName: XXX
   s3Region: XXX
   extraEnvVars: ""
+  envFrom: []
+  sidecarContainers: []
+  updateStrategy: {}
 
 serviceAccount:
   create: true

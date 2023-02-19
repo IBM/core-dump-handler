@@ -1,0 +1,26 @@
+storageClass: standard
+image:
+  tag: latest
+composer:
+  logLevel: "Debug"
+  coreEvents: true
+daemonset:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  mountContainerRuntimeEndpoint: true
+  hostContainerRuntimeEndpoint: "/var/run/cri-dockerd.sock"
+  crioEndpoint: "unix:///var/run/cri-dockerd.sock"
+  deployCrioConfig: true
+  includeCrioExe: true
+  sidecarContainers:
+  - name: simple-printer
+    image: alpine
+    command:
+    - /bin/sh
+    - -c
+    - |
+      apk --no-cache add inotify-tools
+      cd /var/mnt/core-dump-handler/events
+      inotifywait -mq -e create .| while read directory action file; do cat $file; done

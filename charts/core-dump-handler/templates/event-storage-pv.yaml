@@ -1,0 +1,20 @@
+{{ if .Values.composer.coreEvents }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: event-volume
+  labels:
+    type: local
+spec:
+  storageClassName: {{ .Values.storageClass }}
+  claimRef:
+    name: event-storage-pvc
+    namespace: {{ .Release.Namespace }}
+  capacity:
+    storage: {{ .Values.eventStorage }}
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.daemonset.eventDirectory }}
+{{ end }}

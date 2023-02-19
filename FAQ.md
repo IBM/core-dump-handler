@@ -4,6 +4,8 @@
 
 - [Why is my core dump truncated?](#why-is-my-core-dump-truncated)
 
+- [Why is my zip file corrupted?](#why-is-my-zip-file-corrupted)
+
 - [Why is my log file exactly half of my configured line count?](#why-is-my-log-file-exactly-half-of-my-configured-line-count)
 
 - [Can I force an upload?](#can-i-force-an-upload)
@@ -12,7 +14,12 @@
 
 - [How do I use the custom endpoint?](#how-do-i-use-the-custom-endpoint)
 
+- [Why am I getting the wrong container info?](#why-am-i-getting-the-wrong-container-info)
+
 ## How should I integrate my own uploader?
+
+**This custom upload scenario is being replaced by the event pattern implemented in v8.9.0.**
+**More documentation will follow as a client is implemented**
 
 The core dump handler is designed to quickly move the cores *"off-box"* to an object storage environment with as much additional runtime information as possible.
 In order to provide the following benefits:
@@ -23,7 +30,7 @@ In order to provide the following benefits:
 
 - As Object Storage APIs have migrated to S3 as a defacto standard post processing services for scrubbers and indexing the data are easier to implement.
 
-It's strongly recommened that you maintain the upload pattern of moving the cores off the machine but you may wish to move them to a none S3 compabible host.
+It's strongly recommended that you maintain the upload pattern of moving the cores off the machine but you may wish to move them to a none S3 compabible host.
 
 This scenario is possible but the following aspects need consideration:
 
@@ -72,6 +79,14 @@ spec:
 terminationGracePeriodSeconds: 120
 ```
 Also see [Kubernetes best practices: terminating with grace](https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-terminating-with-grace)
+
+## Why is my zip file corrupted?
+
+As of v8.7.0 there is now have a timer on the core dump to prevent repeated hanging core dumps taking down the system.
+For very large core dumps this means the process can be truncated and the zipfile incomplete.
+
+In v8.8.0 We have added the nocompression option to zip process to improve performance and you can increase the timeout default which is currently set to 10 minutes.
+
 
 ## Why is my log file exactly half of my configured line count?
 
@@ -134,3 +149,9 @@ extraEnvVars: |
     - name: S3_ENDPOINT
       value: https://the-endpoint
 ```
+
+## Why am I getting the wrong container info?
+
+Core dump handler trys to find the container information for the crashing process based on the hostname of the pod. This works fine in most scenarios but when pods are created directly in multiple namespaces or the same Statefulsets are created in the same namespaces.
+
+The current recommendation is to create a unique name in both of those scenarios. [See issue 115](https://github.com/IBM/core-dump-handler/issues/115)

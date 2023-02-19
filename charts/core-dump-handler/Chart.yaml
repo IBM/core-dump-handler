@@ -10,9 +10,9 @@ sources:
 
 type: application
 
-version: v8.7.0
+version: v8.10.0
 
-appVersion: "v8.7.0"
+appVersion: "v8.10.0"
 
 icon: https://raw.githubusercontent.com/No9/core-dump-handler/master/assets/handle-with-care-svgrepo-com.svg
 
@@ -29,19 +29,26 @@ maintainers:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description:  Wrap the composer process with in a thread to support time outs
+    - kind: fixed
+      description:  Fix event sourcing setup in chart templates
       links:
         - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/111
-    - kind: added
-      description: Update log4rs to support newer deps
+          url: https://github.com/IBM/core-dump-handler/pull/127
+    - kind: fixed
+      description: Downgrade to 0.31.0
+      links:
+        - name: GitHub Issue
+          url: https://github.com/IBM/core-dump-handler/issues/126
+        - name: GitHub PR
+          url: https://github.com/IBM/core-dump-handler/pull/128
+    - kind: fixed
+      description:  Handle pullSecrets inside daemonset.yaml
       links:
         - name: GitHub PR
-          url: https://github.com/IBM/core-dump-handler/pull/112
+          url: https://github.com/IBM/core-dump-handler/pull/130
   artifacthub.io/images: |
     - name: core-dump-handler
-      image: quay.io/icdh/core-dump-handler:v8.7.0
+      image: quay.io/icdh/core-dump-handler:v8.10.0
   artifacthub.io/license: MIT
   artifacthub.io/signKey: |
     fingerprint: BED079E67FD431E45301B1C9949E671B46AC8A34

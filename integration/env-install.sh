@@ -17,4 +17,4 @@ do
     echo "When all items status are 'True' the core pods are set up" && sleep 1;
 done
 
-echo "Core dump pod is ready - starting crash test"
+echo "Core dump pod is ready - start crash test"

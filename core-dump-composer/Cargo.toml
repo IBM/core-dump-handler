@@ -1,19 +1,19 @@
 [package]
 name = "core-dump-composer"
-version = "8.7.0"
+version = "8.9.0"
 authors = ["Anthony Whalley <anton@venshare.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = "3.2.8"
+clap = "3.2.22"
 advisory-lock = "0.3.0"
 uuid = { version = "1.1.0", features = ["serde", "v4"] }
 zip = "0.6.2"
 dotenv  = "0.15.0"
 log = "0.4.14"
-log4rs = { git = "https://github.com/No9/log4rs/", branch = "typemap-ors-fix" }
+log4rs = "1.2.0"
 anyhow = "1.0.53"
 serde_json = "1.0.76"
 serde = { version = "1.0.134", features = ["derive"] }

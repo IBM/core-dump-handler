@@ -44,6 +44,7 @@ fn timeout_scenario() -> Result<(), std::io::Error> {
         .unwrap();
 
     let cdc = Command::new("../target/debug/core-dump-composer")
+        .env("TIMEOUT", "1")
         .arg("-c")
         .arg("1000000000")
         .arg("-e")
@@ -60,8 +61,6 @@ fn timeout_scenario() -> Result<(), std::io::Error> {
         .arg("1588462466")
         .arg("-h")
         .arg("crashing-app-699c49b4ff-86wrh")
-        .arg("--timeout")
-        .arg("1")
         .stdin(cat)
         .output()
         .expect("Couldn't execute");

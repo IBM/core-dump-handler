@@ -115,6 +115,16 @@
                 },
                 "podSelectorLabel": {
                     "type": "string"
+                },
+                "timeout": {
+                    "type": "integer",
+                    "minimum": 120
+                },
+                "compression": {
+                    "type": "boolean"
+                },
+                "coreEvents": {
+                    "type": "boolean"
                 }
             },
             "required": [
@@ -122,7 +132,10 @@
                 "ignoreCrio",
                 "logLevel",
                 "logLength",
-                "filenameTemplate"
+                "filenameTemplate",
+                "timeout",
+                "compression",
+                "coreEvents"
             ],
             "title": "Composer"
         },
@@ -183,7 +196,7 @@
                             "hostContainerRuntimeEndpoint"
                         ]
                     }
-                 }
+                }
             ],
             "properties": {
                 "name": {
@@ -196,6 +209,9 @@
                     "type": "string"
                 },
                 "coreDirectory": {
+                    "type": "string"
+                },
+                "eventDirectory": {
                     "type": "string"
                 },
                 "suidDumpable": {
@@ -246,6 +262,15 @@
                 },
                 "extraEnvVars": {
                     "type": "string"
+                },
+                "envFrom": {
+                    "type": "array"
+                },
+                "sidecarContainers": {
+                    "type": "array"
+                },
+                "updateStrategy": {
+                    "type": "object"
                 }
             },
             "required": [
@@ -253,6 +278,7 @@
                 "extraEnvVars",
                 "hostDirectory",
                 "coreDirectory",
+                "eventDirectory",
                 "includeCrioExe",
                 "label",
                 "manageStoreSecret",

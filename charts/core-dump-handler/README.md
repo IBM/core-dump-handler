@@ -182,6 +182,20 @@ The agent pod has the following environment variables and these are all set by t
     "img" (Default): This is the value most crictls expect.
     "images": Digital Ocean, Newer OpenShift require this value
 
+* COMP_TIMEOUT - The timeout for the composer in seconds. Defaults to 600.
+
+    In testing ~ 3 mins per 512Mb so we have set it to 10 mins.
+
+* COMP_COMPRESSION - Enable compression Default: true
+
+    Given the amount of time compression there is an option to disable it.
+
+* COMP_CORE_EVENTS - Enable the creation of a core event file Default: false
+
+    Generates a file in a dedicated folder to be picked up by an external process.
+
+* COMP_CORE_EVENT_DIR - The folder where the core dump event is saved.
+
 * CRIO_ENDPOINT - The CRIO endpoint to use.
 
     "unix:///run/containerd/containerd.sock" (Default): This is the default for most containerd nodes
@@ -208,7 +222,13 @@ The agent pod has the following environment variables and these are all set by t
 * S3_ACCESS_KEY - The S3 access key for the bucket that will be uploaded to
 * S3_SECRET - The secret that is used along with the access key
 * S3_BUCKET_NAME - The name of the bucket to upload files too
-* S3_REGION - The region configuration for the bucket
+* S3_REGION - The region configuration for the bucket.
+
+  When using an S3 compatible service you should enter the hostname of the service for this value.
+  
+  e.g. --set S3_REGION=host.mycloud.com 
+
+  See https://github.com/IBM/core-dump-handler/issues/124 for further discussion. 
 * VENDOR - Some older hosts may require targeted builds for the composer.
 
     default(Default) - A RHEL8 build
@@ -252,7 +272,10 @@ Composer
 * logLevel: The log level for the composer (Default "Warn")
 * ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
 * crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
-* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable 
+* timeout: Maps to the COMP_TIMEOUT environment variable ("Default 600)
+* compression: Maps to the COMP_COMPRESSION environment variable (Default "true")
+* coreEvents: Maps to the COMP_CORE_EVENTS envrironment variable (Default "false")
+* filenameTemplate: Maps to COMP_FILENAME_TEMPLATE environment variable
     (Default {{uuid}}-dump-{{timestamp}}-{{hostname}}-{{exe_name}}-{{pid}}-{{signal}})
 
     Possible Values:
@@ -282,8 +305,10 @@ Composer
 
 Daemonset
 * hostDirectory: Maps to the HOST_DIR environment variable (Default "/var/mnt/core-dump-handler")
+* coreDirectory: Maps to the CORE_DIR environment variable (Default "/var/mnt/core-dump-handler/cores")
+* eventDirectory: Maps to the EVENT_DIR environment variable (Default "/var/mnt/core-dump-handler/events")
 * suidDumpable: Maps to the SUID_DUMPABLE environment variable (Default 2)
-* vendor: Maps to the VENDOR enviroment variable (Default default) 
+* vendor: Maps to the VENDOR enviroment variable (Default default)
 * interval: Maps to the INTERVAL enviroment variable (Default 60000)
 * schedule: Maps to the SCHEDULE enviroment variable (Default "")
 * useINotify: Maps to the USE_INOTIFY environment variable (Default false)
@@ -298,3 +323,6 @@ Daemonset
 * s3BucketName : Maps to the S3_BUCKET_NAME enviroment variable
 * 3Region : Maps to the S3_REGION enviroment variable
 * extraEnvVars: Option for passing additional configuration to the agent such as endpoint properties.
+* envFrom: Array of [EnvFromSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#envfromsource-v1-core) to inject into main container.
+* sidecarContainers: Array of [Container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#container-v1-core) to define as part of the pod.
+* updateStrategy: [DaemonsetUpdateStrategy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#daemonsetupdatestrategy-v1-apps) is a struct used to control the update strategy for the DaemonSet.

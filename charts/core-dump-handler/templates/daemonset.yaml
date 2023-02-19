@@ -6,14 +6,25 @@ spec:
   selector:
     matchLabels:
       name: {{ .Values.daemonset.label }}
+  {{- with .Values.daemonset.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | trim | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       labels:
         name: {{ .Values.daemonset.label }}
+      annotations:
+        kubectl.kubernetes.io/default-container: "coredump-container"
     spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: coredump-container
         image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         resources:
           requests:
             memory: {{ .Values.image.request_mem }}
@@ -23,17 +34,7 @@ spec:
             cpu: {{ .Values.image.limit_cpu }}
         securityContext:
           privileged: true
-        volumeMounts:
-        - name: host-volume
-          mountPath:  {{ .Values.daemonset.hostDirectory }}
-          mountPropagation: Bidirectional
-        - name: core-volume
-          mountPath:  {{ .Values.daemonset.coreDirectory }}
-          mountPropagation: Bidirectional
-        {{- if .Values.daemonset.mountContainerRuntimeEndpoint }}
-        - mountPath: {{ .Values.daemonset.hostContainerRuntimeEndpoint }}
-          name: container-runtime
-        {{- end }}
+        volumeMounts: {{ include "core-dump-handler.daemonset.container.volumeMounts" . | nindent 10 }}
         env:
           - name: COMP_FILENAME_TEMPLATE
             value: {{ .Values.composer.filenameTemplate | quote }}
@@ -47,6 +48,14 @@ spec:
             value:  {{ .Values.composer.crioImageCmd }}
           - name: COMP_POD_SELECTOR_LABEL
             value:  {{ .Values.composer.podSelectorLabel }}
+          - name: COMP_TIMEOUT
+            value:  {{ .Values.composer.timeout | quote }}
+          - name: COMP_COMPRESSION
+            value:  {{ .Values.composer.compression | quote }}
+          - name: COMP_CORE_EVENTS
+            value: {{ .Values.composer.coreEvents | quote }}
+          - name: COMP_CORE_EVENT_DIR
+            value: {{ .Values.daemonset.eventDirectory | quote }}
           - name: DEPLOY_CRIO_CONFIG
             value:  {{ .Values.daemonset.deployCrioConfig | quote }}
           - name: CRIO_ENDPOINT
@@ -55,6 +64,8 @@ spec:
             value: {{ .Values.daemonset.hostDirectory }}
           - name: CORE_DIR
             value: {{ .Values.daemonset.coreDirectory }}
+          - name: EVENT_DIR
+            value: {{ .Values.daemonset.eventDirectory }}
           - name: SUID_DUMPABLE
             value: {{ .Values.daemonset.suidDumpable | quote }}
           - name: DEPLOY_CRIO_EXE
@@ -94,11 +105,28 @@ spec:
           {{- if .Values.daemonset.extraEnvVars }}
           {{ include "core-dump-handler.tplvalues.render" ( dict "value" .Values.daemonset.extraEnvVars "context" $) | nindent 10  }}
           {{- end }}
+        {{- with .Values.daemonset.envFrom }}
+        envFrom:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         command: ["/app/core-dump-agent"]
         lifecycle:
           preStop:
             exec:
               command: ["/app/core-dump-agent", "remove"]
+      {{- range .Values.daemonset.sidecarContainers }}
+      - {{ with . -}}
+        securityContext:
+          privileged: true
+        volumeMounts:
+          {{- include "core-dump-handler.daemonset.container.volumeMounts" $ | nindent 10 }}
+          {{- if  .volumeMounts -}}
+          {{- toYaml .volumeMounts | nindent 10 }}
+          {{- end }}
+        {{- $_ := unset . "volumeMounts" -}}
+        {{- toYaml . | nindent 8 -}}
+        {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -119,6 +147,11 @@ spec:
       - name: core-volume
         persistentVolumeClaim:
           claimName:  core-storage-pvc
+      {{- if .Values.composer.coreEvents }}
+      - name: event-volume
+        persistentVolumeClaim:
+          claimName:  event-storage-pvc
+      {{- end }}
       {{- if .Values.daemonset.mountContainerRuntimeEndpoint }}
       - name: container-runtime
         hostPath:

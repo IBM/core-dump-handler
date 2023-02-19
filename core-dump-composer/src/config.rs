@@ -21,6 +21,10 @@ pub struct CoreConfig {
     pub pod_selector_label: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
+    pub core_events: bool,
+    pub timeout: u32,
+    pub compression: bool,
+    pub event_location: PathBuf,
     pub image_command: ImageCommand,
     pub bin_path: String,
     pub os_hostname: String,
@@ -38,7 +42,6 @@ pub struct CoreParams {
     pub directory: String,
     pub hostname: String,
     pub pathname: String,
-    pub timeout: u64,
     pub namespace: Option<String>,
     pub podname: Option<String>,
     pub uuid: Uuid,
@@ -57,11 +60,6 @@ impl CoreConfig {
         let directory = matches.value_of("directory").unwrap_or("").to_string();
         let hostname = matches.value_of("hostname").unwrap_or("").to_string();
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
-        let timeout = matches
-            .value_of("timeout")
-            .unwrap_or("120")
-            .parse::<u64>()
-            .unwrap();
 
         let uuid = Uuid::new_v4();
 
@@ -74,7 +72,6 @@ impl CoreConfig {
             directory,
             hostname,
             pathname,
-            timeout,
             namespace: None,
             podname: None,
             uuid,
@@ -110,6 +107,19 @@ impl CoreConfig {
             .unwrap_or_else(|_| "false".to_string().to_lowercase())
             .parse::<bool>()
             .unwrap();
+        let compression = env::var("COMPRESSION")
+            .unwrap_or_else(|_| "true".to_string().to_lowercase())
+            .parse::<bool>()
+            .unwrap();
+        let timeout = env::var("TIMEOUT")
+            .unwrap_or_else(|_| "600".to_string())
+            .parse::<u32>()
+            .unwrap();
+        let core_events = env::var("CORE_EVENTS")
+            .unwrap_or_else(|_| "false".to_string())
+            .to_lowercase()
+            .parse::<bool>()
+            .unwrap();
         let os_hostname = hostname::get()
             .unwrap_or_else(|_| OsString::from_str("unknown").unwrap_or_default())
             .into_string()
@@ -122,14 +132,15 @@ impl CoreConfig {
             .unwrap_or_else(|_| "/var/mnt/core-dump-handler".to_string());
 
         let bin_path = format!(
-            "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{}",
-            base_path_str
+            "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/home/kubernetes/bin:{base_path_str}"
         );
         let image_command =
             ImageCommand::from_str(&image_command_string).unwrap_or(ImageCommand::Img);
         let filename_template =
             env::var("FILENAME_TEMPLATE").unwrap_or_else(|_| String::from(DEFAULT_TEMPLATE));
-
+        let event_location = PathBuf::from(
+            env::var("EVENT_DIRECTORY").unwrap_or_else(|_| format!("{base_path_str}/events")),
+        );
         Ok(CoreConfig {
             log_level,
             pod_selector_label,
@@ -144,6 +155,10 @@ impl CoreConfig {
             filename_template,
             log_length,
             params,
+            compression,
+            core_events,
+            event_location,
+            timeout,
         })
     }
 
@@ -208,11 +223,11 @@ impl CoreConfig {
         format!("{}-ps-info.json", self.get_templated_name())
     }
 
-    pub fn get_image_filename(&self, counter: u32) -> String {
+    pub fn get_image_filename(&self, counter: usize) -> String {
         format!("{}-{}-image-info.json", self.get_templated_name(), counter)
     }
 
-    pub fn get_log_filename(&self, counter: u32) -> String {
+    pub fn get_log_filename(&self, counter: usize) -> String {
         format!("{}-{}.log", self.get_templated_name(), counter)
     }
     pub fn get_zip_full_path(&self) -> String {
@@ -314,6 +329,13 @@ pub fn try_get_matches() -> clap::Result<ArgMatches> {
                 .required(false)
                 .takes_value(true)
                 .help("test-threads mapped to support the test scenarios"),
+        )
+        .arg(
+            Arg::new("disable-compression")
+                .short('D')
+                .long("disable-compression")
+                .takes_value(false)
+                .help("Disables deflate compression in resulting zip file and stores data uncompressed."),
         )
         .try_get_matches()
 }
