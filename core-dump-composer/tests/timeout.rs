@@ -66,6 +66,6 @@ fn timeout_scenario() -> Result<(), std::io::Error> {
         .expect("Couldn't execute");
 
     // FIXME: It would be nice to check the log output here.
-    assert_eq!(1, *&cdc.status.code().unwrap());
+    assert_eq!(32, *&cdc.status.code().unwrap());
     Ok(())
 }
