@@ -474,7 +474,7 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let filename_template = env::var("COMP_FILENAME_TEMPLATE").unwrap_or_else(|_| {
         "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}".to_string()
     });
-    let log_length = env::var("LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
+    let log_length = env::var("COMP_LOG_LENGTH").unwrap_or_else(|_| "500".to_string());
     let pod_selector_label = env::var("COMP_POD_SELECTOR_LABEL").unwrap_or_default();
     let timeout = env::var("COMP_TIMEOUT").unwrap_or_else(|_| "600".to_string());
 
