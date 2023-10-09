@@ -20,6 +20,8 @@ hostStorage: 1Gi
 coreStorage: 10Gi
 eventStorage: 1Gi
 storageClass: hostclass
+# set claimRef on PersistentVolume or fallback to /spec/volumeName on PVC
+bindPVThroughClaimRef: true
 
 composer:
   ignoreCrio: false
