@@ -110,6 +110,9 @@
                 "ignoreCrio": {
                     "type": "boolean"
                 },
+                "includeProcInfo": {
+                    "type": "boolean"
+                },
                 "crioImageCmd": {
                     "type": "string"
                 },
@@ -130,6 +133,7 @@
             "required": [
                 "crioImageCmd",
                 "ignoreCrio",
+                "includeProcInfo",
                 "logLevel",
                 "logLength",
                 "filenameTemplate",

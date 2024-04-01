@@ -21,6 +21,7 @@ pub struct CoreConfig {
     pub pod_selector_label: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
+    pub include_proc_info: bool,
     pub core_events: bool,
     pub timeout: u32,
     pub compression: bool,
@@ -98,6 +99,10 @@ impl CoreConfig {
             .to_lowercase()
             .parse::<bool>()
             .unwrap();
+        let include_proc_info = env::var("INCLUDE_PROC_INFO")
+            .unwrap_or_else(|_| "false".to_string().to_lowercase())
+            .parse::<bool>()
+            .unwrap();
         let log_length = env::var("LOG_LENGTH")
             .unwrap_or_else(|_| "500".to_string())
             .parse::<u32>()
@@ -145,6 +150,7 @@ impl CoreConfig {
             log_level,
             pod_selector_label,
             ignore_crio,
+            include_proc_info,
             dot_env_path,
             image_command,
             use_crio_config,

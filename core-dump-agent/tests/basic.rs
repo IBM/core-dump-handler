@@ -89,6 +89,7 @@ fn basic() -> Result<(), std::io::Error> {
     let env_content = fs::read_to_string(&env_file).unwrap();
     assert!(env_content.contains("LOG_LEVEL=debug"));
     assert!(env_content.contains("IGNORE_CRIO=false"));
+    assert!(env_content.contains("INCLUDE_PROC_INFO=false"));
     assert!(env_content.contains("CRIO_IMAGE_CMD=img"));
     assert!(env_content.contains("USE_CRIO_CONF=false"));
     assert!(env_content.contains(

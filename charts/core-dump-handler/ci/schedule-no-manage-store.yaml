@@ -21,6 +21,7 @@ storageClass: hostclass
 
 composer:
   ignoreCrio: false
+  includeProcInfo: false
   crioImageCmd: "img"
   logLevel: "Warn"
   # Double curlies are required otherwise helm trys to parse the string

@@ -44,6 +44,8 @@ spec:
             value: {{ .Values.composer.logLevel }}
           - name: COMP_IGNORE_CRIO
             value: {{ .Values.composer.ignoreCrio | quote }}
+          - name: COMP_INCLUDE_PROC_INFO
+            value: {{ .Values.composer.includeProcInfo | quote }}
           - name: COMP_CRIO_IMAGE_CMD
             value:  {{ .Values.composer.crioImageCmd }}
           - name: COMP_POD_SELECTOR_LABEL
