@@ -26,13 +26,11 @@ jobs:
 
       - name: Lint
         run: |
-          cd core-dump-handler
           cargo fmt -- --check
           cargo clippy -- -D warnings
 
       - name: Test
         run: |
-          cd core-dump-handler
           cargo check
           cargo test --release --all
 
