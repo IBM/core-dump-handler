@@ -2,3 +2,6 @@
 daemonset:
   includeCrioExe: true
   vendor: rhel7 # EKS EC2 images have an old libc=2.26
+
+serviceAccount:
+  useToken: true
