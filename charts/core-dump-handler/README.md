@@ -256,6 +256,7 @@ The following secrets are configurable and map to the corresponding environment 
 ### Values
 
 General
+* priorityClassName: The priorityClass of the daemonset pods ( Default nil ) 
 * storage: The size of the storage for the cores (Default 1Gi)
 * storageClass: The storage class for volume (Default hostclass)
 
