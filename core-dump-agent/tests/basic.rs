@@ -98,7 +98,7 @@ fn basic() -> Result<(), std::io::Error> {
     assert!(env_content.contains("LOG_LENGTH=500"));
     assert!(env_content.contains("EVENTS=false"));
     assert!(env_content.contains("EVENT_DIRECTORY=/"));
-    assert_eq!(env_content.lines().count(), 11);
+    assert_eq!(env_content.lines().count(), 12);
     //TODO: [No9] Test uploading of a corefile
     //TODO: [No9] Test remove option
     //TODO: [No9] Test sweep option
