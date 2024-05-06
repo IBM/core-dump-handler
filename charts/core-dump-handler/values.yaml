@@ -86,6 +86,9 @@ nodeSelector: {}
 # gpu-enabled: true
 affinity: {}
 
+# priorityClassName for assigning priorityClass to the daemonset pods
+priorityClassName:
+
 # Tolerations for the daemonset's pod assignment
 # ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
