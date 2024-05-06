@@ -466,6 +466,9 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     let ignore_crio = env::var("COMP_IGNORE_CRIO")
         .unwrap_or_else(|_| "false".to_string())
         .to_lowercase();
+    let include_proc_info = env::var("COMP_INCLUDE_PROC_INFO")
+        .unwrap_or_else(|_| "false".to_string())
+        .to_lowercase();
     let crio_image = env::var("COMP_CRIO_IMAGE_CMD").unwrap_or_else(|_| "img".to_string());
     let destination = format!("{}/{}", host_location, ".env");
     let use_crio_config = env::var("DEPLOY_CRIO_CONFIG")
@@ -492,7 +495,7 @@ fn create_env_file(host_location: &str) -> Result<(), std::io::Error> {
     info!("Creating {} file with LOG_LEVEL={}", destination, loglevel);
     let mut env_file = File::create(destination)?;
     let text = format!(
-        "LOG_LEVEL={loglevel}\nIGNORE_CRIO={ignore_crio}\nCRIO_IMAGE_CMD={crio_image}\nUSE_CRIO_CONF={use_crio_config}\nFILENAME_TEMPLATE={filename_template}\nLOG_LENGTH={log_length}\nPOD_SELECTOR_LABEL={pod_selector_label}\nTIMEOUT={timeout}\nCOMPRESSION={compression}\nCORE_EVENTS={core_events}\nEVENT_DIRECTORY={event_directory}\n");
+        "LOG_LEVEL={loglevel}\nIGNORE_CRIO={ignore_crio}\nINCLUDE_PROC_INFO={include_proc_info}\nCRIO_IMAGE_CMD={crio_image}\nUSE_CRIO_CONF={use_crio_config}\nFILENAME_TEMPLATE={filename_template}\nLOG_LENGTH={log_length}\nPOD_SELECTOR_LABEL={pod_selector_label}\nTIMEOUT={timeout}\nCOMPRESSION={compression}\nCORE_EVENTS={core_events}\nEVENT_DIRECTORY={event_directory}\n");
     info!("Writing composer .env \n{}", text);
     env_file.write_all(text.as_bytes())?;
     env_file.flush()?;
