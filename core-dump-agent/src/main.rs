@@ -233,7 +233,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             };
             info!("INotify Initialised...");
-            match inotify.add_watch(&core_dir_command, WatchMask::CLOSE) {
+            match inotify.watches().add(&core_dir_command, WatchMask::CLOSE) {
                 Ok(_) => {}
                 Err(e) => {
                     error!("Add watch failed: {e}");
