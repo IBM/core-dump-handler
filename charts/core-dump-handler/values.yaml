@@ -23,6 +23,7 @@ storageClass: hostclass
 
 composer:
   ignoreCrio: false
+  includeProcInfo: false
   crioImageCmd: "img"
   logLevel: "Warn"
   filenameTemplate: "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}"

@@ -21,6 +21,8 @@ pub struct CoreConfig {
     pub pod_selector_label: String,
     pub use_crio_config: bool,
     pub ignore_crio: bool,
+    pub include_proc_info: bool,
+    pub system_proc_folder_path: String,
     pub core_events: bool,
     pub timeout: u32,
     pub compression: bool,
@@ -98,6 +100,12 @@ impl CoreConfig {
             .to_lowercase()
             .parse::<bool>()
             .unwrap();
+        let include_proc_info = env::var("INCLUDE_PROC_INFO")
+            .unwrap_or_else(|_| "false".to_string().to_lowercase())
+            .parse::<bool>()
+            .unwrap();
+        let system_proc_folder_path =
+            env::var("OVERRIDE_PROC_FOLDER_PATH").unwrap_or_else(|_| "/proc".to_string());
         let log_length = env::var("LOG_LENGTH")
             .unwrap_or_else(|_| "500".to_string())
             .parse::<u32>()
@@ -145,6 +153,8 @@ impl CoreConfig {
             log_level,
             pod_selector_label,
             ignore_crio,
+            include_proc_info,
+            system_proc_folder_path,
             dot_env_path,
             image_command,
             use_crio_config,
@@ -230,12 +240,21 @@ impl CoreConfig {
     pub fn get_log_filename(&self, counter: usize) -> String {
         format!("{}-{}.log", self.get_templated_name(), counter)
     }
+
     pub fn get_zip_full_path(&self) -> String {
         format!(
             "{}/{}.zip",
             self.params.directory,
             self.get_templated_name()
         )
+    }
+
+    pub fn get_proc_folder_full_path(&self, counter: usize) -> String {
+        format!("{}-{}-proc", self.get_templated_name(), counter)
+    }
+
+    pub fn get_proc_files_to_gather(&self) -> [&'static str; 5] {
+        ["auxv", "cmdline", "environ", "maps", "status"]
     }
 }
 

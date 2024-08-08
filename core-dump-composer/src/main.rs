@@ -4,7 +4,7 @@ use crate::events::CoreEvent;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use libcrio::Cli;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use serde_json::json;
 use serde_json::Value;
 use std::env;
@@ -297,6 +297,9 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
                     break;
                 }
             };
+
+            let container_id = container["id"].as_str().unwrap_or_default();
+            debug!("Getting logs for container id {}", container_id);
             let log =
                 match cli.tail_logs(container["id"].as_str().unwrap_or_default(), cc.log_length) {
                     Ok(v) => v,
@@ -357,10 +360,77 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
                     process::exit(1);
                 }
             };
-            debug!(
-                "Getting logs for container id {}",
-                container["id"].as_str().unwrap_or_default()
-            );
+
+            if cc.include_proc_info {
+                debug!("Getting pid info for container id {}", container_id);
+
+                let inspect = match cli.inspect_container(container_id) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        error!("Error inspecting container \n{}", e);
+                        // We continue here since we do not want to interrupt the whole gathering
+                        // flow because we could not inspect a container
+                        continue;
+                    }
+                };
+
+                let pid = match inspect["info"]["pid"].as_u64() {
+                    Some(p) => p,
+                    None => {
+                        // We continue here since we do not want to interrupt the whole gathering
+                        // flow because we could not extract pid from the container inspection
+                        warn!("Failed to parse pid from inspect container, skipping");
+                        continue;
+                    }
+                };
+
+                debug!("Got pid {} for container", pid);
+
+                debug!("Add proc files to the zip");
+
+                // Gathering proc files means reading from the /proc/$pid folder to capture files
+                // needed fore core2md to do its conversion. If for some reason a file is missing,
+                // then that means that the container was evicted and has no longer a pid folder.
+                // When this happens we do not want to abort the rest of data gathering as it can
+                // contain useful information regardless of that containers process data.
+                // So if any files failed to open, then log the error and continue on to the next container(s)
+                let proc_folder_full_path = cc.get_proc_folder_full_path(counter);
+                for filename in cc.get_proc_files_to_gather() {
+                    let mut file = match File::open(format!(
+                        "{}/{}/{}",
+                        cc.system_proc_folder_path, pid, filename
+                    )) {
+                        Ok(f) => f,
+                        Err(e) => {
+                            warn!(
+                                "Failed to open {}. Has the pod been ejected?\n{}",
+                                filename, e
+                            );
+                            break;
+                        }
+                    };
+
+                    let mut buffer = Vec::new();
+                    if let Err(e) = file.read_to_end(&mut buffer) {
+                        warn!("Failed read contents of the {} file \n{}", filename, e);
+                        break;
+                    }
+
+                    if let Err(e) =
+                        zip.start_file(format!("{}/{}", proc_folder_full_path, filename), options)
+                    {
+                        warn!("Error starting {} file in zip \n{}", filename, e);
+                        break;
+                    }
+
+                    if let Err(e) = zip.write_all(buffer.as_slice()) {
+                        warn!("Error writing {} file in zip \n{}", filename, e);
+                        break;
+                    }
+                }
+
+                debug!("Finished adding proc files to the zip");
+            }
         }
     };
 

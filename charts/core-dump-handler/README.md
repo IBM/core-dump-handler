@@ -177,6 +177,11 @@ The agent pod has the following environment variables and these are all set by t
     false (Default): The composer will generate the additional JSON files.
 
     true: The composer will only collect the core dump and save the core parameters as an additional JSON
+* COMP_INCLUDE_PROC_INFO - Defines if the composer should get additional proc files from the container process. *Warning:* These files can contain sensitive information regarding the process, use with caution
+
+    false (Default): The composer will not collect any pid related files
+
+    true: The composer will copy 'auxv', 'cmdline', 'environ', 'maps' and 'status' for every container into the zip
 * COMP_CRIO_IMAGE_CMD - The command to use to get image information for the core dump.
 
     "img" (Default): This is the value most crictls expect.
@@ -272,6 +277,7 @@ Image
 Composer
 * logLevel: The log level for the composer (Default "Warn")
 * ignoreCrio: Maps to the COMP_IGNORE_CRIO enviroment variable  (Default false)
+* includeProcInfo: Maps to the COMP_INCLUDE_PROC_INFO enviroment variable  (Default false)
 * crioImageCmd: Maps to the COMP_CRIO_IMAGE_CMD enviroment variable (Default "img")
 * timeout: Maps to the COMP_TIMEOUT environment variable ("Default 600)
 * compression: Maps to the COMP_COMPRESSION environment variable (Default "true")
