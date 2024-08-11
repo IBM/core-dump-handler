@@ -16,6 +16,9 @@ spec:
         name: {{ .Values.daemonset.label }}
       annotations:
         kubectl.kubernetes.io/default-container: "coredump-container"
+        {{- with .Values.daemonset.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.image.pullSecrets }}
       imagePullSecrets:

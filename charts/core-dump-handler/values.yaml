@@ -34,6 +34,7 @@ composer:
   coreEvents: false
 
 daemonset:
+  podAnnotations: {}
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"

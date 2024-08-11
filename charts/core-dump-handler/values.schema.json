@@ -209,6 +209,12 @@
                 "label": {
                     "type": "string"
                 },
+                "podAnnotations": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "hostDirectory": {
                     "type": "string"
                 },

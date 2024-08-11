@@ -311,6 +311,7 @@ Composer
 * podSelectorLabel: Enable composer only if pod has label matching the specified selector. (Default "" matches all pods)
 
 Daemonset
+* podAnnotations: Annotations to be added to core-dump-handler pods (Default nil)
 * hostDirectory: Maps to the HOST_DIR environment variable (Default "/var/mnt/core-dump-handler")
 * coreDirectory: Maps to the CORE_DIR environment variable (Default "/var/mnt/core-dump-handler/cores")
 * eventDirectory: Maps to the EVENT_DIR environment variable (Default "/var/mnt/core-dump-handler/events")
