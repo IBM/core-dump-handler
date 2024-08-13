@@ -26,8 +26,8 @@ ENV PATH=/root/.cargo/bin:${PATH}
 
 RUN cargo build --release
 
-RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-amd64.tar.gz --output crictl-v1.22.0-linux-amd64.tar.gz
-RUN tar zxvf crictl-v1.22.0-linux-amd64.tar.gz
+RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.29.0/crictl-v1.29.0-linux-amd64.tar.gz --output crictl-v1.29.0-linux-amd64.tar.gz
+RUN tar zxvf crictl-v1.29.0-linux-amd64.tar.gz
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
