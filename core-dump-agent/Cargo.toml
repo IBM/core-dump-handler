@@ -8,31 +8,31 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.57"
+anyhow = "1.0.86"
 dotenv  = "0.15.0"
-env_logger = "0.10.0"
-log = "0.4.14"
+env_logger = "0.11.5"
+log = "0.4.22"
 advisory-lock = "0.3.0"
-tokio-cron-scheduler = "0.8.1"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio-cron-scheduler = "0.11.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread","fs"] }
 inotify = "0.10"
-thiserror = "1.0.31"
+thiserror = "1.0.63"
 
 [target.x86_64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.34.0"
 default-features = false
 features = ["tokio-rustls-tls"]
 
 [target.aarch64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.34.0"
 default-features = false
 features = ["tokio-rustls-tls"]
 
 [target.x86_64-unknown-linux-gnu.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.34.0"
 
 [target.aarch64-unknown-linux-gnu.dependencies.rust-s3]
-version = "0.31.0"
+version = "0.34.0"
 
 [dev-dependencies]
 fs_extra = "1.2"
