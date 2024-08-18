@@ -345,7 +345,11 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
             return;
         }
     };
-    info!("S3 Returned: status_code: {} uploaded_bytes: {}", code.status_code(), code.uploaded_bytes());
+    info!(
+        "S3 Returned: status_code: {} uploaded_bytes: {}", 
+        code.status_code(), 
+        code.uploaded_bytes()
+    );
 }
 
 fn get_bucket() -> Result<Bucket, anyhow::Error> {
