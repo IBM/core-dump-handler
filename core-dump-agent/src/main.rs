@@ -346,8 +346,8 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
         }
     };
     info!(
-        "S3 Returned: status_code: {} uploaded_bytes: {}", 
-        code.status_code(), 
+        "S3 Returned: status_code: {} uploaded_bytes: {}",
+        code.status_code(),
         code.uploaded_bytes()
     );
 }
