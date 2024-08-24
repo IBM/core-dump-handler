@@ -233,7 +233,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
             };
             info!("INotify Initialised...");
-            match inotify.add_watch(&core_dir_command, WatchMask::CLOSE) {
+            match inotify.watches().add(&core_dir_command, WatchMask::CLOSE) {
                 Ok(_) => {}
                 Err(e) => {
                     error!("Add watch failed: {e}");
@@ -345,7 +345,11 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
             return;
         }
     };
-    info!("S3 Returned: {}", code);
+    info!(
+        "S3 Returned: status_code: {} uploaded_bytes: {}",
+        code.status_code(),
+        code.uploaded_bytes()
+    );
 }
 
 fn get_bucket() -> Result<Bucket, anyhow::Error> {
