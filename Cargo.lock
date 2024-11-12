@@ -377,7 +377,7 @@ checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
 
 [[package]]
 name = "core-dump-agent"
-version = "8.9.0"
+version = "9.0.0"
 dependencies = [
  "advisory-lock",
  "anyhow",
@@ -394,7 +394,7 @@ dependencies = [
 
 [[package]]
 name = "core-dump-composer"
-version = "8.9.0"
+version = "9.0.0"
 dependencies = [
  "advisory-lock",
  "anyhow",
