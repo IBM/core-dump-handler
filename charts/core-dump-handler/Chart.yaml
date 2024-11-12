@@ -40,7 +40,7 @@ annotations:
         - name: GitHub PR
           url: https://github.com/IBM/core-dump-handler/pull/113
     - kind: fixed
-      description:  Add service account token secret 
+      description:  Add service account token secret
       links:
         - name: GitHub PR
           url: https://github.com/IBM/core-dump-handler/pull/160
