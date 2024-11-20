@@ -9,3 +9,6 @@ spec:
     requests:
       storage: {{ .Values.coreStorage }}
   storageClassName: {{ .Values.storageClass }}
+{{ if not .Values.bindPVThroughClaimRef }}
+  volumeName: core-volume
+{{ end }}

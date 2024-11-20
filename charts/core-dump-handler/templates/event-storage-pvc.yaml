@@ -10,4 +10,7 @@ spec:
     requests:
       storage: {{ .Values.eventStorage }}
   storageClassName: {{ .Values.storageClass }}
+{{ if not .Values.bindPVThroughClaimRef }}
+  volumeName: event-volume
+{{ end }}
 {{ end }}

@@ -7,9 +7,11 @@ metadata:
     type: local
 spec:
   storageClassName: {{ .Values.storageClass }}
+{{ if .Values.bindPVThroughClaimRef }}
   claimRef:
     name: event-storage-pvc
     namespace: {{ .Release.Namespace }}
+{{ end }}
   capacity:
     storage: {{ .Values.eventStorage }}
   accessModes:
