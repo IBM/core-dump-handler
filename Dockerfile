@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi7/ubi as rhel7builder
+FROM registry.access.redhat.com/ubi7/ubi AS rhel7builder
 
 RUN yum install -y gcc openssl-devel && \
     rm -rf /var/cache/dnf && \
@@ -12,7 +12,7 @@ ENV PATH=/root/.cargo/bin:${PATH}
 
 RUN cargo build --release -p core-dump-composer
 
-FROM registry.access.redhat.com/ubi8/ubi as rhel8builder
+FROM registry.access.redhat.com/ubi8/ubi AS rhel8builder
 
 RUN yum install -y gcc openssl-devel && \
     rm -rf /var/cache/dnf && \
