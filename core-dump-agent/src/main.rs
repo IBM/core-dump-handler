@@ -292,7 +292,7 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
 
     let f = File::open(zip_path).expect("no file found");
 
-    match f.try_lock(FileLockMode::Shared) {
+    match AdvisoryFileLock::try_lock(&f, FileLockMode::Shared) {
         Ok(_) => { /* If we can lock then we are ok */ }
         Err(e) => {
             let l_inotify = env::var("USE_INOTIFY")

@@ -87,7 +87,7 @@ impl CoreEvent {
     pub fn write_event(&self, eventlocation: &str) -> Result<(), anyhow::Error> {
         let full_path = format!("{}/{}-event.json", eventlocation, self.uuid);
         let file = File::create(full_path)?;
-        file.lock(FileLockMode::Exclusive)?;
+        AdvisoryFileLock::lock(&file, FileLockMode::Exclusive)?;
         serde_json::to_writer(&file, &self)?;
         file.unlock()?;
         Ok(())
