@@ -60,6 +60,7 @@ daemonset:
   envFrom: []
   sidecarContainers: []
   updateStrategy: {}
+  mountPropagation: ""
 
 serviceAccount:
   create: true
