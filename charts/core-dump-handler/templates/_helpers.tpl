@@ -76,18 +76,6 @@ Basically copied from https://github.com/bitnami/charts/blob/master/bitnami/comm
 
 {{- define "core-dump-handler.daemonset.container.volumeMounts" -}}
 - name: host-volume
-  mountPath:  {{ .Values.daemonset.hostDirectory }}
-  mountPropagation: Bidirectional
-- name: core-volume
-  mountPath:  {{ .Values.daemonset.coreDirectory }}
-  mountPropagation: Bidirectional
-{{- if .Values.composer.coreEvents }}
-- name: event-volume
-  mountPath:  {{ .Values.daemonset.eventDirectory }}
-  mountPropagation: Bidirectional
-{{- end }}
-{{- define "core-dump-handler.daemonset.container.volumeMounts" -}}
-- name: host-volume
   mountPath: {{ .Values.daemonset.hostDirectory }}
   {{- if .Values.daemonset.mountPropagation }}
   mountPropagation: {{ .Values.daemonset.mountPropagation }}
@@ -97,6 +85,11 @@ Basically copied from https://github.com/bitnami/charts/blob/master/bitnami/comm
   {{- if .Values.daemonset.mountPropagation }}
   mountPropagation: {{ .Values.daemonset.mountPropagation }}
   {{- end }}
+{{- if .Values.composer.coreEvents }}
+- name: event-volume
+  mountPath:  {{ .Values.daemonset.eventDirectory }}
+  mountPropagation: Bidirectional
+{{- end }}
 {{- if .Values.composer.coreEvents }}
 - name: event-volume
   mountPath: {{ .Values.daemonset.eventDirectory }}
