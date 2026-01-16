@@ -37,6 +37,7 @@ daemonset:
   podAnnotations: {}
   name: "core-dump-handler"
   label: "core-dump-ds"
+  labels: {}
   hostDirectory: "/var/mnt/core-dump-handler"
   coreDirectory: "/var/mnt/core-dump-handler/cores"
   eventDirectory: "/var/mnt/core-dump-handler/events"
