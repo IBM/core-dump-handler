@@ -1,7 +1,6 @@
 extern crate dotenv;
 extern crate s3;
 
-use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use env_logger::Env;
 use inotify::{EventMask, Inotify, WatchMask};
 use log::{error, info, warn};
@@ -314,7 +313,7 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) -> Result<(), String> {
 
     let f = File::open(zip_path).expect("no file found");
 
-    match f.try_lock(FileLockMode::Shared) {
+    match f.try_lock_shared() {
         Ok(_) => { /* If we can lock then we are ok */ }
         Err(e) => {
             let l_inotify = env::var("USE_INOTIFY")
