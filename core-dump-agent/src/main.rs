@@ -352,7 +352,7 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
     );
 }
 
-fn get_bucket() -> Result<Bucket, anyhow::Error> {
+fn get_bucket() -> Result<Box<Bucket>, anyhow::Error> {
     let s3_access_key = env::var("S3_ACCESS_KEY").unwrap_or_default();
     let s3_secret = env::var("S3_SECRET").unwrap_or_default();
     let s3_bucket_name = env::var("S3_BUCKET_NAME").unwrap_or_default();
