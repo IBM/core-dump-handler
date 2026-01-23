@@ -91,10 +91,15 @@ async fn main() -> Result<(), anyhow::Error> {
             };
             let p = Path::new(&file);
             info!("Uploading {}", file);
-            process_file(p, &bucket).await;
+            match process_file(p, &bucket).await {
+                Ok(()) => (),
+                Err(e) => {
+                    error!("File processing failed: {e}");
+                }
+            };
         } else {
             info!("Uploading all content in {}", core_dir_command);
-            run_polling_agent().await;
+            run_polling_agent(false).await;
         }
         process::exit(0);
     }
@@ -149,7 +154,7 @@ async fn main() -> Result<(), anyhow::Error> {
             std::thread::sleep(Duration::from_millis(1000));
         }
     } else {
-        run_polling_agent().await;
+        run_polling_agent(use_inotify == "true").await;
     }
 
     if !interval.is_empty() && !schedule.is_empty() {
@@ -190,7 +195,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 match next_tick {
                     Ok(Some(ts)) => {
                         info!("Next scheduled run {:?}", ts);
-                        run_polling_agent().await;
+                        run_polling_agent(false).await;
                     }
                     _ => warn!("Could not get next tick for job"),
                 }
@@ -255,13 +260,6 @@ async fn main() -> Result<(), anyhow::Error> {
                         if event.mask.contains(EventMask::ISDIR) {
                             warn!("Unknown Directory created: {:?}", event.name);
                         } else {
-                            let bucket = match get_bucket() {
-                                Ok(v) => v,
-                                Err(e) => {
-                                    error!("Bucket creation failed in event: {}", e);
-                                    continue;
-                                }
-                            };
                             match event.name {
                                 Some(s) => {
                                     let file = format!(
@@ -269,8 +267,7 @@ async fn main() -> Result<(), anyhow::Error> {
                                         core_dir_command,
                                         s.to_str().unwrap_or_default()
                                     );
-                                    let p = Path::new(&file);
-                                    process_file(p, &bucket).await
+                                    tokio::spawn(process_file_or_retry(PathBuf::from(file), 0));
                                 }
                                 None => {
                                     continue;
@@ -287,7 +284,32 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn process_file(zip_path: &Path, bucket: &Bucket) {
+async fn process_file_or_retry(file: PathBuf, iteration: usize) {
+    let bucket = match get_bucket() {
+        Ok(v) => v,
+        Err(e) => {
+            error!("Bucket creation failed in event: {}", e);
+            return;
+        }
+    };
+
+    match process_file(&file, &bucket).await {
+        Ok(()) => (),
+        Err(e) => {
+            let backoff = Duration::from_secs(60).mul_f32((iteration as f32 + 1.0).powf(1.5));
+
+            error!(
+                "Core dump file processing failed: {e}. Retrying in {} s.",
+                backoff.as_secs()
+            );
+            tokio::time::sleep(backoff).await;
+
+            Box::pin(process_file_or_retry(file, iteration + 1)).await;
+        }
+    }
+}
+
+async fn process_file(zip_path: &Path, bucket: &Bucket) -> Result<(), String> {
     info!("Uploading: {}", zip_path.display());
 
     let f = File::open(zip_path).expect("no file found");
@@ -303,53 +325,37 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
             } else {
                 error!("File locked on INotify shouldn't happen as we are waiting for file close events.\nPlease recycling pod to perform sweep\n{}", e);
             }
-            return;
+            return Err("File locked".into());
         }
     }
 
-    let metadata = fs::metadata(zip_path).expect("unable to read metadata");
+    let metadata = fs::metadata(zip_path).map_err(|e| format!("unable to read metadata: {e}"))?;
     info!("zip size is {}", metadata.len());
-    let path_str = match zip_path.to_str() {
-        Some(v) => v,
-        None => {
-            error!("Failed to extract path");
-            return;
-        }
-    };
-    let upload_file_name: &str = match zip_path.file_name().unwrap().to_str() {
-        Some(v) => v,
-        None => {
-            error!("Failed to get file name for upload");
-            return;
-        }
-    };
+    let path_str = zip_path.to_str().ok_or("Failed to extract path")?;
+    let upload_file_name: &str = zip_path
+        .file_name()
+        .ok_or("Failed to get file name for upload")?
+        .to_str()
+        .ok_or("Invalid encoding of file name for upload")?;
 
     let mut fasync = tokio::fs::File::open(zip_path)
         .await
-        .expect("file was removed");
+        .map_err(|e| format!("file became unavailable while processing: {e}"))?;
 
-    let code = match bucket
+    let code = bucket
         .put_object_stream(&mut fasync, upload_file_name)
         .await
-    {
-        Ok(v) => v,
-        Err(e) => {
-            error!("Upload Failed {}", e);
-            return;
-        }
-    };
-    match fs::remove_file(path_str) {
-        Ok(v) => v,
-        Err(e) => {
-            error!("File delete failed: {}", e);
-            return;
-        }
-    };
+        .map_err(|e| format!("Upload Failed: {e:?}"))?;
+
+    fs::remove_file(path_str).map_err(|e| format!("File delete failed: {}", e))?;
+
     info!(
         "S3 Returned: status_code: {} uploaded_bytes: {}",
         code.status_code(),
         code.uploaded_bytes()
     );
+
+    Ok(())
 }
 
 fn get_bucket() -> Result<Box<Bucket>, anyhow::Error> {
@@ -395,7 +401,7 @@ fn get_bucket() -> Result<Box<Bucket>, anyhow::Error> {
     Ok(Bucket::new(&s3.bucket, s3.region, s3.credentials)?.with_path_style())
 }
 
-async fn run_polling_agent() {
+async fn run_polling_agent(retry: bool) {
     let core_location = env::var("CORE_DIR").unwrap_or_else(|_| DEFAULT_CORE_DIR.to_string());
     info!("Executing Agent with location : {}", core_location);
 
@@ -418,7 +424,16 @@ async fn run_polling_agent() {
 
     info!("Dir Content {:?}", paths);
     for zip_path in paths {
-        process_file(&zip_path, &bucket).await;
+        if retry {
+            process_file_or_retry(zip_path, 0).await;
+        } else {
+            match process_file(&zip_path, &bucket).await {
+                Ok(()) => (),
+                Err(e) => {
+                    error!("File processing failed: {e}");
+                }
+            };
+        }
     }
 }
 
