@@ -281,6 +281,9 @@
                 },
                 "updateStrategy": {
                     "type": "object"
+                },
+                "mountPropagation": {
+                    "type": "string"
                 }
             },
             "required": [
