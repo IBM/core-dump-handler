@@ -47,6 +47,7 @@ pub struct CoreParams {
     pub namespace: Option<String>,
     pub podname: Option<String>,
     pub uuid: Uuid,
+    pub arch: String,
 }
 
 static DEFAULT_TEMPLATE: &str = "{uuid}-dump-{timestamp}-{hostname}-{exe_name}-{pid}-{signal}";
@@ -64,6 +65,7 @@ impl CoreConfig {
         let pathname = matches.value_of("pathname").unwrap_or("").to_string();
 
         let uuid = Uuid::new_v4();
+        let arch = std::env::consts::ARCH.to_string();
 
         let params = CoreParams {
             limit_size,
@@ -77,6 +79,7 @@ impl CoreConfig {
             namespace: None,
             podname: None,
             uuid,
+            arch
         };
 
         let mut dot_env_path = env::current_exe()?;
@@ -374,6 +377,18 @@ mod tests {
         config.filename_template = "{namespace}".to_string();
         let just_namespace = config.get_templated_name();
         assert_eq!(just_namespace, "anamespace".to_string());
+    }
+    #[test]
+    fn arch_is_rendered() {
+        let mut config = match CoreConfig::new() {
+            Ok(v) => v,
+            Err(e) => panic!("Generation of CoreConfig failed. {}", e),
+        };
+        let templated_name = config.get_templated_name();
+        assert!(templated_name.contains("-dump-----"));
+        config.filename_template = "{arch}".to_string();
+        let just_arch = config.get_templated_name();
+        assert_eq!(just_arch, std::env::consts::ARCH);
     }
     #[test]
     fn default_template_test() {

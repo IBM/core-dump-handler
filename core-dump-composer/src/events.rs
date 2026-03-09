@@ -154,6 +154,7 @@ mod tests {
         let pathname = "pathname".to_string();
         let uuid = Uuid::new_v4();
         let podname = "podname".to_string();
+        let arch = "arch".to_string();
 
         let params = CoreParams {
             limit_size,
@@ -167,6 +168,7 @@ mod tests {
             namespace: None,
             uuid,
             podname: Some(podname),
+            arch
         };
         let pod = json!(
            {
@@ -236,6 +238,7 @@ mod tests {
         let pathname = "pathname".to_string();
         let uuid = Uuid::new_v4();
         let podname = "podname".to_string();
+        let arch = "arch".to_string();
 
         let params = CoreParams {
             limit_size,
@@ -249,6 +252,7 @@ mod tests {
             namespace: None,
             uuid,
             podname: Some(podname),
+            arch
         };
         let image1 = json!({
           "id": "sha256:3b8adc6c30f4e7e4afb57daef9d1c8af783a4a647a4670780e9df085c0525efa",
