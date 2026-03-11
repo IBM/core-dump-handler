@@ -2,7 +2,6 @@ extern crate dotenv;
 
 use crate::events::CoreEvent;
 
-use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use libcrio::Cli;
 use log::{debug, error, info, warn};
 use serde_json::json;
@@ -131,7 +130,7 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
             process::exit(1);
         }
     };
-    file.lock(FileLockMode::Exclusive)?;
+    file.lock_shared()?;
     let mut zip = ZipWriter::new(&file);
 
     debug!(

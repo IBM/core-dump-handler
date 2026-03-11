@@ -1,5 +1,4 @@
 use crate::config::CoreParams;
-use advisory_lock::{AdvisoryFileLock, FileLockMode};
 use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -87,7 +86,7 @@ impl CoreEvent {
     pub fn write_event(&self, eventlocation: &str) -> Result<(), anyhow::Error> {
         let full_path = format!("{}/{}-event.json", eventlocation, self.uuid);
         let file = File::create(full_path)?;
-        file.lock(FileLockMode::Exclusive)?;
+        file.lock_shared()?;
         serde_json::to_writer(&file, &self)?;
         file.unlock()?;
         Ok(())

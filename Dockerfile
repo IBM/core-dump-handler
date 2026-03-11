@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi7/ubi as rhel7builder
+FROM registry.access.redhat.com/ubi7/ubi AS rhel7builder
 
 RUN yum install -y gcc openssl-devel && \
     rm -rf /var/cache/dnf && \
@@ -12,7 +12,9 @@ ENV PATH=/root/.cargo/bin:${PATH}
 
 RUN cargo build --release -p core-dump-composer
 
-FROM registry.access.redhat.com/ubi8/ubi as rhel8builder
+FROM registry.access.redhat.com/ubi8/ubi AS rhel8builder
+
+ARG CRICTL_VERSION=1.33.0
 
 RUN yum install -y gcc openssl-devel && \
     rm -rf /var/cache/dnf && \
@@ -26,8 +28,8 @@ ENV PATH=/root/.cargo/bin:${PATH}
 
 RUN cargo build --release
 
-RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-amd64.tar.gz --output crictl-v1.22.0-linux-amd64.tar.gz
-RUN tar zxvf crictl-v1.22.0-linux-amd64.tar.gz
+RUN curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v${CRICTL_VERSION}/crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz --output crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz
+RUN tar zxvf crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 
