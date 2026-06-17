@@ -131,7 +131,7 @@ fn handle(mut cc: config::CoreConfig) -> Result<(), anyhow::Error> {
             process::exit(1);
         }
     };
-    file.lock(FileLockMode::Exclusive)?;
+    AdvisoryFileLock::lock(&file, FileLockMode::Exclusive)?;
     let mut zip = ZipWriter::new(&file);
 
     debug!(

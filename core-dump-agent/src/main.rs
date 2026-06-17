@@ -2,12 +2,21 @@ extern crate dotenv;
 extern crate s3;
 
 use advisory_lock::{AdvisoryFileLock, FileLockMode};
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use base64::Engine;
+use chrono::Utc;
 use env_logger::Env;
-use inotify::{EventMask, Inotify, WatchMask};
+use hmac::{Hmac, Mac};
 use log::{error, info, warn};
+use reqwest::header::{
+    AUTHORIZATION, CONTENT_LENGTH, HeaderMap, HeaderValue,
+};
+use reqwest::Client;
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
 use s3::region::Region;
+use sha2::Sha256;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -19,14 +28,43 @@ use std::process::Command;
 use std::time::Duration;
 use thiserror::Error;
 use tokio_cron_scheduler::{Job, JobScheduler};
+use tokio_util::io::ReaderStream;
 
-#[allow(dead_code)]
-struct Storage {
-    name: String,
-    region: Region,
-    credentials: Credentials,
-    bucket: String,
-    location_supported: bool,
+#[cfg(unix)]
+use inotify::{EventMask, Inotify, WatchMask};
+
+type HmacSha256 = Hmac<Sha256>;
+
+enum StorageBackend {
+    S3(Bucket),
+    Azure(AzureBlobClient),
+}
+
+struct UploadResult {
+    provider: &'static str,
+    status_code: u16,
+    uploaded_bytes: u64,
+}
+
+struct AzureBlobClient {
+    client: Client,
+    auth: AzureAuth,
+    container_name: String,
+    blob_endpoint: String,
+    blob_prefix: String,
+}
+
+enum AzureAuth {
+    SharedKey {
+        account_name: String,
+        account_key: String,
+    },
+    ManagedIdentity {
+        client_id: String,
+        tenant_id: Option<String>,
+        federated_token_file: Option<String>,
+        authority_host: String,
+    },
 }
 
 #[derive(Error, Debug)]
@@ -39,6 +77,7 @@ const BIN_PATH: &str = "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin";
 const CDC_NAME: &str = "cdc";
 static DEFAULT_BASE_DIR: &str = "/var/mnt/core-dump-handler";
 static DEFAULT_CORE_DIR: &str = "/var/mnt/core-dump-handler/cores";
+const AZURE_BLOB_API_VERSION: &str = "2023-11-03";
 
 static DEFAULT_SUID_DUMPABLE: &str = "2";
 
@@ -82,16 +121,16 @@ async fn main() -> Result<(), anyhow::Error> {
     if pattern == "sweep" {
         let file = std::env::args().nth(2).unwrap_or_default();
         if !file.is_empty() {
-            let bucket = match get_bucket() {
+            let storage = match get_storage_backend() {
                 Ok(v) => v,
                 Err(e) => {
-                    error!("Bucket creation failed in sweep: {}", e);
+                    error!("Storage client creation failed in sweep: {}", e);
                     process::exit(1);
                 }
             };
             let p = Path::new(&file);
             info!("Uploading {}", file);
-            process_file(p, &bucket).await;
+            process_file(p, &storage).await;
         } else {
             info!("Uploading all content in {}", core_dir_command);
             run_polling_agent().await;
@@ -222,6 +261,7 @@ async fn main() -> Result<(), anyhow::Error> {
         }
     }
 
+    #[cfg(unix)]
     if use_inotify == "true" {
         info!("INotify Starting...");
         let inotify_task = tokio::spawn(async move {
@@ -255,10 +295,10 @@ async fn main() -> Result<(), anyhow::Error> {
                         if event.mask.contains(EventMask::ISDIR) {
                             warn!("Unknown Directory created: {:?}", event.name);
                         } else {
-                            let bucket = match get_bucket() {
+                            let storage = match get_storage_backend() {
                                 Ok(v) => v,
                                 Err(e) => {
-                                    error!("Bucket creation failed in event: {}", e);
+                                    error!("Storage client creation failed in event: {}", e);
                                     continue;
                                 }
                             };
@@ -270,7 +310,7 @@ async fn main() -> Result<(), anyhow::Error> {
                                         s.to_str().unwrap_or_default()
                                     );
                                     let p = Path::new(&file);
-                                    process_file(p, &bucket).await
+                                    process_file(p, &storage).await
                                 }
                                 None => {
                                     continue;
@@ -284,15 +324,20 @@ async fn main() -> Result<(), anyhow::Error> {
         inotify_task.await?;
     }
 
+    #[cfg(not(unix))]
+    if use_inotify == "true" {
+        warn!("USE_INOTIFY is not supported on this platform; using polling instead");
+    }
+
     Ok(())
 }
 
-async fn process_file(zip_path: &Path, bucket: &Bucket) {
+async fn process_file(zip_path: &Path, storage: &StorageBackend) {
     info!("Uploading: {}", zip_path.display());
 
     let f = File::open(zip_path).expect("no file found");
 
-    match f.try_lock(FileLockMode::Shared) {
+    match AdvisoryFileLock::try_lock(&f, FileLockMode::Shared) {
         Ok(_) => { /* If we can lock then we are ok */ }
         Err(e) => {
             let l_inotify = env::var("USE_INOTIFY")
@@ -324,12 +369,12 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
         }
     };
 
-    let mut fasync = tokio::fs::File::open(zip_path)
+    let fasync = tokio::fs::File::open(zip_path)
         .await
         .expect("file was removed");
 
-    let code = match bucket
-        .put_object_stream(&mut fasync, upload_file_name)
+    let upload_result = match storage
+        .upload(upload_file_name, metadata.len(), fasync)
         .await
     {
         Ok(v) => v,
@@ -346,10 +391,250 @@ async fn process_file(zip_path: &Path, bucket: &Bucket) {
         }
     };
     info!(
-        "S3 Returned: status_code: {} uploaded_bytes: {}",
-        code.status_code(),
-        code.uploaded_bytes()
+        "{} returned: status_code: {} uploaded_bytes: {}",
+        upload_result.provider,
+        upload_result.status_code,
+        upload_result.uploaded_bytes
     );
+}
+
+impl StorageBackend {
+    async fn upload(
+        &self,
+        upload_file_name: &str,
+        content_length: u64,
+        file: tokio::fs::File,
+    ) -> Result<UploadResult, anyhow::Error> {
+        match self {
+            StorageBackend::S3(bucket) => {
+                let mut file = file;
+                let response = bucket.put_object_stream(&mut file, upload_file_name).await?;
+                Ok(UploadResult {
+                    provider: "S3",
+                    status_code: response.status_code(),
+                    uploaded_bytes: response.uploaded_bytes() as u64,
+                })
+            }
+            StorageBackend::Azure(client) => client.upload(upload_file_name, content_length, file).await,
+        }
+    }
+}
+
+impl AzureBlobClient {
+    async fn upload(
+        &self,
+        upload_file_name: &str,
+        content_length: u64,
+        file: tokio::fs::File,
+    ) -> Result<UploadResult, anyhow::Error> {
+        let blob_name = self.blob_name(upload_file_name);
+        let request_url = self.blob_url(&blob_name);
+        let request_date = Utc::now().format("%a, %d %b %Y %H:%M:%S GMT").to_string();
+        let authorization = self.authorization_header(&blob_name, content_length, &request_date).await?;
+
+        let mut headers = HeaderMap::new();
+        headers.insert("x-ms-blob-type", HeaderValue::from_static("BlockBlob"));
+        headers.insert(
+            "x-ms-date",
+            HeaderValue::from_str(&request_date).map_err(|error| anyhow::Error::msg(error.to_string()))?,
+        );
+        headers.insert("x-ms-version", HeaderValue::from_static(AZURE_BLOB_API_VERSION));
+        headers.insert(CONTENT_LENGTH, HeaderValue::from(content_length));
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(&authorization).map_err(|error| anyhow::Error::msg(error.to_string()))?,
+        );
+
+        let response = self
+            .client
+            .put(request_url)
+            .headers(headers)
+            .body(reqwest::Body::wrap_stream(ReaderStream::new(file)))
+            .send()
+            .await?;
+
+        let status = response.status();
+        if !status.is_success() {
+            let body = response.text().await.unwrap_or_default();
+            anyhow::bail!("Azure Blob upload failed with {}: {}", status, body);
+        }
+
+        Ok(UploadResult {
+            provider: "Azure Blob",
+            status_code: status.as_u16(),
+            uploaded_bytes: content_length,
+        })
+    }
+
+    fn blob_name(&self, upload_file_name: &str) -> String {
+        if self.blob_prefix.is_empty() {
+            upload_file_name.to_string()
+        } else {
+            format!("{}/{}", self.blob_prefix, upload_file_name)
+        }
+    }
+
+    fn blob_url(&self, blob_name: &str) -> String {
+        let encoded_blob_name = blob_name
+            .split('/')
+            .map(urlencoding::encode)
+            .collect::<Vec<_>>()
+            .join("/");
+        format!(
+            "{}/{}/{}",
+            self.blob_endpoint.trim_end_matches('/'),
+            self.container_name,
+            encoded_blob_name
+        )
+    }
+
+    async fn authorization_header(
+        &self,
+        blob_name: &str,
+        content_length: u64,
+        request_date: &str,
+    ) -> Result<String, anyhow::Error> {
+        match &self.auth {
+            AzureAuth::SharedKey {
+                account_name,
+                account_key,
+            } => {
+                let canonicalized_headers = format!(
+                    "x-ms-blob-type:BlockBlob\nx-ms-date:{}\nx-ms-version:{}",
+                    request_date, AZURE_BLOB_API_VERSION
+                );
+                let canonicalized_resource = format!(
+                    "/{}/{}/{}",
+                    account_name, self.container_name, blob_name
+                );
+                let string_to_sign = format!(
+                    "PUT\n\n\n{}\n\n\n\n\n\n\n\n\n{}\n{}",
+                    content_length, canonicalized_headers, canonicalized_resource
+                );
+
+                let decoded_key = BASE64_STANDARD.decode(account_key.as_bytes())?;
+                let mut mac = HmacSha256::new_from_slice(&decoded_key)?;
+                mac.update(string_to_sign.as_bytes());
+                let signature = BASE64_STANDARD.encode(mac.finalize().into_bytes());
+                Ok(format!("SharedKey {}:{}", account_name, signature))
+            }
+            AzureAuth::ManagedIdentity {
+                client_id,
+                tenant_id,
+                federated_token_file,
+                authority_host,
+            } => {
+                let token = if let Some(token_file) = federated_token_file {
+                    let tenant_id = tenant_id.as_ref().ok_or_else(|| {
+                        anyhow::anyhow!(
+                            "AZURE_TENANT_ID is required when AZURE_FEDERATED_TOKEN_FILE is set"
+                        )
+                    })?;
+                    self.exchange_federated_token(
+                        authority_host,
+                        tenant_id,
+                        client_id,
+                        token_file,
+                    )
+                    .await?
+                } else {
+                    self.get_imds_token(client_id).await?
+                };
+
+                Ok(format!("Bearer {}", token))
+            }
+        }
+    }
+
+    async fn exchange_federated_token(
+        &self,
+        authority_host: &str,
+        tenant_id: &str,
+        client_id: &str,
+        token_file: &str,
+    ) -> Result<String, anyhow::Error> {
+        let assertion = fs::read_to_string(token_file)?;
+        let url = format!(
+            "{}/{}/oauth2/v2.0/token",
+            authority_host.trim_end_matches('/'),
+            tenant_id
+        );
+
+        let response = self
+            .client
+            .post(url)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(format!(
+                "client_id={}&scope={}&grant_type=client_credentials&client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer&client_assertion={}",
+                urlencoding::encode(client_id),
+                urlencoding::encode("https://storage.azure.com/.default"),
+                urlencoding::encode(assertion.trim())
+            ))
+            .send()
+            .await?;
+
+        let status = response.status();
+        let body = response.text().await?;
+        if !status.is_success() {
+            anyhow::bail!("Azure federated token exchange failed with {}: {}", status, body);
+        }
+
+        let value: serde_json::Value = serde_json::from_str(&body)?;
+        value
+            .get("access_token")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string())
+            .ok_or_else(|| anyhow::anyhow!("Azure federated token response did not contain access_token"))
+    }
+
+    async fn get_imds_token(&self, client_id: &str) -> Result<String, anyhow::Error> {
+        let mut url = reqwest::Url::parse(
+            "http://169.254.169.254/metadata/identity/oauth2/token",
+        )?;
+        url.query_pairs_mut()
+            .append_pair("api-version", "2018-02-01")
+            .append_pair("resource", "https://storage.azure.com/")
+            .append_pair("client_id", client_id);
+
+        let response = self
+            .client
+            .get(url)
+            .header("Metadata", "true")
+            .send()
+            .await?;
+
+        let status = response.status();
+        let body = response.text().await?;
+        if !status.is_success() {
+            anyhow::bail!("Azure IMDS token request failed with {}: {}", status, body);
+        }
+
+        let value: serde_json::Value = serde_json::from_str(&body)?;
+        value
+            .get("access_token")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string())
+            .ok_or_else(|| anyhow::anyhow!("Azure IMDS token response did not contain access_token"))
+    }
+}
+
+fn get_storage_backend() -> Result<StorageBackend, anyhow::Error> {
+    let provider = env::var("STORAGE_PROVIDER")
+        .unwrap_or_else(|_| String::new())
+        .to_lowercase();
+
+    if provider == "azure" || (provider.is_empty() && has_azure_config()) {
+        return Ok(StorageBackend::Azure(get_azure_blob_client()?));
+    }
+
+    Ok(StorageBackend::S3(get_bucket()?))
+}
+
+fn has_azure_config() -> bool {
+    env::var("AZURE_CLIENT_ID").is_ok()
+        || env::var("AZURE_STORAGE_CONNECTION_STRING").is_ok()
+        || (env::var("AZURE_STORAGE_ACCOUNT_NAME").is_ok()
+            && env::var("AZURE_STORAGE_CONTAINER_NAME").is_ok())
 }
 
 fn get_bucket() -> Result<Bucket, anyhow::Error> {
@@ -385,24 +670,104 @@ fn get_bucket() -> Result<Bucket, anyhow::Error> {
         )
     }?;
 
-    let s3 = Storage {
-        name: "aws".into(),
-        region,
-        credentials,
-        bucket: s3_bucket_name,
-        location_supported: false,
+    Ok(Bucket::new(&s3_bucket_name, region, credentials)?.with_path_style())
+}
+
+fn get_azure_blob_client() -> Result<AzureBlobClient, anyhow::Error> {
+    let connection_string = env::var("AZURE_STORAGE_CONNECTION_STRING").unwrap_or_default();
+    let mut blob_endpoint = env::var("AZURE_STORAGE_BLOB_ENDPOINT").unwrap_or_default();
+    let mut account_name = env::var("AZURE_STORAGE_ACCOUNT_NAME").unwrap_or_default();
+    let mut account_key = env::var("AZURE_STORAGE_ACCOUNT_KEY").unwrap_or_default();
+    let client_id = env::var("AZURE_CLIENT_ID").unwrap_or_default();
+    let tenant_id = env::var("AZURE_TENANT_ID").ok();
+    let federated_token_file = env::var("AZURE_FEDERATED_TOKEN_FILE").ok();
+    let authority_host = env::var("AZURE_AUTHORITY_HOST")
+        .unwrap_or_else(|_| "https://login.microsoftonline.com".to_string());
+
+    if !connection_string.is_empty() {
+        let values = parse_connection_string(&connection_string);
+        if account_name.is_empty() {
+            account_name = values.get("AccountName").cloned().unwrap_or_default();
+        }
+        if account_key.is_empty() {
+            account_key = values.get("AccountKey").cloned().unwrap_or_default();
+        }
+        if blob_endpoint.is_empty() {
+            blob_endpoint = values.get("BlobEndpoint").cloned().unwrap_or_default();
+            if blob_endpoint.is_empty() {
+                let endpoint_suffix = values
+                    .get("EndpointSuffix")
+                    .cloned()
+                    .unwrap_or_else(|| "core.windows.net".to_string());
+                let default_protocol = values
+                    .get("DefaultEndpointsProtocol")
+                    .cloned()
+                    .unwrap_or_else(|| "https".to_string());
+                if !account_name.is_empty() {
+                    blob_endpoint = format!(
+                        "{}://{}.blob.{}",
+                        default_protocol, account_name, endpoint_suffix
+                    );
+                }
+            }
+        }
+    }
+
+    let container_name = env::var("AZURE_STORAGE_CONTAINER_NAME")?;
+    let blob_prefix = env::var("AZURE_STORAGE_BLOB_PREFIX")
+        .unwrap_or_default()
+        .trim_matches('/')
+        .to_string();
+
+    let auth = if !client_id.is_empty() {
+        if blob_endpoint.is_empty() {
+            anyhow::bail!(
+                "Azure managed identity requires AZURE_STORAGE_BLOB_ENDPOINT or AZURE_STORAGE_CONNECTION_STRING to derive it"
+            );
+        }
+
+        AzureAuth::ManagedIdentity {
+            client_id,
+            tenant_id,
+            federated_token_file,
+            authority_host,
+        }
+    } else {
+        if account_name.is_empty() || account_key.is_empty() || blob_endpoint.is_empty() {
+            anyhow::bail!(
+                "Azure Storage requires AZURE_STORAGE_CONTAINER_NAME and either AZURE_CLIENT_ID or AZURE_STORAGE_CONNECTION_STRING / AZURE_STORAGE_ACCOUNT_NAME / AZURE_STORAGE_ACCOUNT_KEY / AZURE_STORAGE_BLOB_ENDPOINT"
+            );
+        }
+
+        AzureAuth::SharedKey {
+            account_name,
+            account_key,
+        }
     };
-    Ok(Bucket::new(&s3.bucket, s3.region, s3.credentials)?.with_path_style())
+
+    if blob_endpoint.is_empty() {
+        anyhow::bail!(
+            "Azure Storage requires AZURE_STORAGE_BLOB_ENDPOINT or AZURE_STORAGE_CONNECTION_STRING to derive it"
+        );
+    }
+
+    Ok(AzureBlobClient {
+        client: Client::builder().build()?,
+        auth,
+        container_name,
+        blob_endpoint,
+        blob_prefix,
+    })
 }
 
 async fn run_polling_agent() {
     let core_location = env::var("CORE_DIR").unwrap_or_else(|_| DEFAULT_CORE_DIR.to_string());
     info!("Executing Agent with location : {}", core_location);
 
-    let bucket = match get_bucket() {
+    let storage = match get_storage_backend() {
         Ok(v) => v,
         Err(e) => {
-            error!("Bucket Creation Failed: {}", e);
+            error!("Storage client creation failed: {}", e);
             return;
         }
     };
@@ -418,7 +783,36 @@ async fn run_polling_agent() {
 
     info!("Dir Content {:?}", paths);
     for zip_path in paths {
-        process_file(&zip_path, &bucket).await;
+        process_file(&zip_path, &storage).await;
+    }
+}
+
+fn parse_connection_string(connection_string: &str) -> HashMap<String, String> {
+    connection_string
+        .split(';')
+        .filter_map(|entry| {
+            let (key, value) = entry.split_once('=')?;
+            Some((key.trim().to_string(), value.trim().to_string()))
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod unit_tests {
+    use super::parse_connection_string;
+
+    #[test]
+    fn parses_azure_connection_string() {
+        let values = parse_connection_string(
+            "DefaultEndpointsProtocol=https;AccountName=testacct;AccountKey=dGVzdA==;EndpointSuffix=core.windows.net",
+        );
+
+        assert_eq!(values.get("AccountName"), Some(&"testacct".to_string()));
+        assert_eq!(values.get("AccountKey"), Some(&"dGVzdA==".to_string()));
+        assert_eq!(
+            values.get("EndpointSuffix"),
+            Some(&"core.windows.net".to_string())
+        );
     }
 }
 

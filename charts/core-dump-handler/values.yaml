@@ -35,6 +35,7 @@ composer:
 
 daemonset:
   podAnnotations: {}
+  podLabels: {}
   name: "core-dump-handler"
   label: "core-dump-ds"
   hostDirectory: "/var/mnt/core-dump-handler"
@@ -50,12 +51,21 @@ daemonset:
   useINotify: true
   deployCrioConfig: false
   includeCrioExe: false
-  # S3 access
+  # Storage access
   manageStoreSecret: true
+  storageProvider: ""
+  azureClientId: ""
+  azureTenantId: ""
   s3AccessKey: XXX
   s3Secret: XXX
   s3BucketName: XXX
   s3Region: XXX
+  azureStorageConnectionString: ""
+  azureStorageAccountName: ""
+  azureStorageAccountKey: ""
+  azureStorageContainerName: ""
+  azureStorageBlobEndpoint: ""
+  azureStorageBlobPrefix: ""
   extraEnvVars: ""
   envFrom: []
   sidecarContainers: []

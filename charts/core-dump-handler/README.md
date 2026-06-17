@@ -1,12 +1,12 @@
 # Core Dump Handler
 
-This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kubernetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an S3 compatible storage service.
+This helm chart is designed to deploy functionality that automatically saves core dumps from any public cloud kubernetes service provider or [RedHat OpenShift Kubernetes Service](https://cloud.ibm.com/kubernetes/catalog/create?platformType=openshift) to an object storage service.
 
 ## Prerequisites
 
 The [Helm](https://helm.sh/) cli to run the chart
 
-An [S3 Protocol Compatible](https://en.wikipedia.org/wiki/Amazon_S3) object storage solution.
+An object storage solution reachable from the cluster. Native S3-compatible uploads and Azure Blob Storage uploads are supported.
 
 A [CRIO](https://cri-o.io/) compatible container runtime on the kubernetes hosts. If you service provider uses something else we will willingly recieve patches to support them.
 
@@ -22,6 +22,30 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 
 Where the `--set` options are configuration for your S3 protocol compatible provider
 
+Azure Blob Storage is auto-detected when `daemonset.azureClientId` is present. The agent prioritizes managed identity authentication; if the client ID is not set, it falls back to connection string / account key.
+
+**With Azure Workload Identity (recommended):**
+
+```
+helm install core-dump-handler . --create-namespace --namespace observe \
+--set daemonset.azureClientId=00000000-0000-0000-0000-000000000000 \
+--set daemonset.azureTenantId=00000000-0000-0000-0000-000000000000 \
+--set daemonset.azureStorageContainerName=core-dumps \
+--set daemonset.azureStorageBlobEndpoint=https://myaccount.blob.core.windows.net \
+--set serviceAccount.annotations.azure\.workload\.identity/client-id=00000000-0000-0000-0000-000000000000 \
+--set daemonset.podLabels.azure\.workload\.identity/use=true
+```
+
+Note: `storageProvider` is automatically set to Azure when a client ID is provided.
+
+**Fallback with connection string (if managed identity is not available):**
+
+```
+helm install core-dump-handler . --create-namespace --namespace observe \
+--set daemonset.azureStorageConnectionString='DefaultEndpointsProtocol=https;AccountName=XXX;AccountKey=XXX;EndpointSuffix=core.windows.net' \
+--set daemonset.azureStorageContainerName=core-dumps
+```
+
 For the following providers an additional option of values should be provided using the `--values` flag
 
 e.g.
@@ -33,6 +57,9 @@ helm install core-dump-handler . --create-namespace --namespace observe \
 ```
 
 <table><thead><td>Provider</td><td>Product</td><td>Values</td></thead>
+<tr>
+    <td>Microsoft</td><td>AKS with Azure Blob Storage</td><td><a href="values.azure.yaml">values.azure.yaml</a></td>
+</tr>
 <tr>
     <td>AWS</td><td>EKS</td><td><a href="values.aws.yaml">values.aws.yaml</a></td>
 </tr>
@@ -234,6 +261,13 @@ The agent pod has the following environment variables and these are all set by t
   e.g. --set S3_REGION=host.mycloud.com 
 
   See https://github.com/IBM/core-dump-handler/issues/124 for further discussion. 
+* STORAGE_PROVIDER - Optional explicit backend selector. Supported values are `s3` and `azure`. When omitted, the agent auto-detects Azure if Azure storage settings are present, otherwise it uses S3.
+* AZURE_STORAGE_CONNECTION_STRING - Azure Blob Storage connection string. When set, the agent derives account and endpoint settings from it.
+* AZURE_STORAGE_ACCOUNT_NAME - Azure storage account name when not using a connection string.
+* AZURE_STORAGE_ACCOUNT_KEY - Azure storage account key when not using a connection string.
+* AZURE_STORAGE_CONTAINER_NAME - Blob container that receives the uploaded archives.
+* AZURE_STORAGE_BLOB_ENDPOINT - Blob service endpoint, for example `https://myaccount.blob.core.windows.net`.
+* AZURE_STORAGE_BLOB_PREFIX - Optional virtual folder prefix prepended to each uploaded blob name.
 * VENDOR - Some older hosts may require targeted builds for the composer.
 
     default(Default) - A RHEL8 build
@@ -257,6 +291,18 @@ The following secrets are configurable and map to the corresponding environment 
     key: s3BucketName
 
     key: s3Region
+
+    key: azureStorageConnectionString
+
+    key: azureStorageAccountName
+
+    key: azureStorageAccountKey
+
+    key: azureStorageContainerName
+
+    key: azureStorageBlobEndpoint
+
+    key: azureStorageBlobPrefix
 
 ### Values
 
@@ -322,14 +368,21 @@ Daemonset
 * useINotify: Maps to the USE_INOTIFY environment variable (Default false)
 * DeployCrioConfig:  Maps to the DEPLOY_CRIO_CONFIG enviroment variable (Default false)
 * includeCrioExe: Maps to the DEPLOY_CRIO_EXE enviroment variable (Default false)
-* manageStoreSecret: Defines if the chart will be responsible for creating the S3 environment variables.
+* manageStoreSecret: Defines if the chart will be responsible for creating the storage environment variables.
 
     Set to false if you are using an external secrets managment system (Default true)
 
+* storageProvider : Maps to the STORAGE_PROVIDER enviroment variable. Use `azure` to force Azure Blob Storage, `s3` to force S3, or leave empty for autodetection.
 * s3AccessKey : Maps to the S3_ACCESS_KEY enviroment variable
 * s3Secret : Maps to the S3_SECRET enviroment variable
 * s3BucketName : Maps to the S3_BUCKET_NAME enviroment variable
 * 3Region : Maps to the S3_REGION enviroment variable
+* azureStorageConnectionString : Maps to the AZURE_STORAGE_CONNECTION_STRING environment variable
+* azureStorageAccountName : Maps to the AZURE_STORAGE_ACCOUNT_NAME environment variable
+* azureStorageAccountKey : Maps to the AZURE_STORAGE_ACCOUNT_KEY environment variable
+* azureStorageContainerName : Maps to the AZURE_STORAGE_CONTAINER_NAME environment variable
+* azureStorageBlobEndpoint : Maps to the AZURE_STORAGE_BLOB_ENDPOINT environment variable
+* azureStorageBlobPrefix : Maps to the AZURE_STORAGE_BLOB_PREFIX environment variable
 * extraEnvVars: Option for passing additional configuration to the agent such as endpoint properties.
 * envFrom: Array of [EnvFromSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#envfromsource-v1-core) to inject into main container.
 * sidecarContainers: Array of [Container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#container-v1-core) to define as part of the pod.

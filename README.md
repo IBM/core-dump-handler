@@ -1,6 +1,6 @@
 # Core Dump Handler
 
-This helm chart is designed to deploy functionality that automatically saves core dumps from most public cloud kubernetes service providers and private kubernetes instances to an S3 compatible storage service.
+This helm chart is designed to deploy functionality that automatically saves core dumps from most public cloud kubernetes service providers and private kubernetes instances to an object storage service.
 
 [![build status](https://github.com/ibm/core-dump-handler/workflows/CI/badge.svg)](https://github.com/ibm/core-dump-handler/actions)
 [![Docker Repository on Quay](https://quay.io/repository/icdh/core-dump-handler/status "Docker Repository on Quay")](https://quay.io/repository/icdh/core-dump-handler)
@@ -99,7 +99,7 @@ This chart aims to tackle the problems surrounding core dumps by leveraging comm
 
 The chart deploys two processes:
 
-1. The **agent** manages the updating of `/proc/sys/kernel/*` configuration, deploys the composer service and uploads the core dumps zipfile created by the composer to an object storage instance.
+1. The **agent** manages the updating of `/proc/sys/kernel/*` configuration, deploys the composer service and uploads the core dumps zipfile created by the composer to an object storage instance. Native S3-compatible and Azure Blob Storage uploads are supported.
 
 2. The **composer** handles the processing of a core dump and creating runtime, container coredump and image JSON documents from CRICTL and inserting them into a single zip file. The zip file is stored on the local file system of the node for the agent to upload.
 
@@ -205,6 +205,11 @@ or run the helm install command with the settings
     S3_SECRET=XXXX
     S3_BUCKET_NAME=XXXX
     S3_REGION=XXXX
+
+    # Or for Azure Blob Storage
+    STORAGE_PROVIDER=azure
+    AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=XXXX;AccountKey=XXXX;EndpointSuffix=core.windows.net
+    AZURE_STORAGE_CONTAINER_NAME=core-dumps
     ```
 
 1. Change directory to the integration folder and run the test

@@ -174,18 +174,61 @@
                         "properties": {
                             "manageStoreSecret": {
                                 "const": true
+                            },
+                            "storageProvider": {
+                                "const": "azure"
                             }
                         },
                         "required": [
-                            "manageStoreSecret"
+                            "manageStoreSecret",
+                            "storageProvider"
                         ]
                     },
                     "then": {
                         "required": [
-                            "s3AccessKey",
+                            "azureStorageContainerName"
+                        ],
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "azureStorageConnectionString"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "azureStorageAccountName",
+                                    "azureStorageAccountKey",
+                                    "azureStorageBlobEndpoint"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "manageStoreSecret": {
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "manageStoreSecret"
+                        ],
+                        "not": {
+                            "properties": {
+                                "storageProvider": {
+                                    "const": "azure"
+                                }
+                            },
+                            "required": [
+                                "storageProvider"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "required": [
                             "s3BucketName",
-                            "s3Region",
-                            "s3Secret"
+                            "s3Region"
                         ]
                     }
                 },
@@ -215,6 +258,12 @@
                         "type": "string"
                     }
                 },
+                "podLabels": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "hostDirectory": {
                     "type": "string"
                 },
@@ -228,6 +277,15 @@
                     "type": "integer"
                 },
                 "vendor": {
+                    "type": "string"
+                },
+                "storageProvider": {
+                    "type": "string"
+                },
+                "azureClientId": {
+                    "type": "string"
+                },
+                "azureTenantId": {
                     "type": "string"
                 },
                 "interval": {
@@ -268,6 +326,24 @@
                     "type": "string"
                 },
                 "s3Region": {
+                    "type": "string"
+                },
+                "azureStorageConnectionString": {
+                    "type": "string"
+                },
+                "azureStorageAccountName": {
+                    "type": "string"
+                },
+                "azureStorageAccountKey": {
+                    "type": "string"
+                },
+                "azureStorageContainerName": {
+                    "type": "string"
+                },
+                "azureStorageBlobEndpoint": {
+                    "type": "string"
+                },
+                "azureStorageBlobPrefix": {
                     "type": "string"
                 },
                 "extraEnvVars": {

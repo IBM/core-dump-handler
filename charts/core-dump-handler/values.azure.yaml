@@ -1,0 +1,19 @@
+# Azure Blob Storage with Managed Identity (recommended)
+#
+# When AZURE_CLIENT_ID is set, the agent automatically selects Azure Blob Storage
+# and authenticates using the managed identity. No need to set storageProvider.
+
+daemonset:
+  manageStoreSecret: true
+  azureClientId: "00000000-0000-0000-0000-000000000000"
+  azureTenantId: "00000000-0000-0000-0000-000000000000"
+  azureStorageContainerName: core-dumps
+  azureStorageBlobEndpoint: "https://XXXX.blob.core.windows.net"
+
+  # Required for Azure Workload Identity on AKS.
+  podLabels:
+    azure.workload.identity/use: "true"
+
+serviceAccount:
+  annotations:
+    azure.workload.identity/client-id: "00000000-0000-0000-0000-000000000000"

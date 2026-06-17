@@ -9,30 +9,25 @@ resolver = "2"
 
 [dependencies]
 anyhow = "1.0.86"
+base64 = "0.22.1"
+chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
 dotenv = "0.15.0"
 env_logger = "0.11.5"
+hmac = "0.12.1"
 log = "0.4.22"
+reqwest = { version = "0.12.9", default-features = false, features = ["http2", "rustls-tls", "stream"] }
 advisory-lock = "0.3.0"
+sha2 = "0.10.8"
+serde_json = "1.0.125"
 tokio-cron-scheduler = "0.11.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs"] }
-inotify = "0.10"
+tokio-util = { version = "0.7.12", features = ["io"] }
+rust-s3 = { version = "0.34.0", default-features = false, features = ["tokio-rustls-tls"] }
 thiserror = "1.0.63"
+urlencoding = "2.1.3"
 
-[target.x86_64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.34.0"
-default-features = false
-features = ["tokio-rustls-tls"]
-
-[target.aarch64-unknown-linux-musl.dependencies.rust-s3]
-version = "0.34.0"
-default-features = false
-features = ["tokio-rustls-tls"]
-
-[target.x86_64-unknown-linux-gnu.dependencies.rust-s3]
-version = "0.34.0"
-
-[target.aarch64-unknown-linux-gnu.dependencies.rust-s3]
-version = "0.34.0"
+[target.'cfg(unix)'.dependencies]
+inotify = "0.10"
 
 [dev-dependencies]
 fs_extra = "1.2"
